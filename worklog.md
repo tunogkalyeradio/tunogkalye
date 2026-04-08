@@ -1,22 +1,24 @@
 ---
-Task ID: 1
+Task ID: 2
 Agent: Main Agent
-Task: Build Tunog Kalye Radio funnel web application (3 funnels)
+Task: Complete ALL pages for Tunog Kalye Radio funnel website
 
 Work Log:
-- Initialized fullstack-dev project environment with Next.js 16, Tailwind CSS, shadcn/ui
-- Generated branded hero image via AI image generation (tunog-kalye-hero.jpg)
-- Designed and implemented Prisma database schema (MusicSubmission, SponsorInquiry, Donation)
-- Built 3 API routes: /api/submit, /api/sponsor, /api/donate (all tested and working)
-- Built complete single-page funnel application with 3 funnels:
-  - Funnel 1: Submit Your Music (Landing → Form → Thank You)
-  - Funnel 2: Sponsor My Station (Landing → Stats → Pricing → Inquiry)
-  - Funnel 3: Super Fan / Donations (Landing → Tier Selection → Checkout → Thank You)
-- Dark theme design matching Tunog Kalye Radio brand (black/amber/red/rose accents)
-- All forms have validation, loading states, error handling, and success feedback
-- ESLint passes cleanly, all API routes tested successfully
+- Audited existing code: Found Funnel 2 missing Thank You page, thin Thank You pages on other funnels, missing How It Works and FAQ sections on home page
+- Complete rewrite of page.tsx with all pages:
+  - Home Page: Hero + Funnel Cards + How It Works (4-step visual) + FAQ (6 expandable questions with Accordion) + Stats Bar
+  - Funnel 1 (Submit): Landing → Form → Rich Thank You with "What Happens Next" timeline (3 steps), Strategic Magic callout, social sharing buttons
+  - Funnel 2 (Sponsor): Landing → Stats/Proof → Pricing (3 tiers) → Inquiry Form → NEW Thank You with timeline, "Why Businesses Choose Us" callout
+  - Funnel 3 (Donate): Landing → Tier Selection (4 tiers) → Checkout Form → Rich Thank You with personalized messages per tier, "Spread the Love" callout, cross-funnel CTA to sponsor
+- Added Progress Bar component (colored dots + connecting lines) to all funnels
+- Added Timeline component for Thank You pages (icon + time + title + description)
+- Enhanced navbar: quick-access funnel icons on home page, breadcrumb inside funnels
+- Added Privacy Shield notice on Submit form
+- All 3 API routes tested successfully
+- ESLint passes with zero errors
 
 Stage Summary:
-- All 3 funnels fully functional with database persistence
-- Preview URL: https://preview-chat-4dabe2b9-d53a-438d-884e-5d0954951633.space.z.ai/
-- Color scheme: Dark (#0a0a0f base) with red (submit), amber (sponsor), rose (donate) accents
+- Complete funnel system: 13 distinct page views across 3 funnels + home
+- All Thank You pages feature: confirmation badge, "What Happens Next" timeline, contextual callout, multiple CTAs
+- Home page: 5 sections (Hero, Cards, How It Works, FAQ with 6 items, Stats)
+- Dev server compiles cleanly, all APIs functional
