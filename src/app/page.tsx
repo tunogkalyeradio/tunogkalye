@@ -169,9 +169,7 @@ function HomePage({ onSelect }: { onSelect: (f: FunnelId) => void }) {
       {/* HERO */}
       <section className="relative overflow-hidden rounded-2xl border border-white/10">
         <div className="absolute inset-0 bg-gradient-to-br from-red-950/80 via-[#0a0a0f]/90 to-orange-950/60" />
-        {typeof window !== "undefined" && (
-          <div className="absolute inset-0 bg-cover bg-center opacity-25" style={{ backgroundImage: "url('/tunog-kalye-hero.jpg')" }} />
-        )}
+        <div className="absolute inset-0 bg-cover bg-center opacity-25" style={{ backgroundImage: "url('/tunog-kalye-hero.jpg')" }} />
         <div className="relative z-10 px-6 py-16 sm:px-12 sm:py-24 lg:py-28">
           <Badge className="mb-4 border-red-500/30 bg-red-500/20 px-3 py-1 text-xs font-medium text-red-400 backdrop-blur-sm">
             <Volume2 className="mr-1 h-3 w-3" /> 24/7 GLOBAL BROADCAST
@@ -796,7 +794,7 @@ function DonateFunnel({ step, setStep, goHome, navigateTo, isSubmitting, setIsSu
   // STEP 3: CHECKOUT FORM
   if (step === 3) return (
     <div className="mx-auto max-w-xl">
-      <ProgressBar steps={["Support", "Choose", "Done"]} current={2} colors={FM.donate} />
+      <ProgressBar steps={["Support", "Choose", "Done"]} current={3} colors={FM.donate} />
       <Button variant="ghost" onClick={() => setStep(2)} className="mb-6 text-slate-400 hover:text-white"><ChevronLeft className="mr-1 h-4 w-4" />Back</Button>
       {submitResult && !submitResult.success && (
         <div className="mb-6 flex items-center gap-2 rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-400"><AlertCircle className="h-4 w-4 shrink-0" />{submitResult.message}</div>

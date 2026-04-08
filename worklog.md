@@ -22,3 +22,25 @@ Stage Summary:
 - All Thank You pages feature: confirmation badge, "What Happens Next" timeline, contextual callout, multiple CTAs
 - Home page: 5 sections (Hero, Cards, How It Works, FAQ with 6 items, Stats)
 - Dev server compiles cleanly, all APIs functional
+
+---
+Task ID: 3
+Agent: Main Agent
+Task: Fix hydration error and verify all funnel pages are complete
+
+Work Log:
+- Identified hydration mismatch: `typeof window !== "undefined"` conditional rendering of hero background image div caused server/client HTML difference
+- Fixed by removing the conditional check — the div with `backgroundImage` style renders identically on server and client
+- Found and fixed Donate Funnel Step 3 (checkout form) progress bar showing `current={2}` instead of `current={3}`
+- Verified all 3 funnels have complete pages:
+  - Funnel 1 (Submit): Landing (step 1) → Form (step 2) → Thank You (step 3) ✓
+  - Funnel 2 (Sponsor): Landing (step 1) → Stats/Proof (step 2) → Pricing (step 3) → Form (step 4) → Thank You (step 5) ✓
+  - Funnel 3 (Donate): Landing (step 1) → Tier Selection (step 2) → Checkout (step 3) → Thank You (step 4) ✓
+- `next build` compiles successfully with zero errors
+- All routes confirmed: `/`, `/api/submit`, `/api/sponsor`, `/api/donate`
+
+Stage Summary:
+- Hydration error fixed by removing `typeof window` guard on hero background div
+- Progress bar bug on Donate checkout page fixed
+- All 13 page views + home page verified complete and functional
+- Production build passes cleanly
