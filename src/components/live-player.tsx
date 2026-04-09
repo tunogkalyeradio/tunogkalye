@@ -11,7 +11,7 @@ import { Play, Pause, Volume1, Volume2, VolumeX, X, ExternalLink, Music2, Image 
 //   C) Disable "Bot Fight Mode" and "Under Attack Mode" in Cloudflare
 const STREAM_CONFIG = {
   // Direct audio stream URL — find this in AzuraCast Admin → Stations → Your Station → Mount Points
-  audioUrl: process.env.NEXT_PUBLIC_STREAM_URL || "https://tunogkalye.net/radio/8000/radio.mp3",
+  audioUrl: process.env.NEXT_PUBLIC_STREAM_URL || "https://tunogkalye.net/radio",
   // AzuraCast Now-Playing API (public, no auth required)
   nowPlayingApi: process.env.NEXT_PUBLIC_NOW_PLAYING_API || "https://tunogkalye.net/api/nowplaying/tunog-kalye",
   // Link to the full AzuraCast station page (always works in browser)
