@@ -29,9 +29,8 @@ export default async function StoreLayout({
               href="/store"
               className="flex items-center gap-2 transition-opacity hover:opacity-80"
             >
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-red-600 to-orange-500">
-                <Radio className="h-4 w-4 text-white" />
-              </div>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/tunog-kalye-logo.png" alt="Tunog Kalye Radio" className="h-8 w-8 object-contain" />
               <span className="text-sm font-bold tracking-tight">
                 MERCH <span className="text-red-400">STORE</span>
               </span>

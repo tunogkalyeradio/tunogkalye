@@ -162,9 +162,8 @@ export default function TunogKalyePathways() {
       <nav className="sticky top-0 z-50 border-b border-white/10 bg-[#0a0a0f]/80 backdrop-blur-xl">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
           <button onClick={goHome} className="flex items-center gap-2 transition-opacity hover:opacity-80">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-red-600 to-orange-500">
-              <Radio className="h-5 w-5 text-white" />
-            </div>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/tunog-kalye-logo.png" alt="Tunog Kalye Radio" className="h-9 w-9 object-contain" />
             <span className="hidden text-lg font-bold tracking-tight sm:inline">
               TUNOG KALYE<span className="text-red-400"> RADIO</span>
             </span>
@@ -237,15 +236,13 @@ function HomePage({ onSelect }: { onSelect: (f: PathwayId) => void }) {
         <div className="absolute inset-0 bg-cover bg-center opacity-25" style={{ backgroundImage: "url('/tunog-kalye-hero.jpg')" }} />
         <div className="relative z-10 px-6 py-16 sm:px-12 sm:py-24 lg:py-28">
           <div className="flex flex-col items-start gap-6 sm:flex-row sm:items-center sm:gap-8">
-            {/* Square Logo */}
-            <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-2xl bg-white/10 backdrop-blur-sm border border-white/10 sm:h-28 sm:w-28">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/tunog-kalye-logo.png"
-                alt="Tunog Kalye Radio"
-                className="h-full w-full rounded-2xl object-cover"
-              />
-            </div>
+            {/* Logo */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/tunog-kalye-logo.png"
+              alt="Tunog Kalye Radio"
+              className="h-24 w-24 object-contain sm:h-28 sm:w-28"
+            />
             <div className="flex-1 min-w-0">
               <Badge className="mb-3 border-red-500/30 bg-red-500/20 px-3 py-1 text-xs font-medium text-red-400 backdrop-blur-sm">
                 <Volume2 className="mr-1 h-3 w-3" /> 24/7 GLOBAL BROADCAST

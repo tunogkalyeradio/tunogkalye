@@ -79,9 +79,8 @@ export default function DashboardShell({ children, user }: DashboardShellProps) 
         {/* Sidebar header */}
         <div className="flex items-center justify-between p-4">
           <Link href="/" className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-red-600 to-orange-500">
-              <Radio className="h-5 w-5 text-white" />
-            </div>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/tunog-kalye-logo.png" alt="Tunog Kalye Radio" className="h-9 w-9 object-contain" />
             <div>
               <span className="text-sm font-bold tracking-tight">TUNOG KALYE</span>
               <span className="ml-1 text-xs text-red-400">RADIO</span>
