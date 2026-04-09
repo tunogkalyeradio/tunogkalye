@@ -174,13 +174,11 @@ export default function LivePlayer() {
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-[100] animate-in slide-in-from-bottom duration-500">
-      {/* Hidden audio element */}
+      {/* Hidden audio element — no crossOrigin so browser sends no-cors request (avoids CORS block from AzuraCast) */}
       <audio
         ref={audioRef}
         src={STREAM_CONFIG.audioUrl}
         preload="none"
-        volume={volume}
-        crossOrigin="anonymous"
       />
 
       {/* Main player bar */}
