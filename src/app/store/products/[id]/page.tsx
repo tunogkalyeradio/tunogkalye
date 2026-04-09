@@ -2,6 +2,8 @@ import { db } from "@/lib/db";
 import { notFound } from "next/navigation";
 import ProductDetailClient from "./product-detail-client";
 import { CATEGORY_GRADIENTS } from "../../page";
+import Link from "next/link";
+import { ArrowLeft, Store } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -61,16 +63,37 @@ export default async function ProductDetailPage({ params }: PageProps) {
 
   if (isNaN(id)) notFound();
 
-  const [product, relatedProducts] = await Promise.all([
-    getProduct(id),
-    id ? getRelatedProducts(id, "", 0).catch(() => []) : Promise.resolve([]),
-  ]);
+  // Try database; show fallback if unavailable
+  let product, related;
+  try {
+    [product, related] = await Promise.all([
+      getProduct(id),
+      getRelatedProducts(id, "", 0).catch(() => []),
+    ]);
+  } catch {
+    return (
+      <div className="flex min-h-[70vh] flex-col items-center justify-center px-4 text-center">
+        <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-red-500 to-orange-500">
+          <Store className="h-10 w-10 text-white" />
+        </div>
+        <h1 className="mb-4 text-3xl font-bold text-white">Store Coming Soon</h1>
+        <p className="mb-6 text-slate-400">This product page will be available once the marketplace is set up.</p>
+        <Link
+          href="/store"
+          className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-red-600 to-orange-500 px-6 py-3 font-semibold text-white"
+        >
+          <ArrowLeft className="h-5 w-5" />
+          Back to Store
+        </Link>
+      </div>
+    );
+  }
 
   if (!product || !product.isActive) notFound();
 
   // Now fetch related products with correct params
-  const related = product.isActive
-    ? await getRelatedProducts(product.id, product.category, product.artistId)
+  const relatedProducts = product.isActive
+    ? await getRelatedProducts(product.id, product.category, product.artistId).catch(() => [])
     : [];
 
   const serializedProduct = {
@@ -92,7 +115,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
       : null,
   };
 
-  const serializedRelated = related.map((p) => ({
+  const serializedRelated = (relatedProducts || related || []).map((p) => ({
     ...p,
     price: Number(p.price),
     compareAtPrice: p.compareAtPrice ? Number(p.compareAtPrice) : null,
