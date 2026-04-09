@@ -43,7 +43,27 @@ enum NotificationType {
   SYSTEM
 }
 
-// ─── Existing Models (Pathway) ────────────────────────────────────────────────
+enum StoreStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  SUSPENDED
+}
+
+enum ProductType {
+  PHYSICAL
+  DIGITAL
+}
+
+enum BadgeType {
+  FIRST_PURCHASE
+  KANTO_CHAMPION
+  EARLY_SUPPORTER
+  TOP_SUPPORTER
+  SUBSCRIBER
+}
+
+// ─── Pathway Models (Submissions) ────────────────────────────────────────────
 
 model MusicSubmission {
   id            String   @id @default(cuid())
@@ -81,6 +101,17 @@ model Donation {
   createdAt     DateTime @default(now())
 }
 
+// ─── Kanto Fund Tracker ──────────────────────────────────────────────────────
+
+model KantoFundEntry {
+  id          Int      @id @default(autoincrement())
+  source      String   // "Sponsorship", "Donation", "Other"
+  description String
+  amount      Float
+  quarter     String   // e.g. "Q1-2026"
+  createdAt   DateTime @default(now())
+}
+
 // ─── User & Auth ─────────────────────────────────────────────────────────────
 
 model User {
@@ -100,6 +131,9 @@ model User {
   cartItems       Cart[]
   reviews         Review[]
   notifications   Notification[]
+  digitalPurchases DigitalPurchase[]
+  tipsSent        Tip[]
+  badges          UserBadge[]
 }
 
 // ─── Artist ──────────────────────────────────────────────────────────────────
@@ -119,14 +153,20 @@ model ArtistProfile {
   stripeAccountId         String?
   stripeOnboardingComplete Boolean         @default(false)
   isVerified              Boolean         @default(false)
+  storeStatus             StoreStatus     @default(PENDING)   // Admin must approve store access
+  storeRejectedReason     String?         // Reason if rejected
+  totalSales              Float           @default(0)          // Cached total
+  totalAirplays           Int             @default(0)          // Cached radio airplay count
   createdAt               DateTime        @default(now())
   updatedAt               DateTime        @updatedAt
 
   user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   products    Product[]
   orderItems  OrderItem[]
+  tips        Tip[]
 
   @@index([userId])
+  @@index([storeStatus])
 }
 
 // ─── Product ─────────────────────────────────────────────────────────────────
@@ -138,7 +178,8 @@ model Product {
   description     String
   price           Float
   compareAtPrice  Float?          // for showing discounts (strikethrough)
-  category        String          // e.g., "T-Shirt", "Hoodie", "Sticker", "Digital"
+  category        String          // e.g., "T-Shirt", "Hoodie", "Sticker", "Album", "EP"
+  productType     ProductType     @default(PHYSICAL)         // PHYSICAL or DIGITAL
   images          String          // JSON string array of image URLs
   sizes           String?         // JSON string array: ["S","M","L","XL"]
   colors          String?         // JSON string array: ["Black","White"]
@@ -146,29 +187,40 @@ model Product {
   fulfillmentMode FulfillmentMode @default(PLATFORM_DELIVERY)
   shippingFee     Float           @default(0)
   isActive        Boolean         @default(true)
+  isStation       Boolean         @default(false)            // true = TKR official merch (revenue goes to station)
+  isFlagged       Boolean         @default(false)            // content moderation flag
+  flagReason      String?         // reason for flagging
+  downloadUrl     String?         // for digital products: file URL
+  fileSize        String?         // for digital products: e.g. "45MB"
+  fileFormat      String?         // for digital products: e.g. "ZIP", "MP3"
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
 
-  artist      ArtistProfile @relation(fields: [artistId], references: [id], onDelete: Cascade)
-  orderItems  OrderItem[]
-  cartItems   Cart[]
-  reviews     Review[]
+  artist            ArtistProfile    @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  orderItems        OrderItem[]
+  cartItems         Cart[]
+  reviews           Review[]
+  digitalPurchases  DigitalPurchase[]
 
   @@index([artistId])
   @@index([category])
   @@index([isActive])
+  @@index([productType])
+  @@index([isStation])
 }
 
 // ─── Order ───────────────────────────────────────────────────────────────────
 
 model Order {
   id                 Int          @id @default(autoincrement())
-  customerId         Int
   orderNumber        String       @unique
+  customerId         Int?
+  guestEmail         String?      // for guest checkout
+  guestName          String?      // for guest checkout
   status             OrderStatus  @default(PENDING)
   totalAmount        Float
-  platformRevenue    Float        @default(0)  // 10% platform cut
-  artistRevenueTotal Float        @default(0)  // sum of artist cuts
+  platformRevenue    Float        @default(0)  // station merch revenue only
+  artistRevenueTotal Float        @default(0)  // sum of artist cuts (info only, money goes directly via Stripe)
   shippingAddress    String       // JSON object: { name, line1, city, province, postalCode, phone }
   paymentIntentId    String?
   trackingNumber     String?
@@ -176,10 +228,11 @@ model Order {
   createdAt          DateTime     @default(now())
   updatedAt          DateTime     @updatedAt
 
-  customer   User        @relation(fields: [customerId], references: [id])
+  customer   User?       @relation(fields: [customerId], references: [id])
   orderItems OrderItem[]
 
   @@index([customerId])
+  @@index([guestEmail])
   @@index([orderNumber])
   @@index([status])
 }
@@ -196,11 +249,12 @@ model OrderItem {
   quantity        Int
   unitPrice       Float           // price snapshot at purchase time
   subtotal        Float           // quantity * unitPrice
-  platformCut     Float           // 10% of subtotal
-  artistCut       Float           // 90% of subtotal
   fulfillmentMode FulfillmentMode
   shippingFee     Float           @default(0)
   status          OrderItemStatus @default(PENDING)
+  isStationMerch  Boolean         @default(false)  // true = TKR station merch
+  isDigital       Boolean         @default(false)  // digital product flag
+  downloadUrl     String?         // snapshot of download URL at purchase time
 
   order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   product Product @relation(fields: [productId], references: [id])
@@ -215,18 +269,19 @@ model OrderItem {
 
 model Cart {
   id        Int      @id @default(autoincrement())
-  userId    Int
+  userId    Int?
+  sessionId String?  // for guest checkout (session-based cart)
   productId Int
   quantity  Int
   size      String?  // selected size e.g. "M", "XL"
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user    User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, productId])
   @@index([userId])
+  @@index([sessionId])
 }
 
 // ─── Review ──────────────────────────────────────────────────────────────────
@@ -264,4 +319,75 @@ model Notification {
 
   @@index([userId])
   @@index([isRead])
+}
+
+// ─── Digital Purchase (Download Vault) ──────────────────────────────────────
+
+model DigitalPurchase {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  productId   Int
+  orderId     Int
+  downloadUrl String   // the file URL
+  fileName    String?  // display name
+  fileFormat  String?  // e.g. "ZIP", "MP3"
+  accessCode  String   @unique  // unique download code for shareable links
+  downloadCount Int    @default(0)
+  maxDownloads Int     @default(10) // max downloads allowed
+  expiresAt   DateTime?  // optional expiration
+  createdAt   DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+
+  @@unique([userId, productId, orderId])
+  @@index([userId])
+  @@index([accessCode])
+}
+
+// ─── Tip (Direct Artist Support) ────────────────────────────────────────────
+
+model Tip {
+  id            Int      @id @default(autoincrement())
+  fromUserId    Int?
+  guestEmail    String?
+  guestName     String?
+  artistId      Int
+  amount        Float
+  message       String?
+  paymentIntentId String?
+  createdAt     DateTime @default(now())
+
+  artist ArtistProfile @relation(fields: [artistId], references: [id])
+  user   User?         @relation(fields: [fromUserId], references: [id])
+
+  @@index([artistId])
+  @@index([fromUserId])
+}
+
+// ─── Badge (Gamification) ───────────────────────────────────────────────────
+
+model Badge {
+  id        Int       @id @default(autoincrement())
+  type      BadgeType @unique
+  name      String    // e.g. "Kanto Champion"
+  icon      String    // emoji or icon identifier
+  description String  // e.g. "Awarded for making 5+ purchases"
+  threshold Int       // number of actions needed
+  createdAt DateTime  @default(now())
+
+  users UserBadge[]
+}
+
+model UserBadge {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  badgeId   Int
+  earnedAt  DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge Badge @relation(fields: [badgeId], references: [id])
+
+  @@unique([userId, badgeId])
+  @@index([userId])
 }

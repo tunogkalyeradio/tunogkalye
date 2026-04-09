@@ -16,6 +16,8 @@ import {
   LogOut,
   ChevronRight,
   Bell,
+  Download,
+  Heart,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -37,8 +39,10 @@ const navItems = [
   { label: "Overview", href: "/dashboard", icon: LayoutDashboard },
   { label: "My Orders", href: "/dashboard/orders", icon: Package },
   { label: "My Cart", href: "/dashboard/cart", icon: ShoppingCart },
-  { label: "Notifications", href: "/dashboard/notifications", icon: Bell },
+  { label: "Downloads", href: "/dashboard/downloads", icon: Download },
+  { label: "Support Artists", href: "/dashboard/tip", icon: Heart },
   { label: "My Reviews", href: "/dashboard/reviews", icon: Star },
+  { label: "Notifications", href: "/dashboard/notifications", icon: Bell },
   { label: "Settings", href: "/dashboard/settings", icon: Settings },
 ];
 
@@ -94,7 +98,7 @@ export default function DashboardShell({ children, user }: DashboardShellProps) 
         <Separator className="bg-white/5" />
 
         {/* Navigation */}
-        <nav className="flex-1 space-y-1 p-3">
+        <nav className="flex-1 space-y-1 overflow-y-auto p-3">
           {navItems.map((item) => {
             const isActive =
               item.href === "/dashboard"

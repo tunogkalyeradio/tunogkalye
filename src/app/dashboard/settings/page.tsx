@@ -11,6 +11,7 @@ import {
   Save,
   Shield,
   CheckCircle2,
+  Award,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -27,6 +28,108 @@ interface UserProfile {
   avatar: string | null;
   address: string | null;
   role: string;
+}
+
+// ─── Badges Section Component ────────────────────────────────────
+const BADGE_DEFINITIONS: Record<string, { icon: string; name: string; description: string; unlock: string }> = {
+  FIRST_PURCHASE: { icon: "\u{1F6D2}", name: "First Purchase", description: "Made your first purchase", unlock: "Make your first purchase" },
+  KANTO_CHAMPION: { icon: "\u{1F3C6}", name: "Kanto Champion", description: "Made 5+ purchases", unlock: "Make 5+ purchases" },
+  EARLY_SUPPORTER: { icon: "\u2B50", name: "Early Supporter", description: "Registered in the first 3 months", unlock: "Registered early" },
+  TOP_SUPPORTER: { icon: "\u{1F48E}", name: "Top Supporter", description: "Spent \u20B15,000+ total", unlock: "Spend \u20B15,000+" },
+  SUBSCRIBER: { icon: "\u{1F4FB}", name: "Subscriber", description: "Subscribed to newsletter", unlock: "Subscribe to newsletter" },
+};
+
+function BadgesSection() {
+  const [earnedBadges, setEarnedBadges] = useState<Array<{ badge: { type: string; name: string; icon: string; description: string } }>>([]);
+  const [allBadges, setAllBadges] = useState<Array<{ type: string; name: string; icon: string; description: string }>>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchBadges() {
+      try {
+        const res = await fetch("/api/user/badges");
+        if (res.ok) {
+          const data = await res.json();
+          setEarnedBadges(data.earnedBadges || []);
+          setAllBadges(data.allBadges || []);
+        }
+      } catch {
+        // ignore
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchBadges();
+  }, []);
+
+  if (loading) {
+    return (
+      <Card className="border-white/10 bg-[#12121a]">
+        <CardContent className="flex items-center justify-center py-8">
+          <Loader2 className="h-6 w-6 animate-spin text-slate-500" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const earnedTypes = new Set(earnedBadges.map((b) => b.badge.type));
+
+  return (
+    <Card className="border-white/10 bg-[#12121a]">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-base font-bold text-white">
+          <Award className="h-4 w-4 text-amber-400" />
+          Badges
+        </CardTitle>
+        <CardDescription className="text-xs text-slate-500">
+          Earn badges by engaging with the Tunog Kalye community
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {Object.entries(BADGE_DEFINITIONS).map(([type, def]) => {
+            const isEarned = earnedTypes.has(type);
+            const dbBadge = allBadges.find((b) => b.type === type);
+            return (
+              <div
+                key={type}
+                className={`flex items-start gap-3 rounded-xl border p-4 transition-all ${
+                  isEarned
+                    ? "border-amber-500/20 bg-amber-500/5"
+                    : "border-white/5 bg-white/[0.01] opacity-50"
+                }`}
+              >
+                <span className="text-2xl">{isEarned ? def.icon : "\u{1F512}"}</span>
+                <div className="flex-1 min-w-0">
+                  <p className={`text-sm font-bold ${isEarned ? "text-white" : "text-slate-500"}`}>
+                    {def.name}
+                  </p>
+                  <p className="mt-0.5 text-xs text-slate-500">
+                    {def.description}
+                  </p>
+                  {!isEarned && (
+                    <p className="mt-1 text-[10px] text-slate-600">
+                      Unlock by: {def.unlock}
+                    </p>
+                  )}
+                  {isEarned && (
+                    <Badge className="mt-1 border-amber-500/30 bg-amber-500/10 px-1.5 py-0 text-[9px] text-amber-400">
+                      Earned
+                    </Badge>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        {earnedBadges.length === 0 && (
+          <p className="mt-4 text-center text-xs text-slate-600">
+            No badges earned yet. Start engaging to unlock them!
+          </p>
+        )}
+      </CardContent>
+    </Card>
+  );
 }
 
 export default function SettingsPage() {
@@ -428,6 +531,9 @@ export default function SettingsPage() {
           </p>
         </CardContent>
       </Card>
+
+      {/* Badges Section */}
+      <BadgesSection />
 
       {/* Change Password */}
       <Card className="border-white/10 bg-[#12121a]">

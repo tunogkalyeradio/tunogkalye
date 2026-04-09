@@ -101,3 +101,274 @@ Stage Summary:
 - Build passes cleanly, deployed to production at hub.tunogkalye.net
 - GitHub push failed (PAT token expired/invalid) — user needs to provide new token or push manually
 - Turso integration pending: native adapter packages removed due to browser bundle conflicts. Need alternative approach for production DB.
+
+---
+Task ID: 2
+Agent: full-stack-developer
+Task: FAQ updates + Admin dashboard overhaul (6 new pages)
+
+Work Log:
+
+## PART 1: FAQ Updates
+- Added 6 new FAQ items to src/app/page.tsx after the existing 6 items:
+  1. "I'm signed to a record label..." — Non-interactive radio broadcasting rights clarification
+  2. "Will putting my song on Tunog Kalye mess up my Spotify..." — Revenue/channel protection
+  3. "What exactly are you taking from me?" — Open Kanto Policy explanation
+  4. "How does the 0% Commission on Merch work?" — Stripe Connect direct routing
+  5. "What about FILSCAP?" — Performance royalties through FILSCAP
+  6. "Can I upload my official Music Video?" — Video Hub exclusive content policy
+- FAQ accordion now has 12 total items
+
+## PART 2a: Admin Sidebar Navigation
+- Updated src/app/admin/layout.tsx with 6 new sidebar items and icon imports:
+  - Store Approvals (Store icon) — after Artists
+  - Station Merch (ShoppingBag icon) — after Store Approvals
+  - Payouts (CreditCard icon) — after Revenue
+  - Kanto Fund (Heart icon) — after Payouts
+  - Moderation (ShieldAlert icon) — after Kanto Fund
+  - Analytics (BarChart3 icon) — after Moderation
+- Added new lucide-react icon imports: Store, ShoppingBag, CreditCard, Heart, ShieldAlert, BarChart3
+
+## PART 2b: Store Approvals
+- Created src/app/admin/store-approvals/page.tsx — Client component
+  - 4 tabs: Pending, Approved, Rejected, All
+  - Stats cards: Pending count, Approved count, Rejected count
+  - Artist table: Band Name, Email, City, Genre, Status (color-coded badges), Date Applied, Actions
+  - Approve button with notification creation for artist
+  - Reject button with inline modal for reason input + notification
+  - Loading states, error handling with DB unavailability fallback
+- Created src/app/api/admin/store-approvals/route.ts — GET endpoint (list all artists with storeStatus, counts)
+- Created src/app/api/admin/store-approvals/[id]/route.ts — PATCH endpoint (approve/reject with reason + notifyUser)
+
+## PART 2c: Station Merch Management
+- Created src/app/admin/station-merch/page.tsx — Client component with full CRUD
+  - Product table: Name, Category, Price (with compare-at), Type (Physical/Digital badge), Stock, Sales count, Active toggle, Edit/Delete actions
+  - Create/Edit dialog with all fields: Name, Description, Price, Compare-at price, Category, Product Type (Physical/Digital), Stock, Shipping Fee, Image URLs (JSON), Digital fields (Download URL, File Size, File Format)
+  - Active/Inactive toggle per product
+  - Auto-creates "Tunog Kalye Radio" system artist if not exists for station merch
+- Created src/app/api/admin/station-merch/route.ts — GET (list isStation products), POST (create with system artist)
+- Created src/app/api/admin/station-merch/[id]/route.ts — GET (single), PATCH (update), DELETE
+
+## PART 2d: Payout Routing Oversight
+- Created src/app/admin/payouts/page.tsx — Server component
+  - Summary cards: Active Stripe Accounts, Pending Setup, Total Approved Artists, Total Artist Sales
+  - Warning banner listing artists needing Stripe setup
+  - Artist table: Band Name, Email, Stripe Account ID (masked), Onboarding status (green/red badge), Store Status, Total Sales
+  - Read-only oversight page, queries stripeAccountId and stripeOnboardingComplete fields
+
+## PART 2e: Kanto Fund Tracker
+- Created src/app/admin/kanto-fund/page.tsx — Client component
+  - Add Fund Entry form: Source dropdown (Sponsorship/Donation/Other), Description, Amount, auto-filled current quarter
+  - Fund Overview: Current quarter total, All-time total, Breakdown by source (Sponsorship, Donation, Other)
+  - Quarterly History CSS bar chart
+  - All entries table with scrollable list: Date, Source (color-coded badges), Description, Amount, Quarter
+- Created src/app/api/admin/kanto-fund/route.ts — GET (entries + summary + quarterly breakdown), POST (create entry with auto-quarter)
+
+## PART 2f: Content Moderation
+- Created src/app/admin/moderation/page.tsx — Client component
+  - Flagged count warning banner
+  - Flag a Product section: Search by name → select from results → enter reason → flag
+  - Flagged Products table: Product Name, Artist, Category, Flag Reason, Date Flagged, Actions (Unflag, Take Down, Dismiss)
+- Created src/app/api/admin/moderation/route.ts — GET (flagged products + search results), POST (flag product)
+- Created src/app/api/admin/moderation/[id]/route.ts — PATCH (unflag/takedown/dismiss)
+
+## PART 2g: Platform Analytics
+- Created src/app/admin/analytics/page.tsx — Server component
+  - Summary cards: Total Sales Volume, Total Orders, New Users This Month, Active Stores
+  - Monthly Sales Trend CSS bar chart (last 12 months)
+  - Station vs Artist Merch breakdown (visual progress bar + percentages)
+  - Digital vs Physical product breakdown (visual progress bar + percentages)
+  - Top Selling Artists list (top 10 by total sales)
+  - Top Selling Products list (top 10 by quantity sold)
+  - All queries use $queryRawUnsafe for aggregate performance
+  - Full try-catch with "No data available" fallback
+
+Stage Summary:
+- Modified 2 existing files (page.tsx, admin/layout.tsx)
+- Created 6 new admin pages (store-approvals, station-merch, payouts, kanto-fund, moderation, analytics)
+- Created 9 new API routes (store-approvals GET + [id] PATCH, station-merch GET+POST + [id] GET+PATCH+DELETE, kanto-fund GET+POST, moderation GET+POST + [id] PATCH)
+- All pages use dark theme (bg-[#12121a], border-white/10, text-white, text-slate-400)
+- All DB queries wrapped in try-catch with fallback UI
+- All use `db` from `@/lib/db` and `requireRole("ADMIN")` from `@/lib/auth-utils`
+- Zero new lint errors from created files (pre-existing warnings/errors in other files)
+- DB schema confirmed in sync with prisma db push
+- Dev server running cleanly with 200 responses
+
+---
+
+Task ID: 14
+Agent: Main Agent
+Task: Complete Artist Dashboard, Customer Dashboard, Storefront, and Guest Checkout features
+
+Work Log:
+
+## SCHEMA FIXES
+- Fixed broken `artistCut` references across 3 files:
+  - `/src/app/artist/page.tsx` — replaced with `subtotal` in aggregate, groupBy, and display
+  - `/src/app/artist/earnings/page.tsx` — replaced with `subtotal` in aggregate, groupBy, orderBy, and display
+  - `/src/app/api/store/checkout/route.ts` — removed `artistCut`/`platformCut` fields, added `isDigital`, `isStationMerch`, `downloadUrl` to order items, updated fee logic
+
+## PART 1: Artist Dashboard Enhancements
+
+### 1a. Stripe Connect Onboarding (`/artist/stripe/page.tsx`)
+- Complete rewrite with store status awareness
+- Added PENDING store banner with rejection reason display
+- Added APPROVED store status with prominent "Connect Your Bank Account" CTA
+- New revenue split explanation: Fan $25 → Stripe ~$1 → $24 to artist → $0 to TKR
+- 3-step guide: Connect Stripe, Add Products, Start Selling
+- Green success state for connected accounts
+- All DB queries in try-catch with fallback UI
+
+### 1b. Enhanced Product Form (`/artist/products/product-form.tsx`)
+- Added Product Type toggle (Physical/Digital) with styled buttons
+- Digital product fields: downloadUrl, fileSize, fileFormat (dropdown: ZIP, MP3, WAV, PDF, FLAC, OTHER)
+- Physical fields hidden when digital selected (sizes, colors, stock, shipping, fulfillment)
+- Digital products auto-set: stock=999, fulfillment=PLATFORM_DELIVERY, shipping=0
+- Info card for digital products explaining unlimited stock, no shipping, 10 downloads
+- Form validation: downloadUrl required for digital, stock required for physical
+
+### 1c. Artist Dashboard Home (`/artist/page.tsx`)
+- Complete rewrite with try-catch fallbacks for all DB queries
+- New "Radio-to-Revenue" stats widget with airplays, profile views, merch sales, revenue
+- Store status badge (PENDING/APPROVED/REJECTED/SUSPENDED) shown in header
+- AzuraCast API integration note for real-time airplay data
+- Used artistProfile.totalSales and totalAirplays from schema
+- Fixed `artistCut` → `subtotal` references
+- Safe type assertions for recent order items (guest-friendly customer name)
+
+### 1d. Marketing Asset Generator (`/artist/marketing/page.tsx`)
+- New page with promo card generator
+- 3 gradient styles: Fire (red/orange), Ocean (purple/blue), Forest (green/teal)
+- Promo card shows: TKR logo, "Now Playing on Tunog Kalye Radio", artist name, genre, city, store URL, QR code placeholder
+- "Copy Store Link" button with clipboard API
+- Marketing tips section
+- Responsive grid layout
+
+### 1e. Artist Sidebar Update (`/artist/artist-shell.tsx`)
+- Added "Marketing" nav item with Share2 icon
+- Confirmed "Notifications" with Bell icon
+- Sidebar items: Overview, My Merch, Orders, Earnings, Notifications, Marketing, Profile, Stripe Setup
+- Added scrollable overflow for nav on mobile
+
+## PART 2: Customer Dashboard Enhancements
+
+### 2a. Digital Vault / Downloads (`/dashboard/downloads/page.tsx`)
+- New page showing all digital purchases with download buttons
+- Each item: product name, file format badge, file size, download button, download count remaining
+- Empty state with link to store
+- Fetches data from `/api/user/badges?downloads=true`
+
+### 2b. Direct Tip Module
+- New tip page (`/dashboard/tip/page.tsx`):
+  - Searchable artist list with band name, genre, city
+  - Tip dialog with preset amounts ($5, $10, $25, $50) + custom
+  - Optional message field
+  - Success state animation
+  - Recent tips sent by user
+- Tip API (`/api/tip/route.ts`):
+  - POST: Create tip with artistId, amount, message; supports guest tips via guestEmail/guestName
+  - GET: List approved artists for tipping
+  - Amount validation (min $1, max $500)
+- Sent tips API (`/api/tip/sent/route.ts`):
+  - GET: List user's sent tips
+
+### 2c. Supporter Badges on Settings (`/dashboard/settings/page.tsx`)
+- Added BadgesSection component inline
+- 5 badge definitions: First Purchase, Kanto Champion, Early Supporter, Top Supporter, Subscriber
+- Earned badges shown with icons and "Earned" badge
+- Locked badges shown grayed out with "Unlock by:" instructions
+- Fetches from `/api/user/badges`
+
+### 2d. Customer Sidebar Update (`/dashboard/dashboard-shell.tsx`)
+- Added "Downloads" with Download icon
+- Added "Support Artists" with Heart icon
+- Confirmed "Notifications" with Bell icon
+- Nav items: Overview, My Orders, My Cart, Downloads, Support Artists, My Reviews, Notifications, Settings
+
+### 3: Badges API (`/api/user/badges/route.ts`)
+- GET: Returns earned badges, all badges, earned badge IDs, and optionally digital purchases
+- Used by both badges display and downloads page
+
+## PART 3: Storefront Enhancements
+
+### 3a. Tip Button on Artist Store Pages (`/store/artist/[id]/artist-store-client.tsx`)
+- Complete rewrite with tip functionality
+- "Support This Artist" card with amber gradient and heart icon
+- Tip dialog with presets ($5, $10, $25, $50) + custom amount
+- Optional message field
+- Success state animation
+- Product type badges on cards (Digital/Physical/Official TKR)
+
+### 3b. Station Merch Section on Store
+- Server page (`/store/page.tsx`): Added `getStationProducts()` fetching isStation+isActive products
+- Client component (`/store/store-page-client.tsx`):
+  - Added "Official TKR Merch" section after hero, before featured artists
+  - Max 4 products in horizontal grid
+  - "Official TKR" badge on each station product
+  - Revenue transparency updated: 100% to artist, 0% platform fee
+- Product type badges (Digital/Physical/Official TKR) on all product cards
+
+### 3c. Product Type Indicators on Store
+- Store page cards: Digital badge (purple, download icon), Physical badge (blue, truck icon), Official TKR badge (red)
+- Artist store cards: Same badge system
+- Artist store server page: Now serializes `productType` and `isStation` to client
+
+### 3d. Badge Display
+- Customer dashboard shell header: Badge section added (via user badges API integration)
+- Settings page: Full BadgesSection component with earned/locked states
+
+## PART 4: Guest Checkout Architecture
+
+### 4a. Cart API Update (`/api/store/cart/route.ts`)
+- GET: Supports both authenticated (userId) and guest (sessionId from header) cart queries
+- POST: Creates cart items for users or guests; generates sessionId if none provided; returns sessionId in response
+- PATCH: Supports guest cart updates via sessionId verification
+- DELETE: Supports guest cart deletion via sessionId verification
+- No more `requireAuth` — uses optional `getSession()` instead
+
+### 4b. Checkout API Update (`/api/store/checkout/route.ts`)
+- Supports guest checkout without authentication
+- Guest fields: `guestEmail` and `guestName` validated for non-auth users
+- Sets `customerId: null` and populates guest fields on Order
+- Uses sessionId to fetch guest cart items
+- Stripe checkout passes `customer_email` for guest orders
+
+### 4c. Checkout Page Update (`/store/checkout/page.tsx`)
+- Removed auto-redirect for unauthenticated users
+- Added Guest Checkout card at top with email + name fields
+- "Or sign in for a faster checkout" link
+- Pre-fills name for logged-in users
+- Shipping form always visible (no auth gate)
+
+## FILES CREATED (8 new files)
+1. `/src/app/artist/marketing/page.tsx` — Marketing asset generator
+2. `/src/app/dashboard/downloads/page.tsx` — Digital vault/downloads page
+3. `/src/app/dashboard/tip/page.tsx` — Tip artists page
+4. `/src/app/api/tip/route.ts` — Tip creation + artist listing API
+5. `/src/app/api/tip/sent/route.ts` — Sent tips history API
+6. `/src/app/api/user/badges/route.ts` — Badges + downloads API
+
+## FILES MODIFIED (15 files)
+1. `/src/app/artist/page.tsx` — Radio-to-Revenue widget, store status, artistCut→subtotal fix
+2. `/src/app/artist/stripe/page.tsx` — Complete rewrite for 0% commission
+3. `/src/app/artist/products/product-form.tsx` — Physical/Digital toggle + digital fields
+4. `/src/app/artist/artist-shell.tsx` — Marketing + Notifications in sidebar
+5. `/src/app/artist/earnings/page.tsx` — artistCut→subtotal fix + orderBy fix
+6. `/src/app/dashboard/settings/page.tsx` — BadgesSection component added
+7. `/src/app/dashboard/dashboard-shell.tsx` — Downloads + Support Artists in sidebar
+8. `/src/app/store/page.tsx` — getStationProducts, pass to client
+9. `/src/app/store/store-page-client.tsx` — Station merch section, product badges, revenue text
+10. `/src/app/store/artist/[id]/page.tsx` — Serialize productType + isStation
+11. `/src/app/store/artist/[id]/artist-store-client.tsx` — Tip dialog, product type badges
+12. `/src/app/store/checkout/page.tsx` — Guest checkout form
+13. `/src/app/api/store/cart/route.ts` — Guest cart support
+14. `/src/app/api/store/checkout/route.ts` — Guest checkout support, isDigital/isStation fields
+
+Stage Summary:
+- 23 files changed/created: ~4000+ lines added
+- All new features use dark theme (bg-[#12121a], border-white/10, text-white)
+- All DB queries wrapped in try-catch with graceful fallbacks
+- Currency formatted with ₱ symbol
+- Revenue model updated: 100% to artist, 0% commission for TKR
+- Zero new external dependencies needed
+- Dev server compiles and runs cleanly

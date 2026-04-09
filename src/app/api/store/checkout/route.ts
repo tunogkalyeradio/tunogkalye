@@ -1,15 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireAuth } from "@/lib/auth-utils";
+import { getSession } from "@/lib/auth-utils";
 import { db } from "@/lib/db";
 import { OrderStatus } from "@prisma/client";
 import { stripe, PLATFORM_FEE_RATE, APP_URL } from "@/lib/stripe";
 
-// POST: Create order from cart + Stripe Checkout
+// POST: Create order from cart + Stripe Checkout (supports guest checkout)
 export async function POST(request: NextRequest) {
   try {
-    const user = await requireAuth();
+    const session = await getSession().catch(() => null);
     const body = await request.json();
-    const { shippingAddress } = body;
+    const { shippingAddress, guestEmail, guestName, sessionId } = body;
+
+    const userId = session?.user?.id ? parseInt(session.user.id, 10) : null;
+    const isGuest = !userId;
 
     // Validate shipping address
     if (
@@ -26,9 +29,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Fetch user's cart items with full product details
+    // For guests, require email and name
+    if (isGuest && (!guestEmail || !guestName)) {
+      return NextResponse.json(
+        { error: "Guest checkout requires email and name" },
+        { status: 400 }
+      );
+    }
+
+    // Fetch cart items
+    const cartWhere = userId && !isNaN(userId)
+      ? { userId }
+      : sessionId
+        ? { sessionId }
+        : {};
+
     const cartItems = await db.cart.findMany({
-      where: { userId: user.id },
+      where: cartWhere,
       include: {
         product: {
           include: { artist: true },
@@ -40,9 +57,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Your cart is empty" }, { status: 400 });
     }
 
-    // Validate stock
+    // Validate stock (skip for digital products)
     for (const item of cartItems) {
-      if (item.product.stock < item.quantity) {
+      const isDigital = item.product.productType === "DIGITAL";
+      if (!isDigital && item.product.stock < item.quantity) {
         return NextResponse.json(
           { error: `Insufficient stock for "${item.product.name}". Only ${item.product.stock} left.` },
           { status: 400 }
@@ -70,14 +88,15 @@ export async function POST(request: NextRequest) {
 
     const orderItemsData = cartItems.map((item) => {
       const subtotal = item.quantity * item.product.price;
-      const platformCut = Math.round(subtotal * PLATFORM_FEE_RATE * 100) / 100;
-      const artistCut = Math.round(subtotal * (1 - PLATFORM_FEE_RATE) * 100) / 100;
-      const shippingFee = item.product.shippingFee;
+      const platformRevenue = item.product.isStation ? Math.round(subtotal * PLATFORM_FEE_RATE * 100) / 100 : 0;
+      const shippingFee = item.product.fulfillmentMode === 'ARTIST_SELF_DELIVERY' && item.product.productType === 'PHYSICAL' ? item.product.shippingFee : 0;
+      const isDigital = item.product.productType === 'DIGITAL';
+      const isStationMerch = item.product.isStation;
 
-      totalAmount += subtotal + shippingFee;
-      totalPlatformRevenue += platformCut;
-      totalArtistRevenue += artistCut;
-      totalShipping += shippingFee;
+      totalAmount += subtotal + (isDigital ? 0 : shippingFee);
+      totalPlatformRevenue += platformRevenue;
+      totalArtistRevenue += subtotal - platformRevenue;
+      totalShipping += isDigital ? 0 : shippingFee;
 
       const images = item.product.images
         ? (() => { try { const imgs = JSON.parse(item.product.images); return Array.isArray(imgs) && imgs.length > 0 ? imgs[0] : null; } catch { return null; } })()
@@ -91,17 +110,20 @@ export async function POST(request: NextRequest) {
         quantity: item.quantity,
         unitPrice: item.product.price,
         subtotal,
-        platformCut,
-        artistCut,
-        fulfillmentMode: item.product.fulfillmentMode,
-        shippingFee,
+        fulfillmentMode: isDigital ? 'PLATFORM_DELIVERY' : item.product.fulfillmentMode,
+        shippingFee: isDigital ? 0 : shippingFee,
+        isStationMerch,
+        isDigital,
+        downloadUrl: item.product.downloadUrl || null,
       };
     });
 
     // Create order
     const order = await db.order.create({
       data: {
-        customerId: user.id,
+        customerId: userId || null,
+        guestEmail: isGuest ? guestEmail : null,
+        guestName: isGuest ? guestName : null,
         orderNumber,
         status: OrderStatus.PENDING,
         totalAmount: Math.round(totalAmount * 100) / 100,
@@ -112,29 +134,33 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Decrease stock
+    // Decrease stock (skip for digital)
     for (const item of cartItems) {
-      await db.product.update({
-        where: { id: item.productId },
-        data: { stock: { decrement: item.quantity } },
-      });
+      const isDigital = item.product.productType === "DIGITAL";
+      if (!isDigital) {
+        await db.product.update({
+          where: { id: item.productId },
+          data: { stock: { decrement: item.quantity } },
+        });
+      }
     }
 
     // Clear cart
-    await db.cart.deleteMany({ where: { userId: user.id } });
+    await db.cart.deleteMany({ where: cartWhere });
 
     // ── Stripe Checkout Integration ──
     if (stripe && process.env.STRIPE_SECRET_KEY) {
       const lineItems = await Promise.all(
         cartItems.map(async (item) => {
           const artist = item.product.artist;
+          const isDigital = item.product.productType === "DIGITAL";
           const lineItem: Stripe.Checkout.SessionCreateParams.LineItem = {
             price_data: {
               currency: "php",
-              unit_amount: Math.round(item.product.price * 100), // Stripe uses cents
+              unit_amount: Math.round(item.product.price * 100),
               product_data: {
                 name: item.product.name,
-                description: `by ${artist?.bandName || "Unknown Artist"}`,
+                description: `by ${artist?.bandName || "Unknown Artist"}${isDigital ? " (Digital Download)" : ""}`,
                 images: item.product.images
                   ? (() => { try { return JSON.parse(item.product.images).slice(0, 1); } catch { return []; } })()
                   : [],
@@ -142,12 +168,6 @@ export async function POST(request: NextRequest) {
             },
             quantity: item.quantity,
           };
-
-          // If artist has Stripe Connect, set up transfer
-          if (artist?.stripeAccountId && artist.stripeOnboardingComplete) {
-            lineItem.price_data!.unit_amount = Math.round(item.product.price * 100);
-            // We'll use transfer_data on the payment_intent level
-          }
 
           return lineItem;
         })
@@ -174,16 +194,16 @@ export async function POST(request: NextRequest) {
         const artist = item.product.artist;
         if (artist?.stripeAccountId && artist.stripeOnboardingComplete) {
           const subtotal = item.quantity * item.product.price;
-          const artistCut = Math.round(subtotal * 0.9 * 100);
+          const artistAmount = Math.round(subtotal * 100);
           connectedArtists.set(
             artist.stripeAccountId,
-            (connectedArtists.get(artist.stripeAccountId) || 0) + artistCut
+            (connectedArtists.get(artist.stripeAccountId) || 0) + artistAmount
           );
         }
       }
 
       try {
-        const session = await stripe.checkout.sessions.create({
+        const stripeSession = await stripe.checkout.sessions.create({
           mode: "payment",
           line_items: lineItems,
           payment_intent_data: {
@@ -191,7 +211,6 @@ export async function POST(request: NextRequest) {
               orderId: String(order.id),
               orderNumber: order.orderNumber,
             },
-            // Use the first connected artist for automatic transfer
             ...(connectedArtists.size > 0
               ? {
                   transfer_data: {
@@ -210,13 +229,13 @@ export async function POST(request: NextRequest) {
             orderId: String(order.id),
             orderNumber: order.orderNumber,
           },
+          customer_email: isGuest ? guestEmail : undefined,
         });
 
-        return NextResponse.json({ url: session.url, orderId: order.id });
+        return NextResponse.json({ url: stripeSession.url, orderId: order.id });
       } catch (stripeError: unknown) {
         const msg = stripeError instanceof Error ? stripeError.message : "Stripe checkout failed";
         console.error("Stripe Checkout error:", msg);
-        // Fallback: return order without Stripe URL
         return NextResponse.json({
           orderId: order.id,
           orderNumber: order.orderNumber,
@@ -233,13 +252,10 @@ export async function POST(request: NextRequest) {
     );
   } catch (error) {
     console.error("[CHECKOUT POST]", error);
-    const message =
-      error instanceof Error && error.message === "Authentication required"
-        ? "Authentication required"
-        : "Failed to process order";
-    const status =
-      error instanceof Error && error.message === "Authentication required" ? 401 : 500;
-    return NextResponse.json({ error: message }, { status });
+    return NextResponse.json(
+      { error: "Failed to process order" },
+      { status: 500 }
+    );
   }
 }
 

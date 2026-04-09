@@ -76,6 +76,8 @@ export default async function ArtistStorePage({ params }: PageProps) {
     sizes: p.sizes ? JSON.parse(p.sizes) : null,
     colors: p.colors ? JSON.parse(p.colors) : null,
     stock: p.stock,
+    productType: p.productType,
+    isStation: p.isStation,
     createdAt: p.createdAt.toISOString(),
     updatedAt: p.updatedAt.toISOString(),
   }));

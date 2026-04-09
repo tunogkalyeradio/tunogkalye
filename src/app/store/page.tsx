@@ -26,6 +26,23 @@ export async function getProducts() {
   });
 }
 
+export async function getStationProducts() {
+  return db.product.findMany({
+    where: { isActive: true, isStation: true },
+    include: {
+      artist: {
+        select: {
+          id: true,
+          bandName: true,
+          isVerified: true,
+        },
+      },
+    },
+    take: 4,
+    orderBy: { createdAt: "desc" },
+  });
+}
+
 export async function getFeaturedArtists() {
   const products = await db.product.findMany({
     where: { isActive: true },
@@ -83,13 +100,15 @@ export default async function StorePage() {
   // Try to fetch from database; show "coming soon" if unavailable
   let products: Awaited<ReturnType<typeof getProducts>> = [];
   let artists: Awaited<ReturnType<typeof getFeaturedArtists>> = [];
+  let stationProducts: Awaited<ReturnType<typeof getStationProducts>> = [];
   let session = null;
   let dbAvailable = false;
 
   try {
-    [products, artists, session] = await Promise.all([
+    [products, artists, stationProducts, session] = await Promise.all([
       getProducts(),
       getFeaturedArtists(),
+      getStationProducts(),
       getSession().catch(() => null),
     ]);
     dbAvailable = true;
@@ -124,10 +143,28 @@ export default async function StorePage() {
     imageUrl: a.imageUrl || null,
   }));
 
+  const serializedStationProducts = stationProducts.map((p) => ({
+    ...p,
+    price: Number(p.price),
+    compareAtPrice: p.compareAtPrice ? Number(p.compareAtPrice) : null,
+    shippingFee: Number(p.shippingFee),
+    images: JSON.parse(p.images || "[]"),
+    productType: p.productType,
+    isStation: p.isStation,
+    createdAt: p.createdAt.toISOString(),
+    updatedAt: p.updatedAt.toISOString(),
+    artist: p.artist
+      ? {
+          ...p.artist,
+        }
+      : null,
+  }));
+
   return (
     <StorePageClient
       products={serializedProducts}
       featuredArtists={serializedArtists}
+      stationProducts={serializedStationProducts}
       isLoggedIn={!!session?.user?.id}
     />
   );

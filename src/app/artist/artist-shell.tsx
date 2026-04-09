@@ -19,6 +19,7 @@ import {
   ChevronRight,
   Music,
   Bell,
+  Share2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -33,6 +34,7 @@ const sidebarItems = [
   { href: "/artist/orders", label: "Orders", icon: ShoppingCart },
   { href: "/artist/earnings", label: "Earnings", icon: DollarSign },
   { href: "/artist/notifications", label: "Notifications", icon: Bell },
+  { href: "/artist/marketing", label: "Marketing", icon: Share2 },
   { href: "/artist/profile", label: "Profile", icon: User },
   { href: "/artist/stripe", label: "Stripe Setup", icon: CreditCard },
 ];
@@ -79,7 +81,7 @@ function SidebarContent({
       <Separator className="bg-white/5" />
 
       {/* Nav */}
-      <nav className="flex-1 space-y-1 px-3 py-4">
+      <nav className="flex-1 space-y-1 px-3 py-4 overflow-y-auto">
         {sidebarItems.map((item) => {
           const isActive =
             pathname === item.href ||

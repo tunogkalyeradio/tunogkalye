@@ -38,6 +38,10 @@ interface ProductFormProps {
     stock: number;
     fulfillmentMode: string;
     shippingFee: number;
+    productType?: string;
+    downloadUrl?: string | null;
+    fileSize?: string | null;
+    fileFormat?: string | null;
   };
 }
 
@@ -48,11 +52,15 @@ const CATEGORIES = [
   "Cap",
   "Sticker",
   "Poster",
+  "Album",
+  "EP",
   "Digital",
   "Other",
 ];
 
 const SIZE_OPTIONS = ["XS", "S", "M", "L", "XL", "XXL"];
+
+const FILE_FORMATS = ["ZIP", "MP3", "WAV", "PDF", "FLAC", "OTHER"];
 
 export default function ProductForm({ product }: ProductFormProps) {
   const router = useRouter();
@@ -60,6 +68,11 @@ export default function ProductForm({ product }: ProductFormProps) {
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+
+  // Product type: PHYSICAL or DIGITAL
+  const [productType, setProductType] = useState<"PHYSICAL" | "DIGITAL">(
+    (product as Record<string, unknown>)?.productType === "DIGITAL" ? "DIGITAL" : "PHYSICAL"
+  );
 
   // Parse initial images
   const initialImages: string[] = [];
@@ -104,6 +117,17 @@ export default function ProductForm({ product }: ProductFormProps) {
     String(product?.shippingFee || "0")
   );
 
+  // Digital fields
+  const [downloadUrl, setDownloadUrl] = useState(
+    (product as Record<string, unknown>)?.downloadUrl as string || ""
+  );
+  const [fileSize, setFileSize] = useState(
+    (product as Record<string, unknown>)?.fileSize as string || ""
+  );
+  const [fileFormat, setFileFormat] = useState(
+    (product as Record<string, unknown>)?.fileFormat as string || ""
+  );
+
   const toggleSize = (size: string) => {
     setSizes((prev) =>
       prev.includes(size)
@@ -113,7 +137,7 @@ export default function ProductForm({ product }: ProductFormProps) {
   };
 
   const handleSave = async () => {
-    if (!name.trim() || !price || !category || !stock) {
+    if (!name.trim() || !price || !category) {
       setError("Please fill in all required fields.");
       return;
     }
@@ -124,28 +148,52 @@ export default function ProductForm({ product }: ProductFormProps) {
       return;
     }
 
-    const stockNum = parseInt(stock, 10);
-    if (isNaN(stockNum) || stockNum < 0) {
-      setError("Stock must be a non-negative number.");
+    if (productType === "PHYSICAL") {
+      const stockNum = parseInt(stock, 10);
+      if (isNaN(stockNum) || stockNum < 0) {
+        setError("Stock must be a non-negative number.");
+        return;
+      }
+    }
+
+    if (productType === "DIGITAL" && !downloadUrl.trim()) {
+      setError("Download URL is required for digital products.");
       return;
     }
 
     setSaving(true);
     setError("");
 
-    const body = {
+    const body: Record<string, unknown> = {
       name: name.trim(),
       description: description.trim(),
       price: priceNum,
       compareAtPrice: compareAtPrice ? parseFloat(compareAtPrice) : null,
       category,
       images: JSON.stringify(imageUrls),
-      sizes: sizes.length > 0 ? JSON.stringify(sizes) : null,
-      colors: colors.trim() || null,
-      stock: stockNum,
-      fulfillmentMode,
-      shippingFee: parseFloat(shippingFee) || 0,
+      productType,
     };
+
+    if (productType === "PHYSICAL") {
+      body.sizes = sizes.length > 0 ? JSON.stringify(sizes) : null;
+      body.colors = colors.trim() || null;
+      body.stock = parseInt(stock, 10) || 0;
+      body.fulfillmentMode = fulfillmentMode;
+      body.shippingFee = parseFloat(shippingFee) || 0;
+      body.downloadUrl = null;
+      body.fileSize = null;
+      body.fileFormat = null;
+    } else {
+      // Digital product
+      body.sizes = null;
+      body.colors = null;
+      body.stock = 999;
+      body.fulfillmentMode = "PLATFORM_DELIVERY";
+      body.shippingFee = 0;
+      body.downloadUrl = downloadUrl.trim();
+      body.fileSize = fileSize.trim() || null;
+      body.fileFormat = fileFormat || null;
+    }
 
     try {
       const url = isEditing
@@ -172,6 +220,8 @@ export default function ProductForm({ product }: ProductFormProps) {
     }
   };
 
+  const isDigital = productType === "DIGITAL";
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -196,13 +246,57 @@ export default function ProductForm({ product }: ProductFormProps) {
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Main form */}
         <div className="space-y-6 lg:col-span-2">
+          {/* Product Type Toggle */}
+          <Card className="border-white/10 bg-[#12121a]">
+            <CardHeader>
+              <CardTitle className="text-base text-white">
+                Product Type
+              </CardTitle>
+              <CardDescription>
+                Is this a physical item or a digital download?
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setProductType("PHYSICAL")}
+                  className={`flex flex-1 items-center justify-center gap-2 rounded-xl border p-4 transition-all ${
+                    !isDigital
+                      ? "border-blue-500/30 bg-blue-500/10 text-blue-400"
+                      : "border-white/10 bg-white/[0.02] text-slate-400 hover:border-white/20 hover:text-slate-300"
+                  }`}
+                >
+                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                  </svg>
+                  <span className="text-sm font-bold">Physical</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setProductType("DIGITAL")}
+                  className={`flex flex-1 items-center justify-center gap-2 rounded-xl border p-4 transition-all ${
+                    isDigital
+                      ? "border-purple-500/30 bg-purple-500/10 text-purple-400"
+                      : "border-white/10 bg-white/[0.02] text-slate-400 hover:border-white/20 hover:text-slate-300"
+                  }`}
+                >
+                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
+                  </svg>
+                  <span className="text-sm font-bold">Digital</span>
+                </button>
+              </div>
+            </CardContent>
+          </Card>
+
           <Card className="border-white/10 bg-[#12121a]">
             <CardHeader>
               <CardTitle className="text-base text-white">
                 Product Details
               </CardTitle>
               <CardDescription>
-                Basic information about your merchandise
+                Basic information about your {isDigital ? "digital product" : "merchandise"}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-5">
@@ -211,7 +305,7 @@ export default function ProductForm({ product }: ProductFormProps) {
                   Product Name <span className="text-red-400">*</span>
                 </Label>
                 <Input
-                  placeholder="e.g., Official Band T-Shirt"
+                  placeholder={isDigital ? "e.g., Debut Album (Digital)" : "e.g., Official Band T-Shirt"}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="border-white/10 bg-white/5 text-white placeholder:text-slate-600"
@@ -221,7 +315,7 @@ export default function ProductForm({ product }: ProductFormProps) {
               <div className="space-y-2">
                 <Label className="text-sm text-slate-300">Description</Label>
                 <Textarea
-                  placeholder="Describe your product, materials, fit, etc."
+                  placeholder={isDigital ? "Describe your album, EP, or digital content..." : "Describe your product, materials, fit, etc."}
                   rows={4}
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
@@ -277,6 +371,58 @@ export default function ProductForm({ product }: ProductFormProps) {
                   </SelectContent>
                 </Select>
               </div>
+
+              {/* Digital-specific fields */}
+              {isDigital && (
+                <div className="space-y-4 rounded-xl border border-purple-500/20 bg-purple-500/5 p-4">
+                  <h4 className="text-sm font-bold text-purple-300 flex items-center gap-2">
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
+                    </svg>
+                    Digital Product Settings
+                  </h4>
+                  <div className="space-y-2">
+                    <Label className="text-sm text-slate-300">
+                      Download URL <span className="text-red-400">*</span>
+                    </Label>
+                    <Input
+                      placeholder="https://drive.google.com/... or direct file link"
+                      value={downloadUrl}
+                      onChange={(e) => setDownloadUrl(e.target.value)}
+                      className="border-white/10 bg-white/5 text-white placeholder:text-slate-600"
+                    />
+                    <p className="text-xs text-slate-500">
+                      Link to the file buyers will download (Google Drive, Dropbox, etc.)
+                    </p>
+                  </div>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label className="text-sm text-slate-300">File Size</Label>
+                      <Input
+                        placeholder="e.g., 45MB"
+                        value={fileSize}
+                        onChange={(e) => setFileSize(e.target.value)}
+                        className="border-white/10 bg-white/5 text-white placeholder:text-slate-600"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-sm text-slate-300">File Format</Label>
+                      <Select value={fileFormat} onValueChange={setFileFormat}>
+                        <SelectTrigger className="border-white/10 bg-white/5 text-white">
+                          <SelectValue placeholder="Select format" />
+                        </SelectTrigger>
+                        <SelectContent className="border-white/10 bg-[#12121a]">
+                          {FILE_FORMATS.map((fmt) => (
+                            <SelectItem key={fmt} value={fmt}>
+                              {fmt}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -304,109 +450,128 @@ export default function ProductForm({ product }: ProductFormProps) {
 
         {/* Sidebar */}
         <div className="space-y-6">
-          {/* Inventory */}
-          <Card className="border-white/10 bg-[#12121a]">
-            <CardHeader>
-              <CardTitle className="text-base text-white">
-                Inventory & Shipping
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-5">
-              <div className="space-y-2">
-                <Label className="text-sm text-slate-300">
-                  Stock Quantity <span className="text-red-400">*</span>
-                </Label>
-                <Input
-                  type="number"
-                  min="0"
-                  placeholder="0"
-                  value={stock}
-                  onChange={(e) => setStock(e.target.value)}
-                  className="border-white/10 bg-white/5 text-white placeholder:text-slate-600"
-                />
-              </div>
-
-              {/* Sizes */}
-              <div className="space-y-2">
-                <Label className="text-sm text-slate-300">Sizes</Label>
-                <div className="flex flex-wrap gap-2">
-                  {SIZE_OPTIONS.map((size) => (
-                    <label
-                      key={size}
-                      className="flex cursor-pointer items-center gap-1.5"
-                    >
-                      <Checkbox
-                        checked={sizes.includes(size)}
-                        onCheckedChange={() => toggleSize(size)}
-                        className="border-white/20 data-[state=checked]:bg-blue-500 data-[state=checked]:border-blue-500"
-                      />
-                      <span className="text-xs text-slate-300">{size}</span>
-                    </label>
-                  ))}
+          {/* Inventory — only for physical */}
+          {!isDigital && (
+            <Card className="border-white/10 bg-[#12121a]">
+              <CardHeader>
+                <CardTitle className="text-base text-white">
+                  Inventory & Shipping
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-5">
+                <div className="space-y-2">
+                  <Label className="text-sm text-slate-300">
+                    Stock Quantity <span className="text-red-400">*</span>
+                  </Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    placeholder="0"
+                    value={stock}
+                    onChange={(e) => setStock(e.target.value)}
+                    className="border-white/10 bg-white/5 text-white placeholder:text-slate-600"
+                  />
                 </div>
-              </div>
 
-              {/* Colors */}
-              <div className="space-y-2">
-                <Label className="text-sm text-slate-300">
-                  Colors (comma-separated)
-                </Label>
-                <Input
-                  placeholder="Black, White, Navy"
-                  value={colors}
-                  onChange={(e) => setColors(e.target.value)}
-                  className="border-white/10 bg-white/5 text-white placeholder:text-slate-600"
-                />
-              </div>
-            </CardContent>
-          </Card>
+                {/* Sizes */}
+                <div className="space-y-2">
+                  <Label className="text-sm text-slate-300">Sizes</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {SIZE_OPTIONS.map((size) => (
+                      <label
+                        key={size}
+                        className="flex cursor-pointer items-center gap-1.5"
+                      >
+                        <Checkbox
+                          checked={sizes.includes(size)}
+                          onCheckedChange={() => toggleSize(size)}
+                          className="border-white/20 data-[state=checked]:bg-blue-500 data-[state=checked]:border-blue-500"
+                        />
+                        <span className="text-xs text-slate-300">{size}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
 
-          {/* Fulfillment */}
-          <Card className="border-white/10 bg-[#12121a]">
-            <CardHeader>
-              <CardTitle className="text-base text-white">
-                Fulfillment
-              </CardTitle>
-              <CardDescription>
-                How will this product be delivered?
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Select value={fulfillmentMode} onValueChange={setFulfillmentMode}>
-                  <SelectTrigger className="border-white/10 bg-white/5 text-white">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="border-white/10 bg-[#12121a]">
-                    <SelectItem value="ARTIST_SELF_DELIVERY">
-                      I will ship myself
-                    </SelectItem>
-                    <SelectItem value="PLATFORM_DELIVERY">
-                      Platform will handle delivery
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+                {/* Colors */}
+                <div className="space-y-2">
+                  <Label className="text-sm text-slate-300">
+                    Colors (comma-separated)
+                  </Label>
+                  <Input
+                    placeholder="Black, White, Navy"
+                    value={colors}
+                    onChange={(e) => setColors(e.target.value)}
+                    className="border-white/10 bg-white/5 text-white placeholder:text-slate-600"
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
-              <div className="space-y-2">
-                <Label className="text-sm text-slate-300">
-                  Shipping Fee (₱)
-                </Label>
-                <Input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  placeholder="0.00"
-                  value={shippingFee}
-                  onChange={(e) => setShippingFee(e.target.value)}
-                  className="border-white/10 bg-white/5 text-white placeholder:text-slate-600"
-                />
-                <p className="text-xs text-slate-500">
-                  Set to 0 for free shipping
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Digital info card */}
+          {isDigital && (
+            <Card className="border-purple-500/20 bg-purple-500/5">
+              <CardContent className="p-5">
+                <h4 className="text-sm font-bold text-purple-300">Digital Product</h4>
+                <div className="mt-3 space-y-2 text-xs text-slate-400">
+                  <p>• Unlimited stock — no inventory tracking</p>
+                  <p>• No shipping fees — instant download</p>
+                  <p>• Buyers get up to 10 downloads per purchase</p>
+                  <p>• Platform handles delivery automatically</p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Fulfillment — only for physical */}
+          {!isDigital && (
+            <Card className="border-white/10 bg-[#12121a]">
+              <CardHeader>
+                <CardTitle className="text-base text-white">
+                  Fulfillment
+                </CardTitle>
+                <CardDescription>
+                  How will this product be delivered?
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Select value={fulfillmentMode} onValueChange={setFulfillmentMode}>
+                    <SelectTrigger className="border-white/10 bg-white/5 text-white">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="border-white/10 bg-[#12121a]">
+                      <SelectItem value="ARTIST_SELF_DELIVERY">
+                        I will ship myself
+                      </SelectItem>
+                      <SelectItem value="PLATFORM_DELIVERY">
+                        Platform will handle delivery
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-sm text-slate-300">
+                    Shipping Fee (₱)
+                  </Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    placeholder="0.00"
+                    value={shippingFee}
+                    onChange={(e) => setShippingFee(e.target.value)}
+                    className="border-white/10 bg-white/5 text-white placeholder:text-slate-600"
+                  />
+                  <p className="text-xs text-slate-500">
+                    Set to 0 for free shipping
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Actions */}
           <div className="space-y-2">

@@ -11,6 +11,8 @@ import {
   Lock,
   Truck,
   CreditCard,
+  User,
+  Mail,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -87,24 +89,19 @@ export default function CheckoutPage() {
     postalCode: "",
   });
 
-  // Redirect if not logged in
-  useEffect(() => {
-    if (status === "unauthenticated") {
-      router.replace(
-        "/auth/login?callbackUrl=/store/checkout"
-      );
-    }
-  }, [status, router]);
+  // Guest checkout fields
+  const [guestEmail, setGuestEmail] = useState("");
+  const [guestName, setGuestName] = useState("");
+
+  const isLoggedIn = status === "authenticated";
 
   // Fetch cart items
   const fetchCart = useCallback(async () => {
     try {
-      const res = await fetch("/api/cart");
+      const res = await fetch("/api/store/cart");
       if (res.ok) {
         const data = await res.json();
         setCartItems(data.cartItems || []);
-      } else if (res.status === 401) {
-        // Will be handled by the session redirect above
       }
     } catch (err) {
       console.error("Failed to fetch cart:", err);
@@ -114,10 +111,15 @@ export default function CheckoutPage() {
   }, []);
 
   useEffect(() => {
-    if (session?.user) {
-      fetchCart();
+    fetchCart();
+  }, [fetchCart]);
+
+  // Pre-fill name for logged-in users
+  useEffect(() => {
+    if (session?.user?.name) {
+      setForm((prev) => ({ ...prev, name: session.user.name }));
     }
-  }, [session, fetchCart]);
+  }, [session]);
 
   const updateField = (field: keyof ShippingForm, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -165,6 +167,16 @@ export default function CheckoutPage() {
       setError("Your cart is empty.");
       return false;
     }
+    if (!isLoggedIn) {
+      if (!guestEmail.trim() || !guestEmail.includes("@")) {
+        setError("Please enter a valid email address.");
+        return false;
+      }
+      if (!guestName.trim()) {
+        setError("Please enter your name.");
+        return false;
+      }
+    }
     return true;
   };
 
@@ -188,13 +200,18 @@ export default function CheckoutPage() {
             province: form.province.trim(),
             postalCode: form.postalCode.trim(),
           },
+          ...(!isLoggedIn ? { guestEmail: guestEmail.trim(), guestName: guestName.trim() } : {}),
         }),
       });
 
       const data = await res.json();
 
       if (res.ok) {
-        router.push(`/store/checkout/success?orderId=${data.orderId}`);
+        if (data.url) {
+          window.location.href = data.url;
+        } else {
+          router.push(`/store/checkout/success?orderId=${data.orderId}`);
+        }
       } else {
         setError(data.error || "Failed to place order. Please try again.");
       }
@@ -207,7 +224,7 @@ export default function CheckoutPage() {
   };
 
   // ─── Loading State ─────────────────────────────────────
-  if (status === "loading" || loading) {
+  if (loading) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-red-400" />
@@ -254,6 +271,51 @@ export default function CheckoutPage() {
         Review your order and complete your purchase.
       </p>
 
+      {/* Guest Checkout Form */}
+      {!isLoggedIn && (
+        <Card className="mb-6 border-amber-500/20 bg-amber-500/5">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-base font-bold text-white">
+              <User className="h-4 w-4 text-amber-400" />
+              Guest Checkout
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0 space-y-3">
+            <p className="text-xs text-slate-400">
+              No account? No problem! Just fill in your details below.
+            </p>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="space-y-1.5">
+                <Label className="text-xs text-slate-400">Email *</Label>
+                <Input
+                  type="email"
+                  placeholder="your@email.com"
+                  value={guestEmail}
+                  onChange={(e) => setGuestEmail(e.target.value)}
+                  className="border-white/10 bg-white/5 text-sm text-white placeholder:text-slate-600 focus:border-amber-500/50"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs text-slate-400">Full Name *</Label>
+                <Input
+                  placeholder="Juan dela Cruz"
+                  value={guestName}
+                  onChange={(e) => setGuestName(e.target.value)}
+                  className="border-white/10 bg-white/5 text-sm text-white placeholder:text-slate-600 focus:border-amber-500/50"
+                />
+              </div>
+            </div>
+            <Link
+              href={`/auth/login?callbackUrl=/store/checkout`}
+              className="inline-flex items-center gap-1.5 text-xs text-amber-400 hover:text-amber-300"
+            >
+              <Mail className="h-3 w-3" />
+              Or sign in for a faster checkout
+            </Link>
+          </CardContent>
+        </Card>
+      )}
+
       <div className="grid gap-8 lg:grid-cols-5">
         {/* LEFT: Order Summary (3 cols) */}
         <div className="lg:col-span-3 space-y-4">
@@ -280,7 +342,6 @@ export default function CheckoutPage() {
                       key={item.id}
                       className="flex gap-4 rounded-xl border border-white/5 bg-white/[0.02] p-3"
                     >
-                      {/* Image */}
                       <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white/5 sm:h-20 sm:w-20">
                         {imageUrl ? (
                           <img
@@ -292,8 +353,6 @@ export default function CheckoutPage() {
                           <ImageOff className="h-5 w-5 text-slate-600" />
                         )}
                       </div>
-
-                      {/* Details */}
                       <div className="flex flex-1 flex-col justify-between min-w-0">
                         <div className="min-w-0">
                           <div className="text-sm font-bold text-white truncate">
@@ -341,7 +400,6 @@ export default function CheckoutPage() {
                 </div>
               )}
 
-              {/* Name */}
               <div className="space-y-1.5">
                 <Label className="text-xs text-slate-400">Full Name *</Label>
                 <Input
@@ -352,7 +410,6 @@ export default function CheckoutPage() {
                 />
               </div>
 
-              {/* Phone */}
               <div className="space-y-1.5">
                 <Label className="text-xs text-slate-400">Phone Number *</Label>
                 <Input
@@ -363,11 +420,8 @@ export default function CheckoutPage() {
                 />
               </div>
 
-              {/* Address Line 1 */}
               <div className="space-y-1.5">
-                <Label className="text-xs text-slate-400">
-                  Address Line 1 *
-                </Label>
+                <Label className="text-xs text-slate-400">Address Line 1 *</Label>
                 <Input
                   placeholder="123 Rizal Street, Barangay Poblacion"
                   value={form.line1}
@@ -376,7 +430,6 @@ export default function CheckoutPage() {
                 />
               </div>
 
-              {/* City + Province */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
                   <Label className="text-xs text-slate-400">City *</Label>
@@ -398,11 +451,8 @@ export default function CheckoutPage() {
                 </div>
               </div>
 
-              {/* Postal Code */}
               <div className="space-y-1.5">
-                <Label className="text-xs text-slate-400">
-                  Postal Code *
-                </Label>
+                <Label className="text-xs text-slate-400">Postal Code *</Label>
                 <Input
                   placeholder="1100"
                   value={form.postalCode}
@@ -411,11 +461,11 @@ export default function CheckoutPage() {
                 />
               </div>
 
-              {/* Payment Method (Placeholder) */}
+              {/* Payment Method */}
               <div className="space-y-1.5 pt-1">
                 <Label className="text-xs text-slate-400">Payment Method</Label>
                 <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] p-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-600 to-purple-600">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-red-600 to-orange-500">
                     <CreditCard className="h-4 w-4 text-white" />
                   </div>
                   <div className="flex-1">
@@ -436,26 +486,19 @@ export default function CheckoutPage() {
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-slate-400">Subtotal</span>
-                  <span className="text-white">
-                    {formatCurrency(subtotal)}
-                  </span>
+                  <span className="text-white">{formatCurrency(subtotal)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-400">Shipping</span>
-                  <span className="text-white">
-                    {formatCurrency(shipping)}
-                  </span>
+                  <span className="text-white">{formatCurrency(shipping)}</span>
                 </div>
                 <Separator className="bg-white/5" />
                 <div className="flex justify-between text-base font-bold">
                   <span className="text-white">Total</span>
-                  <span className="text-white">
-                    {formatCurrency(total)}
-                  </span>
+                  <span className="text-white">{formatCurrency(total)}</span>
                 </div>
               </div>
 
-              {/* Place Order Button */}
               <Button
                 onClick={handleSubmit}
                 disabled={submitting}
@@ -474,10 +517,9 @@ export default function CheckoutPage() {
                 )}
               </Button>
 
-              {/* Terms */}
               <p className="text-center text-[11px] leading-relaxed text-slate-600">
-                By placing this order, you agree to our terms. 90% goes to the
-                artist, 10% supports Tunog Kalye Radio.
+                By placing this order, you agree to our terms. 100% goes to the
+                artist. Tunog Kalye Radio takes zero commission.
               </p>
             </CardContent>
           </Card>

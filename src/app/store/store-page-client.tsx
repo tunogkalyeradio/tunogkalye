@@ -11,6 +11,9 @@ import {
   CheckCircle2,
   ShoppingBag,
   ChevronDown,
+  Download,
+  Truck,
+  Radio,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,6 +33,18 @@ import {
 interface StorePageClientProps {
   products: StoreProduct[];
   featuredArtists: FeaturedArtist[];
+  stationProducts: Array<{
+    id: number;
+    name: string;
+    price: number;
+    compareAtPrice: number | null;
+    category: string;
+    images: string[];
+    productType: string;
+    isStation: boolean;
+    stock: number;
+    artist: { id: number; bandName: string; isVerified: boolean } | null;
+  }>;
   isLoggedIn: boolean;
 }
 
@@ -45,6 +60,7 @@ function getDiscountPercent(price: number, compareAt: number): number {
 export default function StorePageClient({
   products,
   featuredArtists,
+  stationProducts,
   isLoggedIn,
 }: StorePageClientProps) {
   const [search, setSearch] = useState("");
@@ -124,7 +140,7 @@ export default function StorePageClient({
       } else {
         const data = await res.json();
         if (data.redirectToLogin) {
-          window.location.href = `/auth/login?callbackUrl=/store`;
+          location.replace(`/auth/login?callbackUrl=/store`);
         }
       }
     } catch {
@@ -152,10 +168,62 @@ export default function StorePageClient({
             Support Filipino Indie Artists. Every purchase counts.
           </p>
           <p className="mx-auto max-w-md text-sm text-slate-500">
-            90% goes directly to the artist. 10% supports Tunog Kalye Radio.
+            Artists receive 100% of payments. Tunog Kalye takes 0% commission.
           </p>
         </div>
       </section>
+
+      {/* OFFICIAL TKR MERCH */}
+      {stationProducts && stationProducts.length > 0 && (
+        <section>
+          <div className="mb-6 flex items-center justify-between">
+            <div>
+              <h2 className="flex items-center gap-2 text-xl font-bold tracking-tight sm:text-2xl">
+                <Radio className="h-5 w-5 text-red-400" />
+                Official Tunog Kalye Radio Merch
+              </h2>
+              <p className="mt-1 text-sm text-slate-500">100% of proceeds support the station</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+            {stationProducts.map((sp) => {
+              const imageUrl = sp.images && sp.images.length > 0 ? sp.images[0] : null;
+              const spDiscount = sp.compareAtPrice ? getDiscountPercent(sp.price, sp.compareAtPrice) : 0;
+              const gradient = CATEGORY_GRADIENTS[sp.category] || "from-slate-600 to-slate-400";
+              return (
+                <Link key={sp.id} href={`/store/products/${sp.id}`} className="group">
+                  <Card className="overflow-hidden border-white/10 bg-[#12121a] transition-all duration-300 hover:border-red-500/30 hover:shadow-xl">
+                    <div className="relative aspect-square overflow-hidden">
+                      {imageUrl ? (
+                        <img src={imageUrl} alt={sp.name} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                      ) : (
+                        <div className={`flex h-full w-full items-center justify-center bg-gradient-to-br ${gradient}`}>
+                          <ShoppingBag className="h-10 w-10 text-white/20" />
+                        </div>
+                      )}
+                      {spDiscount > 0 && (
+                        <Badge className="absolute left-2 top-2 border-0 bg-green-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
+                          -{spDiscount}%
+                        </Badge>
+                      )}
+                      <Badge className="absolute right-2 top-2 border-0 bg-red-500/80 px-1.5 py-0 text-[9px] font-bold text-white backdrop-blur-sm">
+                        Official TKR
+                      </Badge>
+                    </div>
+                    <CardContent className="p-3">
+                      <h4 className="truncate text-xs font-bold text-white">{sp.name}</h4>
+                      <div className="mt-1 flex items-center gap-1.5">
+                        <span className="text-sm font-bold text-white">{formatPrice(sp.price)}</span>
+                        {sp.compareAtPrice && <span className="text-[10px] text-slate-500 line-through">{formatPrice(sp.compareAtPrice)}</span>}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       {/* FEATURED ARTISTS */}
       {featuredArtists.length > 0 && (
@@ -272,6 +340,8 @@ export default function StorePageClient({
                 product.images && product.images.length > 0
                   ? product.images[0]
                   : null;
+              const isDigital = (product as Record<string, unknown>).productType === "DIGITAL";
+              const isStation = !!(product as Record<string, unknown>).isStation;
 
               return (
                 <Card
@@ -321,6 +391,24 @@ export default function StorePageClient({
                     >
                       {product.category}
                     </Badge>
+                    {/* Product type badges */}
+                    <div className="absolute bottom-2 left-2 flex gap-1">
+                      {isDigital && (
+                        <Badge className="border-0 bg-purple-500/80 px-1.5 py-0 text-[9px] font-bold text-white backdrop-blur-sm">
+                          <Download className="mr-0.5 h-2.5 w-2.5" /> Digital
+                        </Badge>
+                      )}
+                      {!isDigital && (
+                        <Badge className="border-0 bg-blue-500/80 px-1.5 py-0 text-[9px] font-bold text-white backdrop-blur-sm">
+                          <Truck className="mr-0.5 h-2.5 w-2.5" /> Physical
+                        </Badge>
+                      )}
+                      {isStation && (
+                        <Badge className="border-0 bg-red-500/80 px-1.5 py-0 text-[9px] font-bold text-white backdrop-blur-sm">
+                          Official TKR
+                        </Badge>
+                      )}
+                    </div>
                   </Link>
 
                   {/* Content */}
@@ -431,19 +519,19 @@ export default function StorePageClient({
           </h3>
           <p className="max-w-md text-sm text-slate-400">
             Every purchase supports Filipino indie artists directly.{" "}
-            <span className="font-bold text-white">90%</span> goes to the
-            artist. <span className="font-bold text-white">10%</span> supports
-            Tunog Kalye Radio to keep the music playing.
+            <span className="font-bold text-white">100%</span> goes to the
+            artist. Tunog Kalye Radio takes{" "}
+            <span className="font-bold text-white">zero commission</span>.
           </p>
           <div className="flex items-center gap-6">
             <div className="text-center">
-              <div className="text-2xl font-black text-green-400">90%</div>
+              <div className="text-2xl font-black text-green-400">100%</div>
               <div className="text-xs text-slate-500">Artist</div>
             </div>
             <div className="h-8 w-px bg-white/10" />
             <div className="text-center">
-              <div className="text-2xl font-black text-red-400">10%</div>
-              <div className="text-xs text-slate-500">Platform</div>
+              <div className="text-2xl font-black text-red-400">0%</div>
+              <div className="text-xs text-slate-500">Platform Fee</div>
             </div>
           </div>
         </div>

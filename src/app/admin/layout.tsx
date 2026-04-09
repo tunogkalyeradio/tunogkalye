@@ -19,6 +19,12 @@ import {
   ChevronRight,
   Inbox,
   Bell,
+  Store,
+  ShoppingBag,
+  CreditCard,
+  Heart,
+  ShieldAlert,
+  BarChart3,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -30,9 +36,15 @@ import NotificationBell from "@/components/notification-bell";
 const sidebarItems = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/artists", label: "Artists", icon: Users },
+  { href: "/admin/store-approvals", label: "Store Approvals", icon: Store },
+  { href: "/admin/station-merch", label: "Station Merch", icon: ShoppingBag },
   { href: "/admin/products", label: "Products", icon: Package },
   { href: "/admin/orders", label: "Orders", icon: ShoppingCart },
   { href: "/admin/revenue", label: "Revenue", icon: DollarSign },
+  { href: "/admin/payouts", label: "Payouts", icon: CreditCard },
+  { href: "/admin/kanto-fund", label: "Kanto Fund", icon: Heart },
+  { href: "/admin/moderation", label: "Moderation", icon: ShieldAlert },
+  { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/admin/submissions", label: "Submissions", icon: Inbox },
   { href: "/admin/notifications", label: "Notifications", icon: Bell },
   { href: "/admin/settings", label: "Settings", icon: Settings },

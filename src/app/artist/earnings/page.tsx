@@ -38,7 +38,7 @@ export default async function ArtistEarningsPage() {
   // Total earnings
   const totalEarnings = await db.orderItem.aggregate({
     where: { artistId: artistProfile.id },
-    _sum: { artistCut: true },
+    _sum: { subtotal: true },
   });
 
   // Earnings by status
@@ -47,7 +47,7 @@ export default async function ArtistEarningsPage() {
       artistId: artistProfile.id,
       status: { in: ["PENDING", "SHIPPED"] },
     },
-    _sum: { artistCut: true },
+    _sum: { subtotal: true },
   });
 
   const deliveredItems = await db.orderItem.aggregate({
@@ -55,12 +55,12 @@ export default async function ArtistEarningsPage() {
       artistId: artistProfile.id,
       status: "DELIVERED",
     },
-    _sum: { artistCut: true },
+    _sum: { subtotal: true },
   });
 
-  const totalEarningsAmount = totalEarnings._sum.artistCut || 0;
-  const pendingAmount = pendingItems._sum.artistCut || 0;
-  const availableAmount = deliveredItems._sum.artistCut || 0;
+  const totalEarningsAmount = totalEarnings._sum.subtotal || 0;
+  const pendingAmount = pendingItems._sum.subtotal || 0;
+  const availableAmount = deliveredItems._sum.subtotal || 0;
 
   // Monthly breakdown
   const twelveMonthsAgo = new Date();
@@ -74,7 +74,7 @@ export default async function ArtistEarningsPage() {
       artistId: artistProfile.id,
       createdAt: { gte: twelveMonthsAgo },
     },
-    _sum: { artistCut: true },
+    _sum: { subtotal: true },
     _count: { id: true },
   });
 
@@ -85,7 +85,7 @@ export default async function ArtistEarningsPage() {
     if (!monthlyMap[key]) {
       monthlyMap[key] = { earnings: 0, orders: 0 };
     }
-    monthlyMap[key].earnings += item._sum.artistCut || 0;
+    monthlyMap[key].earnings += item._sum.subtotal || 0;
     monthlyMap[key].orders += item._count.id;
   }
 
@@ -97,14 +97,14 @@ export default async function ArtistEarningsPage() {
   const productEarnings = await db.orderItem.groupBy({
     by: ["productId", "productName"],
     where: { artistId: artistProfile.id },
-    _sum: { artistCut: true, quantity: true },
+    _sum: { subtotal: true, quantity: true },
     _count: { id: true },
-    orderBy: { _sum: { artistCut: "desc" } },
+    orderBy: { _sum: { subtotal: "desc" } },
     take: 10,
   });
 
   const maxBarValue = Math.max(
-    ...productEarnings.map((p) => p._sum.artistCut || 0),
+    ...productEarnings.map((p) => p._sum.subtotal || 0),
     1
   );
 
@@ -293,7 +293,7 @@ export default async function ArtistEarningsPage() {
                             {product._count.id} sold
                           </span>
                           <span className="text-sm font-bold text-green-400">
-                            {formatPeso(product._sum.artistCut || 0)}
+                            {formatPeso(product._sum.subtotal || 0)}
                           </span>
                         </div>
                       </div>
