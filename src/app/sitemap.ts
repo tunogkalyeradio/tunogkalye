@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-const BASE_URL = process.env.NEXTAUTH_URL || "https://tunog-kalye-hub.vercel.app";
+const BASE_URL = process.env.NEXTAUTH_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "https://tunog-kalye-hub.vercel.app");
 
 export default function sitemap(): MetadataRoute.Sitemap {
   // Static pages
