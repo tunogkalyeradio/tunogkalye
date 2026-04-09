@@ -143,9 +143,11 @@ NEXT_PUBLIC_BASE_URL="https://hub.tunogkalye.net"
 RESEND_API_KEY="re_..."
 
 # Stream (AzuraCast)
-NEXT_PUBLIC_STREAM_URL="https://www.tunogkalye.net/radio/8000/radio.mp3"
-NEXT_PUBLIC_STATION_URL="https://www.tunogkalye.net"
-NEXT_PUBLIC_EMBED_URL="https://www.tunogkalye.net/public/tunogkalye/embed"
+NEXT_PUBLIC_STREAM_URL="https://tunogkalye.net/radio/8000/radio.mp3"
+NEXT_PUBLIC_NOW_PLAYING_API="https://tunogkalye.net/api/nowplaying/tunog-kalye"
+NEXT_PUBLIC_STATION_URL="https://tunogkalye.net/public/tunog-kalye"
+NEXT_PUBLIC_SITE_URL="https://tunogkalye.net"
+NEXT_PUBLIC_STATION_NAME="Tunog Kalye Radio"
 ```
 
 ---
@@ -283,6 +285,7 @@ src/
 ├── components/
 │   ├── auth-provider.tsx                   # SessionProvider wrapper
 │   ├── chat-widget.tsx                     # KALYE Bot floating chat
+│   ├── live-player.tsx                    # 🎵 Global live radio player (AzuraCast)
 │   ├── notification-bell.tsx               # 🔔 Bell icon with unread badge + dropdown
 │   ├── image-upload.tsx                    # Image upload component
 │   └── ui/                                # 52 shadcn/ui components
@@ -437,12 +440,17 @@ The platform uses **16 Prisma models** organized into 7 domains with **8 enums**
 - Suggested questions for quick guidance
 - Answers questions about submissions, sponsorships, merch, and the Kanto Fund
 
-### Live Radio Integration
-- Sticky player bar streaming from AzuraCast
-- "ON AIR" pulsing indicator
-- Play/Pause + Mute controls
-- "Full Station" link to www.tunogkalye.net
+### Global Live Radio Player
+- **Persistent sticky player** on ALL pages (root layout)
+- **AzuraCast Now-Playing API** integration — displays current song title, artist, album
+- **Live DJ indicator** — shows "🔴 Live" badge with DJ name during live broadcasts
+- **Progress bar** — thin track progress indicator below song info
+- **Listener count** — shows current number of listeners (desktop)
+- Play/Pause + Volume slider + Mute controls
+- "Full Station" link to tunogkalye.net/public/tunog-kalye
+- Offline detection with "Station is currently offline" banner
 - Dismissible with session persistence
+- All stream URLs configurable via environment variables
 
 ### Notification System
 - 🔔 Bell icon with unread count badge in all 3 dashboard headers
@@ -516,7 +524,7 @@ Direct Tips → 100% to artist's Connected Account
 
 ### Components
 - 52 shadcn/ui components (Button, Card, Dialog, Table, Form, Tabs, Badge, etc.)
-- Custom components: ChatWidget, NotificationBell, ImageUpload, LivePlayerBar
+- Custom components: LivePlayer (global), ChatWidget, NotificationBell, ImageUpload
 
 ---
 
@@ -539,6 +547,11 @@ git push origin main
 # - NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
 # - NEXT_PUBLIC_BASE_URL=https://hub.tunogkalye.net
 # - RESEND_API_KEY
+# - NEXT_PUBLIC_STREAM_URL=https://tunogkalye.net/radio/8000/radio.mp3
+# - NEXT_PUBLIC_NOW_PLAYING_API=https://tunogkalye.net/api/nowplaying/tunog-kalye
+# - NEXT_PUBLIC_STATION_URL=https://tunogkalye.net/public/tunog-kalye
+# - NEXT_PUBLIC_SITE_URL=https://tunogkalye.net
+# - NEXT_PUBLIC_STATION_NAME=Tunog Kalye Radio
 ```
 
 ### Custom Domain (Cloudflare → Vercel)
@@ -559,10 +572,71 @@ echo "libsql://your-db.turso.io?authToken=your-token" | npx vercel env add DATAB
 ### AzuraCast Stream Configuration
 
 ```env
-NEXT_PUBLIC_STREAM_URL="https://www.tunogkalye.net/radio/8000/radio.mp3"
-NEXT_PUBLIC_STATION_URL="https://www.tunogkalye.net"
-NEXT_PUBLIC_EMBED_URL="https://www.tunogkalye.net/public/tunogkalye/embed"
+# Direct audio stream (for the global player)
+NEXT_PUBLIC_STREAM_URL="https://tunogkalye.net/radio/8000/radio.mp3"
+# Now-Playing API (public, no auth — shows current song/DJ)
+NEXT_PUBLIC_NOW_PLAYING_API="https://tunogkalye.net/api/nowplaying/tunog-kalye"
+# Full station public page (for "Full Station" link)
+NEXT_PUBLIC_STATION_URL="https://tunogkalye.net/public/tunog-kalye"
+# Main site URL
+NEXT_PUBLIC_SITE_URL="https://tunogkalye.net"
+# Station display name
+NEXT_PUBLIC_STATION_NAME="Tunog Kalye Radio"
 ```
+
+### Domain Setup (Cloudflare DNS)
+
+All domains are managed through Cloudflare DNS. Here's the complete DNS configuration:
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│                    tunogkalye.net DNS Zone                       │
+├────────────────────┬──────────────┬──────────────────────────────┤
+│ Subdomain           │ Record       │ Points To                    │
+├────────────────────┼──────────────┼──────────────────────────────┤
+│ hub.tunogkalye.net │ CNAME        │ cname.vercel-dns.com         │
+│                    │              │ → Next.js Hub (Vercel)        │
+├────────────────────┼──────────────┼──────────────────────────────┤
+│ www.tunogkalye.net │ A Record     │ Your Oracle Cloud VM IP     │
+│                    │              │ → AzuraCast Radio Station    │
+│                    │              │ (SSL: Cloudflare Full mode)  │
+├────────────────────┼──────────────┼──────────────────────────────┤
+│ tunogkalye.net     │ A Record     │ Same Oracle Cloud VM IP     │
+│                    │              │ → AzuraCast (main domain)    │
+├────────────────────┼──────────────┼──────────────────────────────┤
+│ video.tunogkalye   │ CNAME / A    │ Dotcompal server IP or      │
+│ .net               │              │ CNAME to their provided URL  │
+│                    │              │ → Video Channel              │
+└────────────────────┴──────────────┴──────────────────────────────┘
+```
+
+#### Step-by-Step: www.tunogkalye.net → AzuraCast
+
+1. **In Cloudflare Dashboard** → DNS → Add Record
+2. **Type:** `A`  |  **Name:** `www`  |  **IPv4:** Your Oracle Cloud VM IP
+3. **Proxy status:** Proxied (orange cloud) — this gives you free SSL
+4. **In AzuraCast Admin** → Settings → General:
+   - Set **Base URL** to `https://www.tunogkalye.net`
+   - Set **Use HTTPS** to `true`
+   - Ensure **Preferred Station URL** uses the new domain
+5. **SSL Settings in Cloudflare** → SSL/TLS → set to **Full (Strict)** if AzuraCast has a cert, or **Full** if not
+6. Test: Visit `https://www.tunogkalye.net` — should show the AzuraCast interface
+
+#### Step-by-Step: video.tunogkalye.net → Dotcompal
+
+1. **In Cloudflare Dashboard** → DNS → Add Record
+2. **Type:** `CNAME` or `A` | **Name:** `video`
+3. **Target:** Dotcompal's server IP or CNAME target (check Dotcompal docs)
+4. **Proxy status:** Proxied (orange cloud) for SSL
+5. **In Dotcompal settings**, configure the custom domain to `video.tunogkalye.net`
+6. Test: Visit `https://video.tunogkalye.net` — should show your video channel
+
+#### Step-by-Step: hub.tunogkalye.net → Vercel (Already Done ✅)
+
+1. **In Cloudflare Dashboard** → DNS → CNAME record
+2. **Name:** `hub`  |  **Target:** `cname.vercel-dns.com`
+3. **In Vercel Dashboard** → Project → Settings → Domains → Add `hub.tunogkalye.net`
+4. Vercel auto-provisions SSL certificate
 
 ---
 

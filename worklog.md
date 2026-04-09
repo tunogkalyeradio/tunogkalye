@@ -420,3 +420,30 @@ Stage Summary:
 - README.md: 472 insertions, 264 deletions — complete rewrite
 - Accurately documents the current state of the entire platform
 - Committed as e2344fa
+
+---
+Task ID: 15
+Agent: Super Z (Main)
+Task: Connect all domains + global live radio player integration
+
+Work Log:
+- Extracted LivePlayerBar from homepage (src/app/page.tsx) into standalone global component (src/components/live-player.tsx)
+- Added AzuraCast Now-Playing API integration — polls /api/nowplaying/tunog-kalye every 15 seconds
+- Live player features: current song display, live DJ indicator, progress bar, listener count, volume slider
+- Offline detection with "Station is currently offline" banner
+- Added LivePlayer to root layout (src/app/layout.tsx) — player now appears on ALL pages globally
+- Removed inline LivePlayerBar and STREAM_CONFIG from homepage page.tsx
+- Cleaned up unused imports (useRef, useEffect) from page.tsx
+- Added "Listen Live" button to store layout navbar (links to tunogkalye.net/public/tunog-kalye)
+- Created environment variables for all stream config: NEXT_PUBLIC_STREAM_URL, NEXT_PUBLIC_NOW_PLAYING_API, NEXT_PUBLIC_STATION_URL, NEXT_PUBLIC_SITE_URL, NEXT_PUBLIC_STATION_NAME
+- Updated .env.local with actual AzuraCast stream URLs (tunogkalye.net/public/tunog-kalye)
+- Updated README.md: live player feature section, env vars, domain setup guide (www/video/hub), AzuraCast config
+- Build passes cleanly
+- Vercel deployment pending (token expired — user needs to run `vercel login`)
+
+Stage Summary:
+- 4 files modified (live-player.tsx created, layout.tsx, page.tsx, store/layout.tsx, .env.local)
+- 1 new component: src/components/live-player.tsx (global sticky live player)
+- Global live radio player now integrated across ALL pages
+- Domain setup guide added to README for www.tunogkalye.net (AzuraCast) and video.tunogkalye.net (Dotcompal)
+- Stream connected to tunogkalye.net/public/tunog-kalye

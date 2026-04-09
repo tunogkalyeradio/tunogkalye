@@ -1,4 +1,4 @@
-import { Radio, ShoppingCart, ArrowLeft, LogIn, User } from "lucide-react";
+import { Radio, ShoppingCart, ArrowLeft, LogIn, User, Play } from "lucide-react";
 import Link from "next/link";
 import { getSession } from "@/lib/auth-utils";
 
@@ -37,6 +37,18 @@ export default async function StoreLayout({
               </span>
             </Link>
           </div>
+
+          {/* Center: Listen Live (desktop) */}
+          <a
+            href="https://tunogkalye.net/public/tunog-kalye"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hidden items-center gap-2 rounded-lg bg-gradient-to-r from-red-600 to-orange-500 px-3 py-1.5 text-xs font-bold text-white shadow-md shadow-red-500/20 transition-all hover:from-red-500 hover:to-orange-400 md:inline-flex"
+          >
+            <Play className="h-3.5 w-3.5" />
+            <span>Listen Live</span>
+            <span className="inline-flex h-2 w-2 rounded-full bg-white/50 animate-pulse" />
+          </a>
 
           {/* Right: Cart + Auth */}
           <div className="flex items-center gap-2">

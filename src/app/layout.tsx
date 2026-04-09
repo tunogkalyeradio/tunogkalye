@@ -4,6 +4,7 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import AuthProvider from "@/components/auth-provider";
 import ChatWidget from "@/components/chat-widget";
+import LivePlayer from "@/components/live-player";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -47,6 +48,7 @@ export default function RootLayout({
         <AuthProvider>
           {children}
           <ChatWidget />
+          <LivePlayer />
         </AuthProvider>
         <Toaster />
       </body>
