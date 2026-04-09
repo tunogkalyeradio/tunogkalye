@@ -163,7 +163,7 @@ export default function TunogKalyePathways() {
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
           <button onClick={goHome} className="flex items-center gap-2 transition-opacity hover:opacity-80">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/tunog-kalye-logo.png" alt="Tunog Kalye Radio" className="h-9 w-9 object-contain" />
+            <img src="/tunog-kalye-logo.png" alt="Tunog Kalye Radio" className="h-10 w-10 object-contain" />
             <span className="hidden text-lg font-bold tracking-tight sm:inline">
               TUNOG KALYE<span className="text-red-400"> RADIO</span>
             </span>

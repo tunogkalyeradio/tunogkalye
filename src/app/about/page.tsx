@@ -26,9 +26,8 @@ export default function AboutPage() {
             </Link>
             <div className="h-4 w-px bg-white/10" />
             <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-red-600 to-orange-500">
-                <Radio className="h-4 w-4 text-white" />
-              </div>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/tunog-kalye-logo.png" alt="Tunog Kalye Radio" className="h-10 w-10 object-contain" />
               <span className="text-sm font-bold tracking-tight">
                 TUNOG KALYE<span className="text-red-400"> RADIO</span>
               </span>
@@ -209,7 +208,7 @@ export default function AboutPage() {
             </div>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
               {[
-                { icon: Radio, name: "AzuraCast", desc: "Radio Automation" },
+                { icon: Radio, name: "Kanto Broadcast Engine", desc: "Radio Automation" },
                 { icon: Server, name: "Oracle Cloud", desc: "Infrastructure" },
                 { icon: Cloud, name: "Cloudflare CDN", desc: "Global Delivery" },
                 { icon: Cpu, name: "Next.js", desc: "Hub & Store" },

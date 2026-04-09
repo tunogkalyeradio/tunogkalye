@@ -191,7 +191,7 @@ export default function LivePlayer() {
             {/* Logo */}
             <div className="relative flex h-10 w-10 shrink-0 items-center justify-center">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/tunog-kalye-logo.png" alt="TKR" className="h-10 w-10 object-contain" />
+              <img src="/tunog-kalye-logo.png" alt="TKR" className="h-12 w-12 object-contain" />
               {isOnline && (
                 <span className="absolute -right-1 -top-1 flex h-3 w-3">
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
