@@ -236,15 +236,21 @@ export default function AboutPage() {
               Whether you&apos;re an artist looking for airplay, a fan who wants to support the scene, or a sponsor who believes in Filipino music — there&apos;s a place for you.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
-              <Button size="lg" className="bg-gradient-to-r from-red-600 to-orange-500 px-6 font-bold text-white shadow-lg shadow-red-500/20 hover:from-red-500 hover:to-orange-400">
-                <Send className="mr-2 h-5 w-5" /> Submit Your Music
-              </Button>
-              <Button size="lg" variant="outline" className="border-white/20 bg-white/5 px-6 text-white hover:bg-white/10">
-                <Heart className="mr-2 h-5 w-5 text-rose-400" /> Support the Kanto
-              </Button>
-              <Button size="lg" variant="outline" className="border-white/20 bg-white/5 px-6 text-white hover:bg-white/10">
-                <ShoppingBag className="mr-2 h-5 w-5 text-emerald-400" /> Browse Merch
-              </Button>
+              <Link href="/">
+                <Button size="lg" className="bg-gradient-to-r from-red-600 to-orange-500 px-6 font-bold text-white shadow-lg shadow-red-500/20 hover:from-red-500 hover:to-orange-400">
+                  <Send className="mr-2 h-5 w-5" /> Submit Your Music
+                </Button>
+              </Link>
+              <Link href="/">
+                <Button size="lg" variant="outline" className="border-white/20 bg-white/5 px-6 text-white hover:bg-white/10">
+                  <Heart className="mr-2 h-5 w-5 text-rose-400" /> Support the Kanto
+                </Button>
+              </Link>
+              <Link href="/store">
+                <Button size="lg" variant="outline" className="border-white/20 bg-white/5 px-6 text-white hover:bg-white/10">
+                  <ShoppingBag className="mr-2 h-5 w-5 text-emerald-400" /> Browse Merch
+                </Button>
+              </Link>
             </div>
           </section>
         </div>
