@@ -7,8 +7,9 @@ import {
   BarChart3, CreditCard, Coffee, Zap, Star, ArrowRight, Volume2,
   AlertCircle, Loader2, Clock, Mail, PartyPopper, Share2, Shield,
   CircleDot, HelpCircle, ChevronDown, Play, Pause, VolumeX, Volume1,
-  X,
+  X, ShoppingBag, LayoutDashboard, Palette, ShieldCheck,
 } from "lucide-react";
+import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,6 +21,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   Accordion, AccordionContent, AccordionItem, AccordionTrigger,
 } from "@/components/ui/accordion";
+import Link from "next/link";
 
 // ─── Types ───────────────────────────────────────────────
 type FunnelId = "home" | "submit" | "sponsor" | "donate";
@@ -175,6 +177,51 @@ function LivePlayerBar() {
   );
 }
 
+// ─── Auth Navigation Links ──────────────────────────────
+function AuthNavLinks() {
+  let session: { user?: { role?: string } } | null = null;
+  let authStatus: string = "unauthenticated";
+
+  try {
+    const result = useSession();
+    if (result) {
+      session = result.data as { user?: { role?: string } } | null;
+      authStatus = result.status;
+    }
+  } catch {
+    // Session provider not available during prerender
+    return null;
+  }
+
+  if (authStatus === "loading" || !session?.user) return null;
+
+  const role = (session.user as { role?: string }).role;
+
+  return (
+    <>
+      <div className="mx-1 h-4 w-px bg-white/10" />
+      {role === "ADMIN" && (
+        <Link href="/admin" className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-white/5 hover:text-red-400" title="Admin Panel">
+          <ShieldCheck className="h-4 w-4" />
+        </Link>
+      )}
+      {role === "ARTIST" && (
+        <Link href="/artist" className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-white/5 hover:text-purple-400" title="Artist Dashboard">
+          <Palette className="h-4 w-4" />
+        </Link>
+      )}
+      {(role === "CUSTOMER" || role === "ADMIN" || role === "ARTIST") && (
+        <Link href="/dashboard" className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-white/5 hover:text-cyan-400" title="My Dashboard">
+          <LayoutDashboard className="h-4 w-4" />
+        </Link>
+      )}
+      <Link href="/store" className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-white/5 hover:text-orange-400" title="Merch Store">
+        <ShoppingBag className="h-4 w-4" />
+      </Link>
+    </>
+  );
+}
+
 // ═══════════════════════════════════════════════════════════
 // MAIN APP
 // ═══════════════════════════════════════════════════════════
@@ -214,10 +261,11 @@ export default function TunogKalyeFunnels() {
               <span className="font-medium text-white">{FM[activeFunnel]?.label}</span>
             </div>
           ) : (
-            <div className="flex gap-1">
+            <div className="flex items-center gap-1">
               <button onClick={() => navigateTo("submit")} className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-white/5 hover:text-red-400" title="Submit Music"><Mic2 className="h-4 w-4" /></button>
               <button onClick={() => navigateTo("sponsor")} className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-white/5 hover:text-amber-400" title="Sponsor"><DollarSign className="h-4 w-4" /></button>
               <button onClick={() => navigateTo("donate")} className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-white/5 hover:text-rose-400" title="Donate"><Heart className="h-4 w-4" /></button>
+              <AuthNavLinks />
             </div>
           )}
         </div>
@@ -295,13 +343,14 @@ function HomePage({ onSelect }: { onSelect: (f: FunnelId) => void }) {
           <h2 className="mb-2 text-2xl font-bold tracking-tight sm:text-3xl">Choose Your Path</h2>
           <p className="text-sm text-slate-500">Whether you&apos;re an artist, a sponsor, or a fan — there&apos;s a place for you at the Kanto.</p>
         </div>
-        <div className="grid gap-6 md:grid-cols-3">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           {[
             { id: "submit" as FunnelId, icon: Mic2, gradient: "from-red-600 to-orange-500", shadow: "shadow-red-500/20", border: "hover:border-red-500/40", title: "Submit Your Music", desc: "Get your music played on 24/7 global radio. We're always looking for fresh Filipino talent.", checks: ["100% copyright retained", "Non-exclusive broadcasting rights", "Reviewed within one week"], btn: FM.submit.btn },
             { id: "sponsor" as FunnelId, icon: DollarSign, gradient: "from-amber-500 to-yellow-400", shadow: "shadow-amber-500/20", border: "hover:border-amber-500/40", title: "Sponsor My Station", desc: "Reach the Filipino diaspora and 90s OPM lovers with targeted advertising.", checks: ["On-air shoutouts", "Website banner placement", "Plans from $50/month"], btn: FM.sponsor.btn },
             { id: "donate" as FunnelId, icon: Heart, gradient: "from-rose-500 to-pink-400", shadow: "shadow-rose-500/20", border: "hover:border-rose-500/40", title: "Support the Kanto", desc: "Keep independent OPM alive. Every contribution goes directly to the artists and the station.", checks: ["Zero commission to artists", "Funds the Kanto Fund", "Starting from $5"], btn: FM.donate.btn },
+            { id: "store" as string, icon: ShoppingBag, gradient: "from-emerald-500 to-teal-400", shadow: "shadow-emerald-500/20", border: "hover:border-emerald-500/40", title: "Browse Merch Store", desc: "Support Filipino indie artists by buying their merch. 90% goes directly to them.", checks: ["Curated by artists", "Secure checkout", "Fast delivery"], btn: "bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white", isLink: true, href: "/store" },
           ].map((card) => (
-            <Card key={card.id} onClick={() => onSelect(card.id)} className={`group cursor-pointer border-white/10 bg-[#12121a] transition-all duration-300 ${card.border} hover:bg-[#14141f] hover:shadow-lg hover:${card.shadow}`}>
+            <Card key={card.id} onClick={() => card.isLink ? undefined : onSelect(card.id as FunnelId)} className={`group cursor-pointer border-white/10 bg-[#12121a] transition-all duration-300 ${card.border} hover:bg-[#14141f] hover:shadow-lg hover:${card.shadow}`}>
               <CardHeader>
                 <div className={`mb-2 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${card.gradient} shadow-lg ${card.shadow}`}>
                   <card.icon className="h-6 w-6 text-white" />
@@ -311,16 +360,25 @@ function HomePage({ onSelect }: { onSelect: (f: FunnelId) => void }) {
               </CardHeader>
               <CardContent>
                 <ul className="space-y-2 text-sm text-slate-500">
-                  {card.checks.map((c) => (
+                  {card.checks.map((c: string) => (
                     <li key={c} className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" />{c}</li>
                   ))}
                 </ul>
               </CardContent>
               <CardFooter>
-                <Button className={`w-full font-bold ${card.btn}`}>
-                  {card.id === "submit" ? "Start Submission" : card.id === "sponsor" ? "View Packages" : "Support Now"}
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
+                {(card as { isLink?: boolean; href?: string }).isLink ? (
+                  <Link href={(card as { href: string }).href} className="w-full">
+                    <Button className={`w-full font-bold ${(card as { btn: string }).btn}`}>
+                      Shop Now
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </Link>
+                ) : (
+                  <Button className={`w-full font-bold ${card.btn}`}>
+                    {card.id === "submit" ? "Start Submission" : card.id === "sponsor" ? "View Packages" : "Support Now"}
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                )}
               </CardFooter>
             </Card>
           ))}
