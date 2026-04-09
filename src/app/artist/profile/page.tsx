@@ -7,8 +7,8 @@ import {
   Save,
   CheckCircle2,
   Clock,
-  ImageIcon,
 } from "lucide-react";
+import ImageUpload from "@/components/image-upload";
 import {
   Card,
   CardContent,
@@ -369,34 +369,13 @@ export default function ArtistProfilePage() {
                 Profile Image
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-center">
-                <div className="relative h-32 w-32 overflow-hidden rounded-2xl border border-white/10 bg-[#0a0a0f]">
-                  {imageUrl ? (
-                    <img
-                      src={imageUrl}
-                      alt="Profile"
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center">
-                      <ImageIcon className="h-10 w-10 text-slate-700" />
-                    </div>
-                  )}
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-sm text-slate-300">Image URL</Label>
-                <Input
-                  placeholder="https://example.com/photo.jpg"
-                  value={imageUrl}
-                  onChange={(e) => setImageUrl(e.target.value)}
-                  className="border-white/10 bg-white/5 text-white placeholder:text-slate-600"
-                />
-                <p className="text-xs text-slate-500">
-                  Paste a URL to your profile photo
-                </p>
-              </div>
+            <CardContent>
+              <ImageUpload
+                value={imageUrl}
+                onChange={(url) => setImageUrl(typeof url === "string" ? url : url[0] || "")}
+                label="Upload a profile photo"
+                accent="blue"
+              />
             </CardContent>
           </Card>
 

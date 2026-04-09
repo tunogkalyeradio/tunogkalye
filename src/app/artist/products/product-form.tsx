@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, X, Plus } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import ImageUpload from "@/components/image-upload";
 import {
   Card,
   CardContent,
@@ -93,7 +94,6 @@ export default function ProductForm({ product }: ProductFormProps) {
   );
   const [category, setCategory] = useState(product?.category || "");
   const [imageUrls, setImageUrls] = useState<string[]>(initialImages);
-  const [newImageUrl, setNewImageUrl] = useState("");
   const [sizes, setSizes] = useState<string[]>(initialSizes);
   const [colors, setColors] = useState(initialColors);
   const [stock, setStock] = useState(String(product?.stock || ""));
@@ -103,17 +103,6 @@ export default function ProductForm({ product }: ProductFormProps) {
   const [shippingFee, setShippingFee] = useState(
     String(product?.shippingFee || "0")
   );
-
-  const addImage = () => {
-    if (newImageUrl.trim()) {
-      setImageUrls((prev) => [...prev, newImageUrl.trim()]);
-      setNewImageUrl("");
-    }
-  };
-
-  const removeImage = (index: number) => {
-    setImageUrls((prev) => prev.filter((_, i) => i !== index));
-  };
 
   const toggleSize = (size: string) => {
     setSizes((prev) =>
@@ -298,55 +287,17 @@ export default function ProductForm({ product }: ProductFormProps) {
                 Product Images
               </CardTitle>
               <CardDescription>
-                Add image URLs for your product (max 5 recommended)
+                Upload images for your product (max 5)
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex gap-2">
-                <Input
-                  placeholder="https://example.com/image.jpg"
-                  value={newImageUrl}
-                  onChange={(e) => setNewImageUrl(e.target.value)}
-                  className="flex-1 border-white/10 bg-white/5 text-white placeholder:text-slate-600"
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      addImage();
-                    }
-                  }}
-                />
-                <Button
-                  type="button"
-                  onClick={addImage}
-                  variant="outline"
-                  className="border-white/10 bg-white/5 text-white hover:bg-white/10"
-                >
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </div>
-
-              {imageUrls.length > 0 && (
-                <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-5">
-                  {imageUrls.map((url, i) => (
-                    <div
-                      key={i}
-                      className="group relative aspect-square overflow-hidden rounded-lg border border-white/10 bg-[#0a0a0f]"
-                    >
-                      <img
-                        src={url}
-                        alt={`Product ${i + 1}`}
-                        className="h-full w-full object-cover"
-                      />
-                      <button
-                        onClick={() => removeImage(i)}
-                        className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white opacity-0 backdrop-blur-sm transition-opacity group-hover:opacity-100"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
+            <CardContent>
+              <ImageUpload
+                value={imageUrls}
+                onChange={(urls) => setImageUrls(typeof urls === "string" ? [urls] : urls)}
+                multiple
+                maxImages={5}
+                accent="blue"
+              />
             </CardContent>
           </Card>
         </div>

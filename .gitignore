@@ -52,3 +52,7 @@ prompt
 server.log
 # Skills directory
 /skills/
+
+# Uploaded images (keep .gitkeep)
+/public/uploads/*
+!/public/uploads/.gitkeep
