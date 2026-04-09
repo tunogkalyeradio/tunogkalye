@@ -75,3 +75,29 @@ Stage Summary:
 - Enabled avatar upload in Customer Settings
 - Integrated Turso database: all tables pushed successfully, runtime adapter working via db.ts
 - Dev server compiles and runs cleanly with Turso DATABASE_URL
+
+---
+Task ID: 1-6
+Agent: Super Z (Main)
+Task: Rename Funnel→Pathway, add dashboard features, fix bugs, deploy
+
+Work Log:
+- Renamed all "funnel"/"Funnel" to "pathway"/"Pathway" across 5 files (page.tsx, terms, kanto-fund, chat route, schema)
+- Fixed notify.ts import bug: changed `prisma.user.findUnique` to `db.user.findUnique` in 2 locations
+- Created Admin Submissions page with tabs (Music/Sponsors/Donations) + API endpoints
+- Converted Admin Settings from read-only to editable (name + password change) + API endpoint
+- Created notification system: bell component, GET/PATCH API endpoints, notification pages for all 3 dashboards
+- Added notification bell to admin, artist, and customer dashboard headers
+- Added "Notifications" and "Submissions" to all relevant sidebar navigations
+- Enabled avatar upload in customer settings
+- Extracted store constants/types to store-utils.ts to fix client/server import isolation
+- Removed @prisma/adapter-libsql and @libsql/client (caused native module bundle issues)
+- Reverted db.ts to simple PrismaClient (no adapter needed for current setup)
+- Built successfully and deployed to hub.tunogkalye.net via Vercel CLI
+
+Stage Summary:
+- 30 files changed: 2000 insertions, 938 deletions
+- 11 new files created (notification pages, API endpoints, components)
+- Build passes cleanly, deployed to production at hub.tunogkalye.net
+- GitHub push failed (PAT token expired/invalid) — user needs to provide new token or push manually
+- Turso integration pending: native adapter packages removed due to browser bundle conflicts. Need alternative approach for production DB.
