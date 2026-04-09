@@ -236,19 +236,32 @@ function HomePage({ onSelect }: { onSelect: (f: PathwayId) => void }) {
         <div className="absolute inset-0 bg-gradient-to-br from-red-950/80 via-[#0a0a0f]/90 to-orange-950/60" />
         <div className="absolute inset-0 bg-cover bg-center opacity-25" style={{ backgroundImage: "url('/tunog-kalye-hero.jpg')" }} />
         <div className="relative z-10 px-6 py-16 sm:px-12 sm:py-24 lg:py-28">
-          <Badge className="mb-4 border-red-500/30 bg-red-500/20 px-3 py-1 text-xs font-medium text-red-400 backdrop-blur-sm">
-            <Volume2 className="mr-1 h-3 w-3" /> 24/7 GLOBAL BROADCAST
-          </Badge>
-          <h1 className="mb-4 text-4xl font-black leading-tight tracking-tight sm:text-5xl lg:text-6xl">
-            TUNOG KALYE{" "}
-            <span className="bg-gradient-to-r from-red-500 to-orange-400 bg-clip-text text-transparent">RADIO</span>
-          </h1>
-          <p className="mb-2 max-w-2xl text-lg text-slate-300 sm:text-xl">
-            The Premier Grassroots Broadcasting Network for Filipino Independent Music
-          </p>
-          <p className="max-w-xl text-sm text-slate-500">
-            Bridging the golden era of 90s Pinoy Rock with the modern indie movement. Curated by humans, not algorithms.
-          </p>
+          <div className="flex flex-col items-start gap-6 sm:flex-row sm:items-center sm:gap-8">
+            {/* Square Logo */}
+            <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-2xl bg-white/10 backdrop-blur-sm border border-white/10 sm:h-28 sm:w-28">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/tunog-kalye-logo.png"
+                alt="Tunog Kalye Radio"
+                className="h-full w-full rounded-2xl object-cover"
+              />
+            </div>
+            <div className="flex-1 min-w-0">
+              <Badge className="mb-3 border-red-500/30 bg-red-500/20 px-3 py-1 text-xs font-medium text-red-400 backdrop-blur-sm">
+                <Volume2 className="mr-1 h-3 w-3" /> 24/7 GLOBAL BROADCAST
+              </Badge>
+              <h1 className="mb-3 text-4xl font-black leading-tight tracking-tight sm:text-5xl lg:text-6xl">
+                TUNOG KALYE{" "}
+                <span className="bg-gradient-to-r from-red-500 to-orange-400 bg-clip-text text-transparent">RADIO</span>
+              </h1>
+              <p className="mb-2 max-w-2xl text-lg text-slate-300 sm:text-xl">
+                The Premier Grassroots Broadcasting Network for Filipino Independent Music
+              </p>
+              <p className="max-w-xl text-sm text-slate-500">
+                Bridging the golden era of 90s Pinoy Rock with the modern indie movement. Curated by humans, not algorithms.
+              </p>
+            </div>
+          </div>
           <div className="mt-8 flex flex-wrap gap-3">
             <Button onClick={() => onSelect("submit")} size="lg" className="bg-gradient-to-r from-red-600 to-orange-500 px-6 font-bold text-white shadow-lg shadow-red-500/20 hover:from-red-500 hover:to-orange-400">
               <Mic2 className="mr-2 h-5 w-5" /> Submit Your Music
