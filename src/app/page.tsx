@@ -287,10 +287,18 @@ export default function TunogKalyeFunnels() {
               <Radio className="h-4 w-4 text-red-400" />
               <span className="text-sm text-slate-500">Tunog Kalye Radio &copy; 2026. All rights reserved.</span>
             </div>
-            <div className="flex gap-4 text-xs text-slate-600">
+            <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs text-slate-600">
               <span>tunogkalye.net</span><span className="text-slate-700">|</span>
               <span>video.tunogkalye.net</span><span className="text-slate-700">|</span>
               <span>Surrey, BC, Canada</span>
+              <span className="hidden sm:inline text-slate-700">|</span>
+              <Link href="/about" className="transition-colors hover:text-slate-400">About</Link>
+              <span className="text-slate-700">|</span>
+              <Link href="/kanto-fund" className="transition-colors hover:text-slate-400">Kanto Fund</Link>
+              <span className="text-slate-700">|</span>
+              <Link href="/terms" className="transition-colors hover:text-slate-400">Terms</Link>
+              <span className="text-slate-700">|</span>
+              <Link href="/privacy" className="transition-colors hover:text-slate-400">Privacy</Link>
             </div>
           </div>
         </div>

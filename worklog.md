@@ -1,4 +1,53 @@
 ---
+Task ID: 12
+Agent: Content Pages Agent
+Task: Build 4 content pages — About, Kanto Fund, Terms of Service, Privacy Policy
+
+Work Log:
+- Created /src/app/about/page.tsx — Server component with: sticky navbar (Back to Hub + Tunog Kalye branding), hero section ("About Tunog Kalye Radio" with gradient text + "Our Story" badge), Our Story (3 paragraphs about kanto origins, 90s OPM bridge, Surrey BC diaspora reach), Mission & Vision (2-card grid with Zap/Eye icons), What Makes Us Different (6-card grid: Open Kanto Policy, Zero Commission, Human-Curated, Kanto Growth Loop, Community First, 24/7 Global Reach — each with gradient icon + description), Our Team section ("Built by music lovers, for music lovers" with badges), Tech Stack section (4-item grid: AzuraCast, Oracle Cloud, Cloudflare CDN, Next.js), CTA section ("Join the Kanto" with Submit/Support/Merch buttons), footer with About/Kanto Fund/Terms/Privacy links
+- Created /src/app/kanto-fund/page.tsx — Server component with: emerald/teal themed hero ("The Kanto Fund" with "Empowering Filipino indie artists, one quarter at a time"), What Is It (description of transparent 10% revenue-sharing), How It Works (4-step visual timeline with connecting gradient line: Purchase → 10% to pool → Quarterly distribution → Artists use funds), Revenue Breakdown (visual ₱100 breakdown card showing ₱90 artist instant payout with progress bar + ₱10 Kanto Fund quarterly), Transparency Promise (4-item grid of published metrics + "reports coming soon" amber notice), How Artists Use the Funds (4-card grid: Recording Sessions, Music Videos, Live Gigs, Equipment), How to Contribute (3 stacked cards: Buy Merch, Direct Donations, Kanto Champion $100+), CTA with Support + Merch buttons, footer with nav links
+- Created /src/app/terms/page.tsx — Client component ("use client" for scroll-to-top button) with: legal badge, "Terms of Service" heading, 10 sections (Introduction, Account Registration, Artist Submissions, Merch Store, User Conduct, Payment Terms, Intellectual Property, Limitation of Liability, Changes to Terms, Contact), readable typography with proper heading hierarchy, scroll-mt-24 for anchor navigation, back-to-top button, footer with nav links
+- Created /src/app/privacy/page.tsx — Client component ("use client" for scroll-to-top button) with: legal badge, "Privacy Policy" heading, 11 sections (Information We Collect, How We Use Information, Data Sharing, Data Security, Cookies, Your Rights, Artist Data, Third-Party Services, Children's Privacy, Changes to Privacy Policy, Contact — privacy@tunogkalye.net), PIPEDA compliance mention, back-to-top button, footer with nav links
+- Updated /src/app/page.tsx footer — Added Link imports for About, Kanto Fund, Terms, Privacy pages; changed footer links div to flex-wrap for responsive wrapping; kept existing tunogkalye.net/video/Surrey links and appended 4 new page links
+- Fixed build error: Terms and Privacy pages needed "use client" directive for onClick scroll-to-top button (Server Components cannot pass event handlers)
+- Dark theme consistent: bg-[#0a0a0f], bg-[#12121a], border-white/10 throughout all pages
+- Responsive design: mobile-first grids, proper heading hierarchy, scroll behavior
+- Production build passes cleanly: all 4 new routes registered (about, kanto-fund, terms, privacy)
+
+Stage Summary:
+- 4 new content pages created + 1 file modified (footer update)
+- About Page: Hero + Story + Mission/Vision + 6 differentiator cards + Team + Tech Stack + CTA
+- Kanto Fund Page: Emerald-themed hero + What/How/Revenue/Transparency/Use/Contribute + CTA
+- Terms of Service: 10 comprehensive sections with readable typography
+- Privacy Policy: 11 sections with PIPEDA compliance, privacy@tunogkalye.net contact
+- All pages share: consistent navbar (Back to Hub + branding), footer (with cross-page links), dark theme, responsive design
+- Footer updated in main page.tsx with links to all 4 new pages
+- Build compiles with zero errors
+
+---
+
+Task ID: 11
+Agent: AI Chat Assistant Agent
+Task: Build AI Chat Assistant — floating chat widget powered by z-ai-web-dev-sdk
+
+Work Log:
+- Created /src/app/api/chat/route.ts — POST endpoint: receives {messages, context}, validates message format (role must be user/assistant, content must be string), builds comprehensive system prompt with optional context overrides (artist/customer/general), uses z-ai-web-dev-sdk chat completions (temperature 0.7, max_tokens 1000), returns {message} with assistant response, graceful error handling
+- Created /src/components/chat-widget.tsx — Client component ("use client"): floating chat bubble (fixed bottom-right, bottom-24 to clear player bar, z-[90], red/orange gradient circle with MessageCircle icon, pulsing notification badge on first visit), chat panel (380px wide / 520px tall / full-width on mobile, origin-bottom-right scale animation, dark theme bg-[#12121a]), header (Tunog Kalye Radio icon + "KALYE Bot" + green Online dot + close button), context tabs (General/For Artists/For Fans with red border accent), messages area (scrollable, AI messages dark bg bubble left-aligned with bot avatar, user messages red-orange gradient right-aligned with user avatar), welcome message "Kamusta! 🎵 I'm KALYE Bot...", typing indicator (3 bouncing dots), suggested questions (4 per context, shown before first message), input area (text input + gradient send button, Enter to send, disabled while loading), keyboard support (Escape to close, Enter to send), smooth animations (CSS scale/fade transitions, animate-in for messages, smooth scroll to bottom)
+- Created /src/components/auth-provider.tsx — Client wrapper component with SessionProvider from next-auth/react
+- Updated /src/app/layout.tsx — Imported AuthProvider and ChatWidget, wrapped children in AuthProvider, rendered ChatWidget alongside children (available on every page)
+- Comprehensive system prompt covers: Tunog Kalye Radio info (24/7, AzuraCast, Surrey BC), key policies (Open Kanto, copyright, non-exclusive, 10% hub commission), artist guidance (submission flow, merch setup, Stripe Connect, earnings), customer guidance (browsing, checkout, reviews, donations), sponsor tiers, Kanto Fund details, behavior guidelines (friendly, Taglish warmth, step-by-step, honest, concise)
+- Zero lint errors from created/modified files (chat-widget.tsx, auth-provider.tsx, api/chat/route.ts, layout.tsx)
+- Production build passes cleanly: /api/chat route registered
+
+Stage Summary:
+- AI Chat Assistant: 1 component + 1 API route + 1 provider wrapper + 1 layout update
+- Chat Widget: Floating bubble + expandable panel with context tabs, message history, typing indicator, suggested questions, responsive design
+- API Route: POST /api/chat (z-ai-web-dev-sdk chat completions with comprehensive system prompt + context-aware overrides)
+- SessionProvider added to root layout for next-auth integration across all pages
+- Build compiles with zero errors
+
+---
+
 Task ID: 9
 Agent: Checkout Flow + Hub Navigation Agent
 Task: Build Checkout Flow and Update Hub Home Navigation
