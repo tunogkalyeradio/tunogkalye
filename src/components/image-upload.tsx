@@ -12,7 +12,7 @@ interface ImageUploadProps {
   className?: string;
 }
 
-export function ImageUpload({
+export default function ImageUpload({
   value,
   onChange,
   label = "Upload Image",
