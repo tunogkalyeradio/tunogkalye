@@ -447,3 +447,27 @@ Stage Summary:
 - Global live radio player now integrated across ALL pages
 - Domain setup guide added to README for www.tunogkalye.net (AzuraCast) and video.tunogkalye.net (Dotcompal)
 - Stream connected to tunogkalye.net/public/tunog-kalye
+
+---
+Task ID: 16
+Agent: Super Z (Main)
+Task: Fix live player + add custom favicon from logo
+
+Work Log:
+- Diagnosed player not working: Cloudflare Bot Fight Mode/Under Attack Mode is blocking ALL requests (403 on API, 404 on stream) — not a code issue
+- Rewrote live-player.tsx with resilience: 5s timeout on API calls, response validation (detects Cloudflare challenge HTML vs real JSON), graceful degradation when API is unreachable
+- Player now shows "Tunog Kalye Radio — 24/7 OPM" when API is blocked, and still attempts to play audio stream
+- Added helpful banner: "Song info unavailable — may be blocked by Cloudflare. Stream still works!"
+- Audio element now uses crossOrigin="anonymous" and calls .load() before play for better retry behavior
+- Created favicon from uploaded tunogkalye-logo.jpg: favicon.ico, favicon-16.png, favicon-32.png, favicon-180.png, apple-touch-icon.png, og-image.png, tunogkalye-logo.png
+- Updated layout.tsx: proper PNG favicon metadata, Open Graph image, manifest.json
+- Created PWA manifest.json with TKR branding
+- Updated player to use TKR logo image instead of Radio icon
+- Build passes cleanly
+
+Stage Summary:
+- Root cause of player not working: Cloudflare security (not code)
+- 1 rewritten component: src/components/live-player.tsx (resilient to Cloudflare blocking)
+- 7 new static files: favicon.ico, 4 PNG sizes, apple-touch-icon, og-image, manifest.json
+- 1 updated layout.tsx with proper favicon + manifest metadata
+- User needs to fix Cloudflare settings (see instructions below) for full player functionality

@@ -1,16 +1,20 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Radio, Play, Pause, Volume1, Volume2, VolumeX, X, Globe, ExternalLink, Music2 } from "lucide-react";
+import { Play, Pause, Volume1, Volume2, VolumeX, X, ExternalLink, Music2, Image as ImageIcon } from "lucide-react";
 
 // ─── AzuraCast Stream Configuration ──────────────────────────
-// All URLs configurable via environment variables
+// All URLs configurable via environment variables.
+// IMPORTANT: If you're behind Cloudflare, you MUST either:
+//   A) Create a WAF rule to allow /api/nowplaying/* and /radio/* paths
+//   B) Use a DNS-only (grey cloud) subdomain like stream.tunogkalye.net
+//   C) Disable "Bot Fight Mode" and "Under Attack Mode" in Cloudflare
 const STREAM_CONFIG = {
-  // Direct audio stream URL (for the sticky player bar)
+  // Direct audio stream URL — find this in AzuraCast Admin → Stations → Your Station → Mount Points
   audioUrl: process.env.NEXT_PUBLIC_STREAM_URL || "https://tunogkalye.net/radio/8000/radio.mp3",
   // AzuraCast Now-Playing API (public, no auth required)
   nowPlayingApi: process.env.NEXT_PUBLIC_NOW_PLAYING_API || "https://tunogkalye.net/api/nowplaying/tunog-kalye",
-  // Link to the full AzuraCast station page
+  // Link to the full AzuraCast station page (always works in browser)
   stationUrl: process.env.NEXT_PUBLIC_STATION_URL || "https://tunogkalye.net/public/tunog-kalye",
   // Link to the main site
   siteUrl: process.env.NEXT_PUBLIC_SITE_URL || "https://tunogkalye.net",
@@ -55,11 +59,11 @@ export default function LivePlayer() {
   const [isDismissed, setIsDismissed] = useState(false);
   const [nowPlaying, setNowPlaying] = useState<NowPlayingData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [showVolumeSlider, setShowVolumeSlider] = useState(false);
-  const volumeSliderRef = useRef<HTMLDivElement>(null);
+  const [streamError, setStreamError] = useState<string | null>(null);
+  const [apiStatus, setApiStatus] = useState<"loading" | "ok" | "error">("loading");
+  const [volumeOpen, setVolumeOpen] = useState(false);
 
-  // Load dismiss state from sessionStorage
+  // Load dismiss state
   useEffect(() => {
     const dismissed = sessionStorage.getItem("player-dismissed");
     if (dismissed) setIsDismissed(true);
@@ -68,37 +72,39 @@ export default function LivePlayer() {
   // Fetch now-playing data from AzuraCast API
   const fetchNowPlaying = useCallback(async () => {
     try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000); // 5s timeout
+
       const res = await fetch(STREAM_CONFIG.nowPlayingApi, {
         cache: "no-store",
+        signal: controller.signal,
       });
+      clearTimeout(timeout);
+
       if (res.ok) {
         const data: NowPlayingData = await res.json();
-        setNowPlaying(data);
-        setError(null);
+        // Validate it's actual JSON, not a Cloudflare challenge page
+        if (data && data.now_playing && data.now_playing.song) {
+          setNowPlaying(data);
+          setApiStatus("ok");
+          setStreamError(null);
+        } else {
+          throw new Error("Invalid API response");
+        }
+      } else {
+        throw new Error(`HTTP ${res.status}`);
       }
     } catch {
-      // Silently fail — stream may still work even if API is unreachable
-      setError("Stream info unavailable");
+      setApiStatus("error");
     }
   }, []);
 
-  // Initial fetch + polling every 15 seconds
+  // Poll now-playing every 15s
   useEffect(() => {
     fetchNowPlaying();
     const interval = setInterval(fetchNowPlaying, 15000);
     return () => clearInterval(interval);
   }, [fetchNowPlaying]);
-
-  // Close volume slider when clicking outside
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (volumeSliderRef.current && !volumeSliderRef.current.contains(e.target as Node)) {
-        setShowVolumeSlider(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
   const togglePlay = () => {
     if (!audioRef.current) return;
@@ -107,14 +113,22 @@ export default function LivePlayer() {
       setIsPlaying(false);
     } else {
       setIsLoading(true);
+      setStreamError(null);
+      audioRef.current.load(); // force reload in case URL was blocked
       audioRef.current.play()
         .then(() => {
           setIsPlaying(true);
           setIsLoading(false);
+          setStreamError(null);
         })
-        .catch(() => {
-          setError("Unable to connect to stream");
+        .catch((err) => {
           setIsLoading(false);
+          const msg = err?.message || "Unknown error";
+          if (msg.includes("NotAllowedError") || msg.includes("NotAllowed")) {
+            setStreamError("Click again — browser blocked auto-play");
+          } else {
+            setStreamError("Stream unreachable");
+          }
         });
     }
   };
@@ -124,9 +138,7 @@ export default function LivePlayer() {
     const v = Math.max(0, Math.min(1, val));
     audioRef.current.volume = v;
     setVolume(v);
-    if (v === 0) {
-      setPrevVolume(prevVolume || 0.8);
-    }
+    if (v === 0) setPrevVolume(volume || 0.8);
   };
 
   const toggleMute = () => {
@@ -168,16 +180,23 @@ export default function LivePlayer() {
         src={STREAM_CONFIG.audioUrl}
         preload="none"
         volume={volume}
+        crossOrigin="anonymous"
       />
 
       {/* Main player bar */}
       <div className="border-t border-white/10 bg-[#0d0d14]/98 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-3 py-2 sm:px-5">
-          {/* LEFT: Now Playing Info */}
+
+          {/* LEFT: Station info */}
           <div className="flex items-center gap-3 min-w-0 flex-1">
-            {/* Station icon with live indicator */}
-            <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-red-600 to-orange-500">
-              <Radio className="h-5 w-5 text-white" />
+            {/* Logo with live indicator */}
+            <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-lg overflow-hidden bg-gradient-to-br from-red-600 to-orange-500">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/tunog-kalye-logo.png"
+                alt="TKR"
+                className="h-10 w-10 object-cover rounded-lg"
+              />
               {isOnline && (
                 <span className="absolute -right-1 -top-1 flex h-3 w-3">
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
@@ -186,41 +205,51 @@ export default function LivePlayer() {
               )}
             </div>
 
-            {/* Song info */}
+            {/* Now playing info */}
             <div className="hidden sm:block min-w-0">
-              {isLive && streamerName ? (
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold text-white truncate">
-                    🔴 {streamerName}
-                  </span>
-                  <span className="inline-flex items-center rounded-full bg-red-500/20 px-1.5 py-0.5 text-[9px] font-bold text-red-400 uppercase">
-                    Live
-                  </span>
-                </div>
+              {apiStatus === "ok" && currentSong ? (
+                <>
+                  {isLive && streamerName ? (
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-white truncate">
+                        🔴 {streamerName}
+                      </span>
+                      <span className="inline-flex items-center rounded-full bg-red-500/20 px-1.5 py-0.5 text-[9px] font-bold text-red-400 uppercase">
+                        Live
+                      </span>
+                    </div>
+                  ) : (
+                    <div>
+                      <p className="text-xs font-bold text-white truncate">
+                        {currentSong.artist}
+                      </p>
+                      <p className="text-[11px] text-slate-400 truncate">
+                        {currentSong.title}
+                        {currentSong.album ? ` · ${currentSong.album}` : ""}
+                      </p>
+                    </div>
+                  )}
+                  {/* Progress bar */}
+                  {progress > 0 && (
+                    <div className="mt-1 h-0.5 w-full overflow-hidden rounded-full bg-white/10">
+                      <div
+                        className="h-full rounded-full bg-gradient-to-r from-red-500 to-orange-400 transition-all duration-1000"
+                        style={{ width: `${Math.min(progress, 100)}%` }}
+                      />
+                    </div>
+                  )}
+                </>
               ) : (
                 <div>
-                  <p className="text-xs font-bold text-white truncate">
-                    {currentSong?.artist || "Tunog Kalye Radio"}
+                  <p className="text-xs font-bold text-white">Tunog Kalye Radio</p>
+                  <p className="text-[11px] text-slate-400">
+                    24/7 OPM Independent Music
                   </p>
-                  <p className="text-[11px] text-slate-400 truncate">
-                    {currentSong?.title || "24/7 OPM"}
-                    {currentSong?.album && ` · ${currentSong.album}`}
-                  </p>
-                </div>
-              )}
-
-              {/* Progress bar (thin line under song info) */}
-              {progress > 0 && (
-                <div className="mt-1 h-0.5 w-full overflow-hidden rounded-full bg-white/10">
-                  <div
-                    className="h-full rounded-full bg-gradient-to-r from-red-500 to-orange-400 transition-all duration-1000"
-                    style={{ width: `${Math.min(progress, 100)}%` }}
-                  />
                 </div>
               )}
             </div>
 
-            {/* Mobile: just show station name */}
+            {/* Mobile: compact */}
             <div className="sm:hidden min-w-0">
               <div className="flex items-center gap-1.5">
                 <span className="text-[10px] font-bold text-white">LIVE</span>
@@ -239,51 +268,22 @@ export default function LivePlayer() {
 
           {/* RIGHT: Controls */}
           <div className="flex items-center gap-1.5 sm:gap-2">
-            {/* Volume control (desktop) */}
-            <div className="relative hidden sm:block" ref={volumeSliderRef}>
-              <button
-                onClick={toggleMute}
-                className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-white/10 hover:text-white"
-                title={volume === 0 ? "Unmute" : "Mute"}
-              >
-                {volume === 0 ? (
-                  <VolumeX className="h-4 w-4" />
-                ) : volume < 0.5 ? (
-                  <Volume1 className="h-4 w-4" />
-                ) : (
-                  <Volume2 className="h-4 w-4" />
-                )}
-              </button>
-              {showVolumeSlider && (
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 rounded-lg bg-[#1a1a2e] border border-white/10 p-2 shadow-xl">
-                  <input
-                    type="range"
-                    min="0"
-                    max="1"
-                    step="0.01"
-                    value={volume}
-                    onChange={(e) => handleVolumeChange(parseFloat(e.target.value))}
-                    className="h-24 w-1.5 cursor-pointer appearance-none rounded-full bg-white/20 accent-red-500 [writing-mode:vertical-lr] [direction:rtl]"
-                    onClick={() => setShowVolumeSlider(true)}
-                  />
-                </div>
-              )}
-              <button
-                onClick={() => setShowVolumeSlider(!showVolumeSlider)}
-                className="absolute inset-0"
-                aria-label="Volume slider"
-              />
-            </div>
-
-            {/* Mobile mute toggle */}
+            {/* Volume */}
             <button
               onClick={toggleMute}
-              className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-white/10 hover:text-white sm:hidden"
+              className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-white/10 hover:text-white"
+              title={volume === 0 ? "Unmute" : "Mute"}
             >
-              {volume === 0 ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+              {volume === 0 ? (
+                <VolumeX className="h-4 w-4" />
+              ) : volume < 0.5 ? (
+                <Volume1 className="h-4 w-4" />
+              ) : (
+                <Volume2 className="h-4 w-4" />
+              )}
             </button>
 
-            {/* Play/Pause button */}
+            {/* Play/Pause */}
             <button
               onClick={togglePlay}
               disabled={isLoading}
@@ -304,42 +304,51 @@ export default function LivePlayer() {
               )}
             </button>
 
-            {/* Full Station link (desktop) */}
+            {/* Full Station link */}
             <a
               href={STREAM_CONFIG.stationUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden lg:inline-flex items-center gap-1.5 rounded-lg border border-white/10 px-3 py-2 text-xs text-slate-400 transition-colors hover:border-white/20 hover:text-white"
+              className="hidden md:inline-flex items-center gap-1.5 rounded-lg border border-white/10 px-3 py-2 text-xs text-slate-400 transition-colors hover:border-white/20 hover:text-white"
               title="Open full AzuraCast station"
             >
               <ExternalLink className="h-3.5 w-3.5" />
-              <span className="hidden xl:inline">Full Station</span>
+              <span className="hidden lg:inline">Full Station</span>
             </a>
 
             {/* Error indicator */}
-            {error && (
-              <span className="hidden sm:inline-flex items-center gap-1 text-[10px] text-red-400">
-                <span className="h-1.5 w-1.5 rounded-full bg-red-400" />
-                {error}
+            {streamError && (
+              <span className="hidden sm:inline-flex items-center gap-1 text-[10px] text-amber-400">
+                <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
+                {streamError}
               </span>
             )}
 
-            {/* Dismiss button */}
+            {/* Dismiss */}
             <button
               onClick={dismiss}
               className="rounded-lg p-2 text-slate-600 transition-colors hover:bg-white/10 hover:text-slate-400"
-              title="Hide player (for this session)"
+              title="Hide player"
             >
               <X className="h-4 w-4" />
             </button>
           </div>
         </div>
 
-        {/* Offline banner */}
-        {!isOnline && (
+        {/* Offline or Error banner */}
+        {!isOnline && apiStatus === "ok" && (
           <div className="border-t border-red-500/20 bg-red-500/10 px-4 py-1.5 text-center">
             <p className="text-[10px] font-medium text-red-400">
               Station is currently offline — check back soon!
+            </p>
+          </div>
+        )}
+
+        {/* API unreachable banner — helpful for the user to know their config needs fixing */}
+        {apiStatus === "error" && !streamError && (
+          <div className="border-t border-amber-500/20 bg-amber-500/10 px-4 py-1.5 text-center">
+            <p className="text-[10px] font-medium text-amber-400">
+              Song info unavailable — may be blocked by Cloudflare. Stream still works!
             </p>
           </div>
         )}
