@@ -372,3 +372,28 @@ Stage Summary:
 - Revenue model updated: 100% to artist, 0% commission for TKR
 - Zero new external dependencies needed
 - Dev server compiles and runs cleanly
+
+---
+Task ID: 2-7
+Agent: Super Z (Main) + 2 full-stack-developer subagents
+Task: Multi-vendor marketplace ecosystem overhaul
+
+Work Log:
+- Updated Prisma schema: 4 new enums, 5 new models, 15+ new fields across existing models
+- Added storeStatus (PENDING/APPROVED/REJECTED/SUSPENDED) to ArtistProfile for store approval workflow
+- Added productType (PHYSICAL/DIGITAL), isStation, isFlagged, downloadUrl, fileSize, fileFormat to Product
+- Made Order and Cart support guest checkout (optional userId, sessionId, guestEmail/guestName)
+- Removed platformCut/artistCut from OrderItem (Stripe Connect handles money splitting)
+- Created KantoFundEntry, DigitalPurchase, Tip, Badge, UserBadge models
+- Agent 1: Created 6 new admin pages + 9 API endpoints + updated sidebar + 6 FAQ items
+- Agent 2: Enhanced artist dashboard (5 changes), customer dashboard (4 changes), storefront (4 changes), guest checkout (3 APIs)
+- Fixed broken artistCut/platformCut references across 3 files after schema change
+- Build passes cleanly, deployed to hub.tunogkalye.net
+
+Stage Summary:
+- 38 files changed, ~6000+ lines of new code
+- 11 new page routes, 15+ new API endpoints
+- Full multi-vendor marketplace architecture with Stripe Connect-ready foundation
+- Zero-commission model implemented at data layer
+- Guest checkout, digital products, tips, badges, store approvals, content moderation all functional
+- Deployed to production: https://hub.tunogkalye.net
