@@ -252,7 +252,7 @@ function HomePage({ onSelect }: { onSelect: (f: PathwayId) => void }) {
                 <span className="bg-gradient-to-r from-red-500 to-orange-400 bg-clip-text text-transparent">RADIO</span>
               </h1>
               <p className="mb-2 max-w-2xl text-lg text-slate-300 sm:text-xl">
-                The Premier Grassroots Broadcasting Network for Filipino Independent Music
+                The Premier Grassroots Network for Filipino Independent Music
               </p>
               <p className="max-w-xl text-sm text-slate-500">
                 Bridging the golden era of 90s Pinoy Rock with the modern indie movement. Curated by humans, not algorithms.
