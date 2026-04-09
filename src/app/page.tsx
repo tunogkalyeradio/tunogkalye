@@ -255,7 +255,7 @@ function HomePage({ onSelect }: { onSelect: (f: PathwayId) => void }) {
                 The Premier Grassroots Network for Filipino Independent Music
               </p>
               <p className="max-w-xl text-sm text-slate-500">
-                Bridging the golden era of 90s Pinoy Rock with the modern indie movement. Curated by humans, not algorithms.
+                Bridging 90s Pinoy Rock with modern indie. Curated by humans, not algorithms.
               </p>
             </div>
           </div>
