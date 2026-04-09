@@ -263,7 +263,7 @@ export default function KantoFundPage() {
                 {
                   icon: Heart,
                   title: "Direct Donations",
-                  desc: "Use the \"Support the Kanto\" funnel on our hub to make a direct donation. Every peso donated goes into the Kanto Fund pool.",
+                  desc: "Use the \"Support the Kanto\" pathway on our hub to make a direct donation. Every peso donated goes into the Kanto Fund pool.",
                 },
                 {
                   icon: CheckCircle2,

@@ -16,7 +16,7 @@ KEY POLICIES:
 - 10% platform commission on merch sold THROUGH hub.tunogkalye.net (90% goes to artist)
 
 FOR ARTISTS:
-- Submit music via the "Submit Your Music" funnel — reviewed within 1 week by real DJs
+- Submit music via the "Submit Your Music" pathway — reviewed within 1 week by real DJs
 - Once approved, we email them when their song airs: "Your song is on air RIGHT NOW! Share this link!"
 - This creates the "Kanto Growth Loop" — play song → email artist → artist shares → fans discover → loop
 - Artists can create a profile, list merch, manage orders, and track earnings
@@ -35,7 +35,7 @@ FOR CUSTOMERS/FANS:
 FOR SPONSORS:
 - 3 tiers: Shoutout ($50/mo), Banner ($100/mo), Premium ($200/mo)
 - On-air shoutouts, website banners, sponsored hours
-- Contact via the "Sponsor My Station" funnel
+- Contact via the "Sponsor My Station" pathway
 
 THE KANTO FUND:
 - Revenue-sharing model: 10% of hub merch sales pooled quarterly

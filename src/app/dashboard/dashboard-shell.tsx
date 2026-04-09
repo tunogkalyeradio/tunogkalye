@@ -15,11 +15,13 @@ import {
   X,
   LogOut,
   ChevronRight,
+  Bell,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
+import NotificationBell from "@/components/notification-bell";
 
 interface DashboardShellProps {
   children: React.ReactNode;
@@ -35,6 +37,7 @@ const navItems = [
   { label: "Overview", href: "/dashboard", icon: LayoutDashboard },
   { label: "My Orders", href: "/dashboard/orders", icon: Package },
   { label: "My Cart", href: "/dashboard/cart", icon: ShoppingCart },
+  { label: "Notifications", href: "/dashboard/notifications", icon: Bell },
   { label: "My Reviews", href: "/dashboard/reviews", icon: Star },
   { label: "Settings", href: "/dashboard/settings", icon: Settings },
 ];
@@ -177,6 +180,7 @@ export default function DashboardShell({ children, user }: DashboardShellProps) 
           </div>
 
           <div className="flex items-center gap-2">
+            <NotificationBell />
             <Link href="/">
               <Button
                 variant="outline"

@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/db";
+import { db } from "@/lib/db";
 import { sendEmail, welcomeEmail, artistVerifiedEmail, orderConfirmationEmail, orderShippedEmail, newOrderForArtistEmail, donationThankYouEmail, submissionReceivedEmail } from "@/lib/email";
 
 // Generic notification: DB + Email
@@ -17,7 +17,7 @@ export async function notifyUser(
 ) {
   try {
     // 1. Save notification to database
-    await prisma.notification.create({
+    await db.notification.create({
       data: {
         userId,
         title: opts.title,
@@ -33,7 +33,7 @@ export async function notifyUser(
   // 2. Send email
   if (opts.sendEmail && opts.emailTemplate) {
     try {
-      const user = await prisma.user.findUnique({ where: { id: userId } });
+      const user = await db.user.findUnique({ where: { id: userId } });
       if (!user?.email) return;
 
       let email: { subject: string; html: string } | null = null;
@@ -95,7 +95,7 @@ export async function notifyUser(
 
 // Convenience functions
 export async function notifyWelcome(userId: number, role: string) {
-  const user = await prisma.user.findUnique({ where: { id: userId } });
+  const user = await db.user.findUnique({ where: { id: userId } });
   return notifyUser(userId, {
     title: "Welcome to Tunog Kalye Radio!",
     message: "Your account has been created. Welcome to the Kanto!",

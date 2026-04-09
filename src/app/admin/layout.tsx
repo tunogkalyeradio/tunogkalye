@@ -17,12 +17,15 @@ import {
   X,
   ShieldCheck,
   ChevronRight,
+  Inbox,
+  Bell,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
+import NotificationBell from "@/components/notification-bell";
 
 const sidebarItems = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
@@ -30,6 +33,8 @@ const sidebarItems = [
   { href: "/admin/products", label: "Products", icon: Package },
   { href: "/admin/orders", label: "Orders", icon: ShoppingCart },
   { href: "/admin/revenue", label: "Revenue", icon: DollarSign },
+  { href: "/admin/submissions", label: "Submissions", icon: Inbox },
+  { href: "/admin/notifications", label: "Notifications", icon: Bell },
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ];
 
@@ -210,6 +215,7 @@ export default function AdminLayout({
           </div>
 
           <div className="flex items-center gap-3">
+            <NotificationBell />
             <Link href="/">
               <Button
                 variant="ghost"

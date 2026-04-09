@@ -12,7 +12,7 @@ export default function TermsPage() {
       content: [
         "Welcome to Tunog Kalye Radio, accessible at hub.tunogkalye.net (the \"Hub\"). These Terms of Service (\"Terms\") govern your use of the Hub, including all features, services, and content provided therein.",
         "Tunog Kalye Radio is a grassroots broadcasting network and community platform dedicated to Filipino independent music. By accessing or using the Hub, you agree to be bound by these Terms. If you do not agree with any part of these Terms, you must not use the Hub.",
-        "The Hub includes, but is not limited to: the merch store, music submission portal, artist dashboards, customer dashboards, donation funnels, sponsorship inquiry forms, and all associated content and functionality.",
+        "The Hub includes, but is not limited to: the merch store, music submission portal, artist dashboards, customer dashboards, donation pathways, sponsorship inquiry forms, and all associated content and functionality.",
       ],
     },
     {
@@ -71,7 +71,7 @@ export default function TermsPage() {
         "By making a purchase on the Hub, you agree to Stripe's Terms of Service and Privacy Policy, which are available at stripe.com.",
         "Prices are displayed in Philippine Pesos (₱) and are inclusive of applicable taxes unless otherwise stated. Shipping fees, where applicable, are calculated at checkout and are the responsibility of the buyer.",
         "Artist payouts are processed via Stripe Connect. Payout timing depends on Stripe's standard processing schedule and the artist's account configuration. Tunog Kalye is not liable for delays caused by Stripe's processing.",
-        "Donations made through the \"Support the Kanto\" funnel are non-refundable. Merchandise purchases follow the individual artist's return and refund policy.",
+        "Donations made through the \"Support the Kanto\" pathway are non-refundable. Merchandise purchases follow the individual artist's return and refund policy.",
       ],
     },
     {

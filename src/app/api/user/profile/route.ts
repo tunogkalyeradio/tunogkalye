@@ -30,10 +30,10 @@ export async function PATCH(request: NextRequest) {
   try {
     const user = await requireAuth();
     const body = await request.json();
-    const { name, phone, address } = body;
+    const { name, phone, address, avatar } = body;
 
     // Build update data
-    const updateData: { name?: string; phone?: string | null; address?: string | null } = {};
+    const updateData: { name?: string; phone?: string | null; address?: string | null; avatar?: string | null } = {};
 
     if (name !== undefined && typeof name === "string" && name.trim()) {
       updateData.name = name.trim();
@@ -46,6 +46,11 @@ export async function PATCH(request: NextRequest) {
     if (address !== undefined) {
       updateData.address =
         typeof address === "string" && address.trim() ? address.trim() : null;
+    }
+
+    if (avatar !== undefined) {
+      updateData.avatar =
+        typeof avatar === "string" && avatar.trim() ? avatar.trim() : null;
     }
 
     const updatedUser = await db.user.update({

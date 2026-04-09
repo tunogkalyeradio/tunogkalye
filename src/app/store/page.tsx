@@ -3,28 +3,9 @@ import { getSession } from "@/lib/auth-utils";
 import StorePageClient from "./store-page-client";
 import Link from "next/link";
 import { ShoppingBag, Store } from "lucide-react";
+import { CATEGORIES, CATEGORY_GRADIENTS, type StoreProduct, type FeaturedArtist } from "./store-utils";
 
-// Category gradient colors for placeholder images
-export const CATEGORY_GRADIENTS: Record<string, string> = {
-  "T-Shirt": "from-red-600 to-orange-500",
-  Hoodie: "from-purple-600 to-pink-500",
-  Longsleeve: "from-blue-600 to-cyan-500",
-  Cap: "from-amber-500 to-yellow-400",
-  Sticker: "from-green-500 to-emerald-400",
-  Poster: "from-rose-500 to-pink-400",
-  Digital: "from-violet-600 to-purple-400",
-};
-
-export const CATEGORIES = [
-  "All",
-  "T-Shirt",
-  "Hoodie",
-  "Longsleeve",
-  "Cap",
-  "Sticker",
-  "Poster",
-  "Digital",
-];
+export { CATEGORIES, CATEGORY_GRADIENTS, type StoreProduct, type FeaturedArtist };
 
 export async function getProducts() {
   return db.product.findMany({
@@ -152,30 +133,4 @@ export default async function StorePage() {
   );
 }
 
-export type StoreProduct = Awaited<ReturnType<typeof getProducts>>[number] & {
-  price: number;
-  compareAtPrice: number | null;
-  shippingFee: number;
-  images: string[];
-  sizes: string[] | null;
-  colors: string[] | null;
-  createdAt: string;
-  updatedAt: string;
-  artist: {
-    id: number;
-    bandName: string;
-    genre: string | null;
-    city: string;
-    isVerified: boolean;
-    imageUrl: string | null;
-  } | null;
-};
 
-export type FeaturedArtist = {
-  id: number;
-  bandName: string;
-  genre: string | null;
-  city: string;
-  isVerified: boolean;
-  imageUrl: string | null;
-};

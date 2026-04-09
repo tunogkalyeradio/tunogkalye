@@ -43,7 +43,7 @@ enum NotificationType {
   SYSTEM
 }
 
-// ─── Existing Models (Funnel) ────────────────────────────────────────────────
+// ─── Existing Models (Pathway) ────────────────────────────────────────────────
 
 model MusicSubmission {
   id            String   @id @default(cuid())

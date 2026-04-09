@@ -18,18 +18,21 @@ import {
   BadgeCheck,
   ChevronRight,
   Music,
+  Bell,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
+import NotificationBell from "@/components/notification-bell";
 
 const sidebarItems = [
   { href: "/artist", label: "Overview", icon: LayoutDashboard },
   { href: "/artist/products", label: "My Merch", icon: Package },
   { href: "/artist/orders", label: "Orders", icon: ShoppingCart },
   { href: "/artist/earnings", label: "Earnings", icon: DollarSign },
+  { href: "/artist/notifications", label: "Notifications", icon: Bell },
   { href: "/artist/profile", label: "Profile", icon: User },
   { href: "/artist/stripe", label: "Stripe Setup", icon: CreditCard },
 ];
@@ -228,6 +231,7 @@ export default function ArtistShell({
           </div>
 
           <div className="flex items-center gap-3">
+            <NotificationBell />
             <Link href="/">
               <Button
                 variant="ghost"

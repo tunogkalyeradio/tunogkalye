@@ -24,7 +24,7 @@ import {
 import Link from "next/link";
 
 // ─── Types ───────────────────────────────────────────────
-type FunnelId = "home" | "submit" | "sponsor" | "donate";
+type PathwayId = "home" | "submit" | "sponsor" | "donate";
 
 interface FormData {
   bandName: string; realName: string; email: string;
@@ -225,18 +225,18 @@ function AuthNavLinks() {
 // ═══════════════════════════════════════════════════════════
 // MAIN APP
 // ═══════════════════════════════════════════════════════════
-export default function TunogKalyeFunnels() {
-  const [activeFunnel, setActiveFunnel] = useState<FunnelId>("home");
-  const [funnelStep, setFunnelStep] = useState(1);
+export default function TunogKalyePathways() {
+  const [activePathway, setActivePathway] = useState<PathwayId>("home");
+  const [pathwayStep, setPathwayStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitResult, setSubmitResult] = useState<{ success: boolean; message: string } | null>(null);
 
-  const navigateTo = useCallback((f: FunnelId) => {
-    setActiveFunnel(f); setFunnelStep(1); setSubmitResult(null);
+  const navigateTo = useCallback((f: PathwayId) => {
+    setActivePathway(f); setPathwayStep(1); setSubmitResult(null);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
   const goHome = useCallback(() => {
-    setActiveFunnel("home"); setFunnelStep(1); setSubmitResult(null);
+    setActivePathway("home"); setPathwayStep(1); setSubmitResult(null);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
@@ -254,11 +254,11 @@ export default function TunogKalyeFunnels() {
             </span>
           </button>
 
-          {activeFunnel !== "home" ? (
+          {activePathway !== "home" ? (
             <div className="flex items-center gap-2 text-sm">
-              <button onClick={goHome} className="text-slate-400 transition-colors hover:text-white">Funnels</button>
+              <button onClick={goHome} className="text-slate-400 transition-colors hover:text-white">Pathways</button>
               <ChevronRight className="h-4 w-4 text-slate-600" />
-              <span className="font-medium text-white">{FM[activeFunnel]?.label}</span>
+              <span className="font-medium text-white">{FM[activePathway]?.label}</span>
             </div>
           ) : (
             <div className="flex items-center gap-1">
@@ -273,10 +273,10 @@ export default function TunogKalyeFunnels() {
 
       {/* MAIN */}
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:px-6">
-        {activeFunnel === "home" && <HomePage onSelect={navigateTo} />}
-        {activeFunnel === "submit" && <SubmitFunnel step={funnelStep} setStep={setFunnelStep} goHome={goHome} isSubmitting={isSubmitting} setIsSubmitting={setIsSubmitting} submitResult={submitResult} setSubmitResult={setSubmitResult} />}
-        {activeFunnel === "sponsor" && <SponsorFunnel step={funnelStep} setStep={setFunnelStep} goHome={goHome} isSubmitting={isSubmitting} setIsSubmitting={setIsSubmitting} submitResult={submitResult} setSubmitResult={setSubmitResult} />}
-        {activeFunnel === "donate" && <DonateFunnel step={funnelStep} setStep={setFunnelStep} goHome={goHome} navigateTo={navigateTo} isSubmitting={isSubmitting} setIsSubmitting={setIsSubmitting} submitResult={submitResult} setSubmitResult={setSubmitResult} />}
+        {activePathway === "home" && <HomePage onSelect={navigateTo} />}
+        {activePathway === "submit" && <SubmitPathway step={pathwayStep} setStep={setPathwayStep} goHome={goHome} isSubmitting={isSubmitting} setIsSubmitting={setIsSubmitting} submitResult={submitResult} setSubmitResult={setSubmitResult} />}
+        {activePathway === "sponsor" && <SponsorPathway step={pathwayStep} setStep={setPathwayStep} goHome={goHome} isSubmitting={isSubmitting} setIsSubmitting={setIsSubmitting} submitResult={submitResult} setSubmitResult={setSubmitResult} />}
+        {activePathway === "donate" && <DonatePathway step={pathwayStep} setStep={setPathwayStep} goHome={goHome} navigateTo={navigateTo} isSubmitting={isSubmitting} setIsSubmitting={setIsSubmitting} submitResult={submitResult} setSubmitResult={setSubmitResult} />}
       </main>
 
       {/* FOOTER */}
@@ -313,7 +313,7 @@ export default function TunogKalyeFunnels() {
 // ═══════════════════════════════════════════════════════════
 // HOME PAGE
 // ═══════════════════════════════════════════════════════════
-function HomePage({ onSelect }: { onSelect: (f: FunnelId) => void }) {
+function HomePage({ onSelect }: { onSelect: (f: PathwayId) => void }) {
   return (
     <div className="flex flex-col gap-16">
       {/* HERO */}
@@ -345,7 +345,7 @@ function HomePage({ onSelect }: { onSelect: (f: FunnelId) => void }) {
         </div>
       </section>
 
-      {/* FUNNEL CARDS */}
+      {/* PATHWAY CARDS */}
       <section>
         <div className="mb-8 text-center">
           <h2 className="mb-2 text-2xl font-bold tracking-tight sm:text-3xl">Choose Your Path</h2>
@@ -353,12 +353,12 @@ function HomePage({ onSelect }: { onSelect: (f: FunnelId) => void }) {
         </div>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           {[
-            { id: "submit" as FunnelId, icon: Mic2, gradient: "from-red-600 to-orange-500", shadow: "shadow-red-500/20", border: "hover:border-red-500/40", title: "Submit Your Music", desc: "Get your music played on 24/7 global radio. We're always looking for fresh Filipino talent.", checks: ["100% copyright retained", "Non-exclusive broadcasting rights", "Reviewed within one week"], btn: FM.submit.btn },
-            { id: "sponsor" as FunnelId, icon: DollarSign, gradient: "from-amber-500 to-yellow-400", shadow: "shadow-amber-500/20", border: "hover:border-amber-500/40", title: "Sponsor My Station", desc: "Reach the Filipino diaspora and 90s OPM lovers with targeted advertising.", checks: ["On-air shoutouts", "Website banner placement", "Plans from $50/month"], btn: FM.sponsor.btn },
-            { id: "donate" as FunnelId, icon: Heart, gradient: "from-rose-500 to-pink-400", shadow: "shadow-rose-500/20", border: "hover:border-rose-500/40", title: "Support the Kanto", desc: "Keep independent OPM alive. Every contribution goes directly to the artists and the station.", checks: ["Zero commission to artists", "Funds the Kanto Fund", "Starting from $5"], btn: FM.donate.btn },
+            { id: "submit" as PathwayId, icon: Mic2, gradient: "from-red-600 to-orange-500", shadow: "shadow-red-500/20", border: "hover:border-red-500/40", title: "Submit Your Music", desc: "Get your music played on 24/7 global radio. We're always looking for fresh Filipino talent.", checks: ["100% copyright retained", "Non-exclusive broadcasting rights", "Reviewed within one week"], btn: FM.submit.btn },
+            { id: "sponsor" as PathwayId, icon: DollarSign, gradient: "from-amber-500 to-yellow-400", shadow: "shadow-amber-500/20", border: "hover:border-amber-500/40", title: "Sponsor My Station", desc: "Reach the Filipino diaspora and 90s OPM lovers with targeted advertising.", checks: ["On-air shoutouts", "Website banner placement", "Plans from $50/month"], btn: FM.sponsor.btn },
+            { id: "donate" as PathwayId, icon: Heart, gradient: "from-rose-500 to-pink-400", shadow: "shadow-rose-500/20", border: "hover:border-rose-500/40", title: "Support the Kanto", desc: "Keep independent OPM alive. Every contribution goes directly to the artists and the station.", checks: ["Zero commission to artists", "Funds the Kanto Fund", "Starting from $5"], btn: FM.donate.btn },
             { id: "store" as string, icon: ShoppingBag, gradient: "from-emerald-500 to-teal-400", shadow: "shadow-emerald-500/20", border: "hover:border-emerald-500/40", title: "Browse Merch Store", desc: "Support Filipino indie artists by buying their merch. 90% goes directly to them.", checks: ["Curated by artists", "Secure checkout", "Fast delivery"], btn: "bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white", isLink: true, href: "/store" },
           ].map((card) => (
-            <Card key={card.id} onClick={() => card.isLink ? undefined : onSelect(card.id as FunnelId)} className={`group cursor-pointer border-white/10 bg-[#12121a] transition-all duration-300 ${card.border} hover:bg-[#14141f] hover:shadow-lg hover:${card.shadow}`}>
+            <Card key={card.id} onClick={() => card.isLink ? undefined : onSelect(card.id as PathwayId)} className={`group cursor-pointer border-white/10 bg-[#12121a] transition-all duration-300 ${card.border} hover:bg-[#14141f] hover:shadow-lg hover:${card.shadow}`}>
               <CardHeader>
                 <div className={`mb-2 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${card.gradient} shadow-lg ${card.shadow}`}>
                   <card.icon className="h-6 w-6 text-white" />
@@ -470,9 +470,9 @@ function HomePage({ onSelect }: { onSelect: (f: FunnelId) => void }) {
 }
 
 // ═══════════════════════════════════════════════════════════
-// FUNNEL 1: SUBMIT YOUR MUSIC
+// PATHWAY 1: SUBMIT YOUR MUSIC
 // ═══════════════════════════════════════════════════════════
-function SubmitFunnel({ step, setStep, goHome, isSubmitting, setIsSubmitting, submitResult, setSubmitResult }: {
+function SubmitPathway({ step, setStep, goHome, isSubmitting, setIsSubmitting, submitResult, setSubmitResult }: {
   step: number; setStep: (s: number) => void; goHome: () => void;
   isSubmitting: boolean; setIsSubmitting: (b: boolean) => void;
   submitResult: { success: boolean; message: string } | null; setSubmitResult: (r: { success: boolean; message: string } | null) => void;
@@ -629,7 +629,7 @@ function SubmitFunnel({ step, setStep, goHome, isSubmitting, setIsSubmitting, su
           <Headphones className="mr-2 h-5 w-5" /> Listen to the Station Live
         </Button>
         <Button size="lg" variant="outline" onClick={goHome} className="border-white/20 bg-white/5 text-white hover:bg-white/10">
-          Back to Funnels
+          Back to Pathways
         </Button>
       </div>
     </div>
@@ -637,9 +637,9 @@ function SubmitFunnel({ step, setStep, goHome, isSubmitting, setIsSubmitting, su
 }
 
 // ═══════════════════════════════════════════════════════════
-// FUNNEL 2: SPONSOR MY STATION
+// PATHWAY 2: SPONSOR MY STATION
 // ═══════════════════════════════════════════════════════════
-function SponsorFunnel({ step, setStep, goHome, isSubmitting, setIsSubmitting, submitResult, setSubmitResult }: {
+function SponsorPathway({ step, setStep, goHome, isSubmitting, setIsSubmitting, submitResult, setSubmitResult }: {
   step: number; setStep: (s: number) => void; goHome: () => void;
   isSubmitting: boolean; setIsSubmitting: (b: boolean) => void;
   submitResult: { success: boolean; message: string } | null; setSubmitResult: (r: { success: boolean; message: string } | null) => void;
@@ -850,7 +850,7 @@ function SponsorFunnel({ step, setStep, goHome, isSubmitting, setIsSubmitting, s
       {/* CTAs */}
       <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
         <Button size="lg" onClick={goHome} className="bg-gradient-to-r from-amber-500 to-yellow-400 font-bold text-black shadow-lg shadow-amber-500/20 hover:from-amber-400 hover:to-yellow-300">
-          Explore Other Funnels
+          Explore Other Pathways
         </Button>
         <Button size="lg" variant="outline" className="border-white/20 bg-white/5 text-white hover:bg-white/10">
           <Globe className="mr-2 h-5 w-5" /> Visit tunogkalye.net
@@ -861,10 +861,10 @@ function SponsorFunnel({ step, setStep, goHome, isSubmitting, setIsSubmitting, s
 }
 
 // ═══════════════════════════════════════════════════════════
-// FUNNEL 3: SUPER FAN / DONATIONS
+// PATHWAY 3: SUPER FAN / DONATIONS
 // ═══════════════════════════════════════════════════════════
-function DonateFunnel({ step, setStep, goHome, navigateTo, isSubmitting, setIsSubmitting, submitResult, setSubmitResult }: {
-  step: number; setStep: (s: number) => void; goHome: () => void; navigateTo: (f: FunnelId) => void;
+function DonatePathway({ step, setStep, goHome, navigateTo, isSubmitting, setIsSubmitting, submitResult, setSubmitResult }: {
+  step: number; setStep: (s: number) => void; goHome: () => void; navigateTo: (f: PathwayId) => void;
   isSubmitting: boolean; setIsSubmitting: (b: boolean) => void;
   submitResult: { success: boolean; message: string } | null; setSubmitResult: (r: { success: boolean; message: string } | null) => void;
 }) {
@@ -1033,7 +1033,7 @@ function DonateFunnel({ step, setStep, goHome, navigateTo, isSubmitting, setIsSu
           <DollarSign className="mr-2 h-5 w-5 text-amber-400" /> Become a Sponsor
         </Button>
         <Button size="lg" variant="outline" onClick={goHome} className="border-white/20 bg-white/5 text-white hover:bg-white/10">
-          Back to Funnels
+          Back to Pathways
         </Button>
       </div>
     </div>

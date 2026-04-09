@@ -25,13 +25,10 @@ import {
   CATEGORY_GRADIENTS,
   type StoreProduct,
   type FeaturedArtist,
-} from "./page";
-import type { StoreProduct as StoreProductType } from "./page";
-
-// Re-import the type (it's the same, just re-aliasing for clarity)
+} from "./store-utils";
 
 interface StorePageClientProps {
-  products: StoreProductType[];
+  products: StoreProduct[];
   featuredArtists: FeaturedArtist[];
   isLoggedIn: boolean;
 }

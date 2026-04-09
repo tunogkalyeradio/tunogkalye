@@ -34,6 +34,7 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   // Form fields
   const [name, setName] = useState("");
@@ -211,18 +212,75 @@ export default function SettingsPage() {
         <CardContent className="space-y-5">
           {/* Avatar */}
           <div className="flex items-center gap-4">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-red-600 to-orange-500 text-xl font-bold text-white">
-              {initials}
+            <div className="relative">
+              {profile?.avatar ? (
+                <img
+                  src={profile.avatar}
+                  alt="Avatar"
+                  className="flex h-16 w-16 items-center justify-center rounded-2xl object-cover"
+                />
+              ) : (
+                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-red-600 to-orange-500 text-xl font-bold text-white">
+                  {initials}
+                </div>
+              )}
+              {uploadingAvatar && (
+                <div className="absolute inset-0 flex items-center justify-center rounded-2xl bg-black/60">
+                  <Loader2 className="h-5 w-5 animate-spin text-white" />
+                </div>
+              )}
             </div>
             <div>
+              <input
+                type="file"
+                accept="image/jpeg,image/png"
+                className="hidden"
+                id="avatar-upload"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  if (file.size > 2 * 1024 * 1024) {
+                    alert("File must be under 2MB");
+                    return;
+                  }
+                  setUploadingAvatar(true);
+                  try {
+                    const formData = new FormData();
+                    formData.append("image", file);
+                    const uploadRes = await fetch("/api/upload", {
+                      method: "POST",
+                      body: formData,
+                    });
+                    if (uploadRes.ok) {
+                      const uploadData = await uploadRes.json();
+                      const avatarUrl = uploadData.url;
+                      // Save avatar URL to profile
+                      const profileRes = await fetch("/api/user/profile", {
+                        method: "PATCH",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ avatar: avatarUrl }),
+                      });
+                      if (profileRes.ok) {
+                        const data = await profileRes.json();
+                        setProfile(data.user);
+                      }
+                    }
+                  } catch {
+                    alert("Upload failed");
+                  } finally {
+                    setUploadingAvatar(false);
+                  }
+                }}
+              />
               <Button
                 variant="outline"
                 size="sm"
-                disabled
-                className="border-white/10 bg-white/5 text-xs text-slate-400"
+                onClick={() => document.getElementById("avatar-upload")?.click()}
+                disabled={uploadingAvatar}
+                className="border-white/10 bg-white/5 text-xs text-slate-400 hover:bg-white/10"
               >
                 <Camera className="mr-1.5 h-3.5 w-3.5" />
-                Upload Avatar
+                {uploadingAvatar ? "Uploading..." : "Upload Avatar"}
               </Button>
               <p className="mt-1 text-[11px] text-slate-600">
                 JPG, PNG. Max 2MB.
