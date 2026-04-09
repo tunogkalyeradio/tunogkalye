@@ -44,3 +44,26 @@ Stage Summary:
 - Progress bar bug on Donate checkout page fixed
 - All 13 page views + home page verified complete and functional
 - Production build passes cleanly
+
+---
+Task ID: 4
+Agent: Main Agent
+Task: Set up Vercel deployment config, add sticky live player, create AzuraCast widget and deployment guide
+
+Work Log:
+- Created vercel.json with build command (prisma generate + next build)
+- Removed `output: "standalone"` from next.config.ts (Vercel handles its own build)
+- Built LivePlayerBar component: sticky bottom bar with Play/Pause, Mute, dismiss, "Full Station" link to AzuraCast
+- Added STREAM_CONFIG constant for easy AzuraCast URL configuration (audioUrl, embedUrl, siteUrl)
+- Player bar includes: animated ON AIR indicator, session-based dismiss, responsive design
+- Added bottom padding to footer to prevent content being hidden behind the player bar
+- Created azuracast-custom-widget.html: copy-paste HTML/CSS for AzuraCast public page with Submit/Support/Sponsor buttons
+- Created DEPLOYMENT_GUIDE.md with 7 steps: GitHub push, Vercel deploy, DNS setup (hub.tunogkalye.net), database setup (Turso free), AzuraCast widget, stream URL config, testing checklist
+- Build compiles cleanly with zero errors
+
+Stage Summary:
+- App is Vercel-ready: vercel.json + next.config.ts configured
+- Sticky live player bar integrated into the funnel site (streaming from AzuraCast)
+- AzuraCast widget HTML ready to paste into station public page
+- Complete deployment guide created (7 steps, $0/month total cost)
+- Final architecture: www (AzuraCast) + video (Dotcompal) + hub (Vercel/Next.js)

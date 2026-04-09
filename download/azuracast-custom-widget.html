@@ -1,0 +1,91 @@
+<!--
+  ═══════════════════════════════════════════════════════════
+  AZURACAST CUSTOM HTML WIDGET
+  Paste this into your AzuraCast Station Page → Custom HTML
+  (Administration → Station Pages → Custom HTML)
+  
+  This adds funnel links to your AzuraCast homepage that
+  point to hub.tunogkalye.net
+  ═══════════════════════════════════════════════════════════
+-->
+
+<style>
+  .tk-hub-banner {
+    background: linear-gradient(135deg, #1a0000 0%, #0a0a0f 50%, #1a0a00 100%);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 24px;
+    margin: 20px 0;
+    text-align: center;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+  .tk-hub-banner h3 {
+    color: #fff;
+    font-size: 18px;
+    font-weight: 800;
+    margin: 0 0 4px 0;
+    letter-spacing: -0.02em;
+  }
+  .tk-hub-banner h3 span {
+    background: linear-gradient(to right, #ef4444, #f97316);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .tk-hub-banner p {
+    color: #94a3b8;
+    font-size: 13px;
+    margin: 0 0 16px 0;
+  }
+  .tk-hub-buttons {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .tk-hub-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    color: #fff;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    border: none;
+  }
+  .tk-hub-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  }
+  .tk-hub-btn-primary {
+    background: linear-gradient(to right, #dc2626, #f97316);
+  }
+  .tk-hub-btn-secondary {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: #e2e8f0;
+  }
+  .tk-hub-btn-secondary:hover {
+    background: rgba(255,255,255,0.12);
+  }
+</style>
+
+<div class="tk-hub-banner">
+  <h3>🎤 TUNOG KALYE <span>HUB</span></h3>
+  <p>Submit your music, support the station, or become a sponsor</p>
+  <div class="tk-hub-buttons">
+    <a href="https://hub.tunogkalye.net" class="tk-hub-btn tk-hub-btn-primary" target="_blank">
+      🎵 Submit Your Music
+    </a>
+    <a href="https://hub.tunogkalye.net" class="tk-hub-btn tk-hub-btn-secondary" target="_blank">
+      ❤️ Support the Station
+    </a>
+    <a href="https://hub.tunogkalye.net" class="tk-hub-btn tk-hub-btn-secondary" target="_blank">
+      💰 Sponsor Us
+    </a>
+  </div>
+</div>

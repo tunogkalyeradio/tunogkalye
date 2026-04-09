@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import {
   Mic2, Radio, Heart, ChevronRight, ChevronLeft, Music, Send,
   CheckCircle2, DollarSign, TrendingUp, Users, Headphones, Globe,
   BarChart3, CreditCard, Coffee, Zap, Star, ArrowRight, Volume2,
   AlertCircle, Loader2, Clock, Mail, PartyPopper, Share2, Shield,
-  CircleDot, HelpCircle, ChevronDown,
+  CircleDot, HelpCircle, ChevronDown, Play, Pause, VolumeX, Volume1,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -84,6 +85,96 @@ function Timeline({ items, accentColor }: { items: { icon: React.ElementType; ti
   );
 }
 
+// ─── AzuraCast Stream Config ──────────────────────────
+// Replace these with your actual AzuraCast URLs
+const STREAM_CONFIG = {
+  // Your main AzuraCast station embed URL (for the iframe widget)
+  embedUrl: "https://www.tunogkalye.net/public/tunogkalye/embed",
+  // Direct audio stream URL (for the sticky player bar)
+  audioUrl: "https://www.tunogkalye.net/radio/8000/radio.mp3",
+  // Link to your main AzuraCast site
+  siteUrl: "https://www.tunogkalye.net",
+};
+
+// ─── Sticky Live Player Component ────────────────────────
+function LivePlayerBar() {
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
+  const [isDismissed, setIsDismissed] = useState(false);
+  const [hasInteracted, setHasInteracted] = useState(false);
+
+  useEffect(() => {
+    const dismissed = sessionStorage.getItem("player-dismissed");
+    if (dismissed) setIsDismissed(true);
+  }, []);
+
+  const togglePlay = () => {
+    if (!audioRef.current) return;
+    setHasInteracted(true);
+    if (isPlaying) {
+      audioRef.current.pause();
+    } else {
+      audioRef.current.play().catch(() => {});
+    }
+    setIsPlaying(!isPlaying);
+  };
+
+  const toggleMute = () => {
+    if (!audioRef.current) return;
+    audioRef.current.muted = !isMuted;
+    setIsMuted(!isMuted);
+  };
+
+  const dismiss = () => {
+    setIsDismissed(true);
+    sessionStorage.setItem("player-dismissed", "1");
+    if (audioRef.current) audioRef.current.pause();
+  };
+
+  if (isDismissed) return null;
+
+  return (
+    <div className="fixed bottom-0 left-0 right-0 z-[100] animate-in slide-in-from-bottom duration-500">
+      <audio ref={audioRef} src={STREAM_CONFIG.audioUrl} preload="none" />
+      <div className="border-t border-white/10 bg-[#0d0d14]/95 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-2.5 sm:px-6">
+          <div className="flex items-center gap-3">
+            <div className="relative flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-red-600 to-orange-500">
+              <Radio className="h-5 w-5 text-white" />
+              <span className="absolute -right-1 -top-1 flex h-3 w-3">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
+                <span className="relative inline-flex h-3 w-3 rounded-full bg-red-500" />
+              </span>
+            </div>
+            <div className="hidden sm:block">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-bold text-white">LIVE NOW</span>
+                <span className="inline-flex items-center rounded-full bg-red-500/20 px-2 py-0.5 text-[10px] font-medium text-red-400">ON AIR</span>
+              </div>
+              <p className="text-xs text-slate-500">Tunog Kalye Radio &middot; 24/7 OPM</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button onClick={toggleMute} className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-white/10 hover:text-white">
+              {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume1 className="h-4 w-4" />}
+            </button>
+            <button onClick={togglePlay} className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-red-600 to-orange-500 px-4 py-2 text-sm font-bold text-white shadow-lg shadow-red-500/20 transition-all hover:from-red-500 hover:to-orange-400">
+              {isPlaying ? <><Pause className="h-4 w-4" /><span className="hidden sm:inline">Pause</span></> : <><Play className="h-4 w-4" /><span className="hidden sm:inline">Listen Live</span></>}
+            </button>
+            <a href={STREAM_CONFIG.siteUrl} target="_blank" rel="noopener noreferrer" className="hidden rounded-lg border border-white/10 px-3 py-2 text-xs text-slate-400 transition-colors hover:border-white/20 hover:text-white sm:inline-flex items-center gap-1.5">
+              <Globe className="h-3.5 w-3.5" /> Full Station
+            </a>
+            <button onClick={dismiss} className="rounded-lg p-2 text-slate-600 transition-colors hover:bg-white/10 hover:text-slate-400">
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ═══════════════════════════════════════════════════════════
 // MAIN APP
 // ═══════════════════════════════════════════════════════════
@@ -141,7 +232,7 @@ export default function TunogKalyeFunnels() {
       </main>
 
       {/* FOOTER */}
-      <footer className="border-t border-white/5 bg-black/20 mt-auto">
+      <footer className="border-t border-white/5 bg-black/20 mt-auto pb-20">
         <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
           <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-between">
             <div className="flex items-center gap-2">
@@ -156,6 +247,9 @@ export default function TunogKalyeFunnels() {
           </div>
         </div>
       </footer>
+
+      {/* STICKY LIVE PLAYER BAR */}
+      <LivePlayerBar />
     </div>
   );
 }
