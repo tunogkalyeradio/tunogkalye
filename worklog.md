@@ -397,3 +397,26 @@ Stage Summary:
 - Zero-commission model implemented at data layer
 - Guest checkout, digital products, tips, badges, store approvals, content moderation all functional
 - Deployed to production: https://hub.tunogkalye.net
+
+---
+Task ID: readme-update
+Agent: Super Z (Main)
+Task: Comprehensive README update for multi-vendor marketplace ecosystem
+
+Work Log:
+- Read existing README and identified all outdated information
+- Counted exact project stats: 48 pages, 39 API routes, 52 components, 16 DB models, 8 enums
+- Rewrote README from scratch with accurate counts and comprehensive documentation
+- Updated core principles (zero commission, not 90/10)
+- Added multi-vendor marketplace architecture section
+- Documented Stripe Connect payment flow (instant split, no money pooling)
+- Added full route maps for all 3 dashboards (14 admin, 9 artist, 8 customer pages)
+- Documented all 39 API endpoints organized by category
+- Added guest checkout, digital vault, tips, badges, marketing generator docs
+- Added content moderation, store approvals, Kanto Fund tracker, analytics docs
+- Updated deployment guide with Turso and Cloudflare instructions
+
+Stage Summary:
+- README.md: 472 insertions, 264 deletions — complete rewrite
+- Accurately documents the current state of the entire platform
+- Committed as e2344fa
