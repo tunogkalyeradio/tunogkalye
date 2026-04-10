@@ -16,35 +16,54 @@ export async function getSession() {
  * Returns null if not authenticated.
  */
 export async function getCurrentUser() {
-  const session = await getSession();
-  if (!session?.user?.id) return null;
+  try {
+    const session = await getSession();
+    if (!session?.user?.id) return null;
 
-  const userId = parseInt(session.user.id, 10);
-  if (isNaN(userId)) return null;
+    const userId = parseInt(session.user.id, 10);
+    if (isNaN(userId)) return null;
 
-  const user = await db.user.findUnique({
-    where: { id: userId },
-    select: {
-      id: true,
-      email: true,
-      name: true,
-      role: true,
-      phone: true,
-      avatar: true,
-      createdAt: true,
-      artistProfile: {
-        select: {
-          id: true,
-          bandName: true,
-          genre: true,
-          city: true,
-          isVerified: true,
+    const user = await db.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        phone: true,
+        avatar: true,
+        createdAt: true,
+        artistProfile: {
+          select: {
+            id: true,
+            bandName: true,
+            genre: true,
+            city: true,
+            isVerified: true,
+          },
         },
       },
-    },
-  });
+    });
 
-  return user;
+    return user;
+  } catch (error) {
+    console.error("[getCurrentUser] Error fetching user:", error);
+    // If DB query fails, return a basic user object from session data
+    const session = await getSession().catch(() => null);
+    if (session?.user) {
+      return {
+        id: parseInt(session.user.id || "0", 10),
+        email: session.user.email || "",
+        name: session.user.name || "User",
+        role: (session.user as any).role || "CUSTOMER",
+        phone: null,
+        avatar: session.user.image || null,
+        createdAt: new Date(),
+        artistProfile: null,
+      };
+    }
+    return null;
+  }
 }
 
 /**
