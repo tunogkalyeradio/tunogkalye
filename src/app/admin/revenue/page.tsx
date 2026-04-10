@@ -16,106 +16,149 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 
 function formatPeso(amount: number) {
   return `₱${amount.toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
 export default async function RevenuePage() {
-  await requireRole("ADMIN");
+  try {
+    await requireRole("ADMIN");
+  } catch {
+    return (
+      <div className="flex h-96 items-center justify-center">
+        <p className="text-slate-400">Not authorized. Admin access required.</p>
+      </div>
+    );
+  }
 
   // Total revenue
-  const totalRevenue = await db.order.aggregate({
-    _sum: { platformRevenue: true, artistRevenueTotal: true, totalAmount: true },
-    _count: true,
-    where: { status: { not: "CANCELLED" } },
-  });
+  let totalRevenue: any = { _sum: {}, _count: 0 };
+  try {
+    totalRevenue = await db.order.aggregate({
+      _sum: { platformRevenue: true, artistRevenueTotal: true, totalAmount: true },
+      _count: true,
+      where: { status: { not: "CANCELLED" } },
+    });
+  } catch (error) {
+    console.error("[RevenuePage] Error fetching total revenue:", error);
+    totalRevenue = { _sum: { platformRevenue: 0, artistRevenueTotal: 0, totalAmount: 0 }, _count: 0 };
+  }
 
   // Monthly breakdown (last 12 months)
-  const monthlyRevenue = await db.$queryRawUnsafe(`
-    SELECT 
-      substr(createdAt, 1, 7) as month,
-      SUM(platformRevenue) as platformRevenue,
-      SUM(artistRevenueTotal) as artistRevenue,
-      SUM(totalAmount) as totalAmount,
-      COUNT(*) as orderCount
-    FROM \`Order\`
-    WHERE status != 'CANCELLED'
-    GROUP BY substr(createdAt, 1, 7)
-    ORDER BY month DESC
-    LIMIT 12
-  `) as {
+  let monthlyRevenue: {
     month: string;
     platformRevenue: number;
     artistRevenue: number;
     totalAmount: number;
     orderCount: number;
-  }[];
+  }[] = [];
+  try {
+    monthlyRevenue = await db.$queryRawUnsafe(`
+      SELECT 
+        substr(createdAt, 1, 7) as month,
+        SUM(platformRevenue) as platformRevenue,
+        SUM(artistRevenueTotal) as artistRevenue,
+        SUM(totalAmount) as totalAmount,
+        COUNT(*) as orderCount
+      FROM \`Order\`
+      WHERE status != 'CANCELLED'
+      GROUP BY substr(createdAt, 1, 7)
+      ORDER BY month DESC
+      LIMIT 12
+    `) as {
+      month: string;
+      platformRevenue: number;
+      artistRevenue: number;
+      totalAmount: number;
+      orderCount: number;
+    }[];
+  } catch (error) {
+    console.error("[RevenuePage] Error fetching monthly revenue:", error);
+    monthlyRevenue = [];
+  }
 
   const monthlyData = [...monthlyRevenue].reverse();
 
   // Per-artist revenue breakdown
-  const artistRevenue = await db.artistProfile.findMany({
-    select: {
-      id: true,
-      bandName: true,
-      city: true,
-      _count: { select: { orderItems: true } },
-      orderItems: {
-        select: { artistCut: true, platformCut: true, subtotal: true },
+  let artistRevenue: any[] = [];
+  try {
+    artistRevenue = await db.artistProfile.findMany({
+      select: {
+        id: true,
+        bandName: true,
+        city: true,
+        _count: { select: { orderItems: true } },
+        orderItems: {
+          select: { subtotal: true },
+        },
       },
-    },
-    where: { orderItems: { some: {} } },
-    orderBy: {
-      orderItems: { _sum: { subtotal: "desc" } },
-    },
-  });
+      where: { orderItems: { some: {} } },
+      orderBy: {
+        orderItems: { _sum: { subtotal: "desc" } },
+      },
+    });
+  } catch (error) {
+    console.error("[RevenuePage] Error fetching artist revenue:", error);
+    artistRevenue = [];
+  }
+
+  // Platform cut is 10%, artist gets 90%
+  const PLATFORM_CUT = 0.1;
 
   const artistBreakdown = artistRevenue
-    .map((a) => ({
-      id: a.id,
-      bandName: a.bandName,
-      city: a.city,
-      totalSales: a.orderItems.reduce((s, i) => s + i.subtotal, 0),
-      artistEarnings: a.orderItems.reduce((s, i) => s + i.artistCut, 0),
-      platformEarnings: a.orderItems.reduce((s, i) => s + i.platformCut, 0),
-      itemsSold: a.orderItems.length,
-    }))
-    .sort((a, b) => b.totalSales - a.totalSales);
+    .map((a: any) => {
+      const totalSales = a.orderItems.reduce((s: number, i: any) => s + (i.subtotal || 0), 0);
+      return {
+        id: a.id,
+        bandName: a.bandName,
+        city: a.city,
+        totalSales,
+        artistEarnings: totalSales * (1 - PLATFORM_CUT),
+        platformEarnings: totalSales * PLATFORM_CUT,
+        itemsSold: a.orderItems.length,
+      };
+    })
+    .sort((a: any, b: any) => b.totalSales - a.totalSales);
 
   // Top selling products
-  const topProducts = await db.product.findMany({
-    select: {
-      id: true,
-      name: true,
-      price: true,
-      category: true,
-      _count: { select: { orderItems: true } },
-      orderItems: {
-        select: { subtotal: true, quantity: true },
+  let topProducts: any[] = [];
+  try {
+    topProducts = await db.product.findMany({
+      select: {
+        id: true,
+        name: true,
+        price: true,
+        category: true,
+        _count: { select: { orderItems: true } },
+        orderItems: {
+          select: { subtotal: true, quantity: true },
+        },
       },
-    },
-    where: { orderItems: { some: {} } },
-    orderBy: {
-      orderItems: { _sum: { subtotal: "desc" } },
-    },
-    take: 10,
-  });
+      where: { orderItems: { some: {} } },
+      orderBy: {
+        orderItems: { _sum: { subtotal: "desc" } },
+      },
+      take: 10,
+    });
+  } catch (error) {
+    console.error("[RevenuePage] Error fetching top products:", error);
+    topProducts = [];
+  }
 
   const topProductsData = topProducts
-    .map((p) => ({
+    .map((p: any) => ({
       id: p.id,
       name: p.name,
       price: p.price,
       category: p.category,
-      totalSold: p.orderItems.reduce((s, i) => s + i.quantity, 0),
-      totalRevenue: p.orderItems.reduce((s, i) => s + i.subtotal, 0),
+      totalSold: p.orderItems.reduce((s: number, i: any) => s + (i.quantity || 0), 0),
+      totalRevenue: p.orderItems.reduce((s: number, i: any) => s + (i.subtotal || 0), 0),
     }))
-    .sort((a, b) => b.totalRevenue - a.totalRevenue);
+    .sort((a: any, b: any) => b.totalRevenue - a.totalRevenue);
 
   const maxMonthlyRevenue = Math.max(
-    ...monthlyData.map((m) => m.totalAmount),
+    ...monthlyData.map((m) => m.totalAmount || 0),
     1
   );
 
@@ -217,7 +260,7 @@ export default async function RevenuePage() {
               <div className="mb-6 flex items-end gap-2 h-44">
                 {monthlyData.map((m) => {
                   const height = Math.max(
-                    (m.totalAmount / maxMonthlyRevenue) * 100,
+                    ((m.totalAmount || 0) / maxMonthlyRevenue) * 100,
                     3
                   );
                   return (
@@ -227,10 +270,10 @@ export default async function RevenuePage() {
                     >
                       <div className="flex flex-col items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                         <span className="text-[9px] text-red-400">
-                          {formatPeso(m.platformRevenue)}
+                          {formatPeso(m.platformRevenue || 0)}
                         </span>
                         <span className="text-[9px] text-green-400">
-                          {formatPeso(m.artistRevenue)}
+                          {formatPeso(m.artistRevenue || 0)}
                         </span>
                       </div>
                       <div className="relative w-full flex flex-col" style={{ height: `${height}%` }}>
@@ -299,13 +342,13 @@ export default async function RevenuePage() {
                           {m.orderCount}
                         </td>
                         <td className="py-2 text-right text-white">
-                          {formatPeso(m.totalAmount)}
+                          {formatPeso(m.totalAmount || 0)}
                         </td>
                         <td className="py-2 text-right text-red-400">
-                          {formatPeso(m.platformRevenue)}
+                          {formatPeso(m.platformRevenue || 0)}
                         </td>
                         <td className="py-2 text-right text-green-400">
-                          {formatPeso(m.artistRevenue)}
+                          {formatPeso(m.artistRevenue || 0)}
                         </td>
                       </tr>
                     ))}
@@ -338,7 +381,7 @@ export default async function RevenuePage() {
           <CardContent>
             {artistBreakdown.length > 0 ? (
               <div className="max-h-96 overflow-y-auto space-y-2">
-                {artistBreakdown.map((artist, index) => (
+                {artistBreakdown.map((artist: any, index: number) => (
                   <div
                     key={artist.id}
                     className="rounded-lg border border-white/5 bg-white/5 p-3"
@@ -398,7 +441,7 @@ export default async function RevenuePage() {
           <CardContent>
             {topProductsData.length > 0 ? (
               <div className="max-h-96 overflow-y-auto space-y-2">
-                {topProductsData.map((product, index) => (
+                {topProductsData.map((product: any, index: number) => (
                   <div
                     key={product.id}
                     className="rounded-lg border border-white/5 bg-white/5 p-3"
