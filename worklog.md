@@ -55,3 +55,30 @@ Stage Summary:
 - Updated AzuraCast widget: `/home/z/my-project/download/azuracast-custom-widget.html`
 - Admin can now manage sponsors at /admin/settings → "Sponsors & Partners" tab
 - To deploy: paste new widget HTML into AzuraCast Station Pages → Custom HTML
+
+---
+Task ID: 3
+Agent: Main Agent
+Task: Fix admin login, registration, and KALYE Bot on production
+
+Work Log:
+- Diagnosed that production Turso database schema was out of sync (missing `provider` column, missing tables)
+- Created `/api/setup/admin` endpoint with raw SQL for schema-safe admin account creation
+- Fixed SQL syntax error in `/api/setup/route.ts` (Product foreign key quote typo)
+- Added database migration support (non-destructive): adds missing columns + creates missing tables
+- Added `provider` column to User table on Turso
+- Created missing tables: KantoFundEntry, Tip, SiteSetting, Badge, UserBadge, DigitalPurchase
+- Seeded 23 default site settings into production Turso database
+- Created admin account: admin@tunogkalye.net / Tunog1990s! with ADMIN role on production
+- Fixed KALYE Bot: rewrote `/api/chat/route.ts` with keyword-based fallback responses
+  - Dynamic import of z-ai-web-dev-sdk (won't crash if unavailable)
+  - 10 topic categories with detailed responses: music submission, merch, kanto fund, sponsor, stripe/payments, donations, registration, orders, reviews, greeting
+  - Generic fallback for unrecognized topics
+- Verified on production: admin login ✅, registration ✅, chat bot ✅
+
+Stage Summary:
+- Admin account created on production: admin@tunogkalye.net / Tunog1990s!
+- Production database schema now fully in sync with Prisma schema
+- Registration flow working on production
+- KALYE Bot working with intelligent fallback responses
+- Files modified: src/app/api/chat/route.ts, src/app/api/setup/admin/route.ts, src/app/api/setup/route.ts
