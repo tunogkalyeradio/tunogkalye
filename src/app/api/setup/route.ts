@@ -45,6 +45,63 @@ export async function PATCH(request: globalThis.Request) {
 
     if (action === "migrate") {
       const db = getDb();
+      const results: string[] = [];
+
+      // First, ensure all tables exist
+      try {
+        const existingTables: any[] = await db.$queryRawUnsafe(`SELECT name FROM sqlite_master WHERE type='table'`);
+        const tableNames = existingTables.map((t: any) => t.name);
+
+        if (!tableNames.includes("OrderItem")) {
+          await runRaw(db, `CREATE TABLE "OrderItem" (
+            "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+            "orderId" INTEGER NOT NULL, "productId" INTEGER NOT NULL, "artistId" INTEGER NOT NULL,
+            "productName" TEXT NOT NULL, "productImage" TEXT,
+            "quantity" INTEGER NOT NULL, "unitPrice" REAL NOT NULL, "subtotal" REAL NOT NULL,
+            "fulfillmentMode" TEXT NOT NULL, "shippingFee" REAL NOT NULL DEFAULT 0,
+            "status" TEXT NOT NULL DEFAULT 'PENDING',
+            "isStationMerch" INTEGER NOT NULL DEFAULT 0, "isDigital" INTEGER NOT NULL DEFAULT 0,
+            "downloadUrl" TEXT,
+            "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY ("orderId") REFERENCES "Order"("id") ON DELETE CASCADE,
+            FOREIGN KEY ("productId") REFERENCES "Product"("id"),
+            FOREIGN KEY ("artistId") REFERENCES "ArtistProfile"("id")
+          );`);
+          results.push("Created table OrderItem");
+          // Create indexes
+          try { await runRaw(db, `CREATE INDEX IF NOT EXISTS "OrderItem_orderId_idx" ON "OrderItem"("orderId")`); } catch {}
+          try { await runRaw(db, `CREATE INDEX IF NOT EXISTS "OrderItem_productId_idx" ON "OrderItem"("productId")`); } catch {}
+          try { await runRaw(db, `CREATE INDEX IF NOT EXISTS "OrderItem_artistId_idx" ON "OrderItem"("artistId")`); } catch {}
+          results.push("Created OrderItem indexes");
+        }
+
+        if (!tableNames.includes("UserBadge")) {
+          await runRaw(db, `CREATE TABLE "UserBadge" (
+            "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+            "userId" INTEGER NOT NULL, "badgeId" INTEGER NOT NULL,
+            "earnedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE,
+            FOREIGN KEY ("badgeId") REFERENCES "Badge"("id"),
+            UNIQUE("userId", "badgeId")
+          );`);
+          results.push("Created table UserBadge");
+        }
+
+        if (!tableNames.includes("Badge")) {
+          await runRaw(db, `CREATE TABLE "Badge" (
+            "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+            "type" TEXT NOT NULL UNIQUE, "name" TEXT NOT NULL,
+            "icon" TEXT NOT NULL, "description" TEXT NOT NULL,
+            "threshold" INTEGER NOT NULL,
+            "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+          );`);
+          results.push("Created table Badge");
+        }
+      } catch (e: any) {
+        results.push(`Table creation check: ${e.message?.substring(0, 100)}`);
+      }
+
+      // Then add missing columns
       const migrations = [
         // User table
         ["User", "provider", "TEXT", "'credentials'"],
