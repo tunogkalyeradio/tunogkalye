@@ -1,10 +1,27 @@
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import GoogleProvider from "next-auth/providers/google";
+import FacebookProvider from "next-auth/providers/facebook";
 import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
 
 export const authOptions: NextAuthOptions = {
   providers: [
+    // ─── Google OAuth ──────────────────────────────────────
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID || "",
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
+      allowDangerousEmailAccountLinking: false,
+    }),
+
+    // ─── Facebook OAuth ────────────────────────────────────
+    FacebookProvider({
+      clientId: process.env.FACEBOOK_CLIENT_ID || "",
+      clientSecret: process.env.FACEBOOK_CLIENT_SECRET || "",
+      allowDangerousEmailAccountLinking: false,
+    }),
+
+    // ─── Email/Password ────────────────────────────────────
     CredentialsProvider({
       name: "credentials",
       credentials: {
@@ -28,7 +45,7 @@ export const authOptions: NextAuthOptions = {
           },
         });
 
-        if (!user) {
+        if (!user || !user.password) {
           throw new Error("No account found with this email");
         }
 
@@ -52,10 +69,51 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async signIn({ user, account, profile }) {
+      // Auto-create user for OAuth providers (Google, Facebook)
+      if (account && (account.provider === "google" || account.provider === "facebook") && user.email) {
+        const existingUser = await db.user.findUnique({
+          where: { email: user.email },
+        });
+
+        if (!existingUser) {
+          // Auto-register new OAuth user
+          await db.user.create({
+            data: {
+              email: user.email,
+              name: user.name || "User",
+              avatar: user.image || null,
+              provider: account.provider,
+              role: "CUSTOMER",
+            },
+          });
+        } else {
+          // Update avatar if the OAuth provider has a newer one
+          if (user.image && existingUser.avatar !== user.image) {
+            await db.user.update({
+              where: { email: user.email },
+              data: { avatar: user.image },
+            });
+          }
+        }
+      }
+      return true;
+    },
+    async jwt({ token, user, account }) {
       if (user) {
         token.id = user.id;
         token.role = (user as { role?: string }).role;
+        // Fetch role from DB if not present (OAuth first login)
+        if (!token.role && user.email) {
+          const dbUser = await db.user.findUnique({
+            where: { email: user.email },
+            select: { id: true, role: true },
+          });
+          if (dbUser) {
+            token.id = String(dbUser.id);
+            token.role = dbUser.role;
+          }
+        }
       }
       return token;
     },

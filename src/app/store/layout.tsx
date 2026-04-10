@@ -110,6 +110,15 @@ export default async function StoreLayout({
               >
                 Back to Hub
               </Link>
+              <span className="text-slate-700">|</span>
+              <a
+                href="https://www.facebook.com/profile.php?id=61578465900871"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-slate-600 transition-colors hover:text-blue-400"
+              >
+                Facebook
+              </a>
             </div>
           </div>
         </div>

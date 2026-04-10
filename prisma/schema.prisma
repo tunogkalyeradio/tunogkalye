@@ -117,11 +117,12 @@ model KantoFundEntry {
 model User {
   id        Int      @id @default(autoincrement())
   email     String   @unique
-  password  String
+  password  String?
   name      String
   role      UserRole @default(CUSTOMER)
   phone     String?
   avatar    String?
+  provider  String   @default("credentials") // "credentials", "google", "facebook"
   address   String?  // JSON: default shipping address
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
