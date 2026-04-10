@@ -104,10 +104,9 @@ function LoginForm() {
       <div className="relative z-10 w-full max-w-md">
         {/* Branding */}
         <div className="mb-8 text-center">
-          <Link href="/" className="inline-flex items-center gap-2 transition-opacity hover:opacity-80">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-red-600 to-orange-500 shadow-lg shadow-red-500/20">
-              <Radio className="h-6 w-6 text-white" />
-            </div>
+          <Link href="/" className="inline-flex items-center gap-3 transition-opacity hover:opacity-80">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/tunog-kalye-logo.png" alt="Tunog Kalye Radio" className="h-14 w-14 object-contain" />
           </Link>
           <h1 className="mt-4 text-2xl font-black tracking-tight text-white sm:text-3xl">
             Welcome Back to{" "}
