@@ -68,8 +68,24 @@ function LoginForm() {
         return;
       }
 
-      // Redirect on success
-      router.push(callbackUrl);
+      // Redirect on success — use callbackUrl if provided, otherwise redirect by role
+      if (callbackUrl && callbackUrl !== "/") {
+        router.push(callbackUrl);
+      } else {
+        // Fetch user session to determine role-based redirect
+        try {
+          const sessionRes = await fetch("/api/auth/session");
+          const sessionData = await sessionRes.json();
+          const role = sessionData?.user?.role;
+          const redirectPath =
+            role === "ADMIN" ? "/admin" :
+            role === "ARTIST" ? "/artist" :
+            "/dashboard";
+          router.push(redirectPath);
+        } catch {
+          router.push("/");
+        }
+      }
       router.refresh();
     } catch {
       setError("Something went wrong. Please try again.");

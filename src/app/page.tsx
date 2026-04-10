@@ -1,16 +1,16 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import {
   Mic2, Radio, Heart, ChevronRight, ChevronLeft, Music, Send,
   CheckCircle2, DollarSign, TrendingUp, Users, Headphones, Globe,
   BarChart3, CreditCard, Coffee, Zap, Star, ArrowRight, Volume2,
   AlertCircle, Loader2, Clock, Mail, PartyPopper, Share2, Shield,
   CircleDot, HelpCircle, ChevronDown, Play, Pause, VolumeX, Volume1,
-  X, ShoppingBag, LayoutDashboard, Palette, ShieldCheck,
+  X, ShoppingBag, ShieldCheck,
 } from "lucide-react";
-import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
+import Navbar from "@/components/navbar";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -93,51 +93,6 @@ function Timeline({ items, accentColor }: { items: { icon: React.ElementType; ti
 
 
 
-// ─── Auth Navigation Links ──────────────────────────────
-function AuthNavLinks() {
-  let session: { user?: { role?: string } } | null = null;
-  let authStatus: string = "unauthenticated";
-
-  try {
-    const result = useSession();
-    if (result) {
-      session = result.data as { user?: { role?: string } } | null;
-      authStatus = result.status;
-    }
-  } catch {
-    // Session provider not available during prerender
-    return null;
-  }
-
-  if (authStatus === "loading" || !session?.user) return null;
-
-  const role = (session.user as { role?: string }).role;
-
-  return (
-    <>
-      <div className="mx-1 h-4 w-px bg-white/10" />
-      {role === "ADMIN" && (
-        <Link href="/admin" className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-white/5 hover:text-red-400" title="Admin Panel">
-          <ShieldCheck className="h-4 w-4" />
-        </Link>
-      )}
-      {role === "ARTIST" && (
-        <Link href="/artist" className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-white/5 hover:text-purple-400" title="Artist Dashboard">
-          <Palette className="h-4 w-4" />
-        </Link>
-      )}
-      {(role === "CUSTOMER" || role === "ADMIN" || role === "ARTIST") && (
-        <Link href="/dashboard" className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-white/5 hover:text-cyan-400" title="My Dashboard">
-          <LayoutDashboard className="h-4 w-4" />
-        </Link>
-      )}
-      <Link href="/store" className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-white/5 hover:text-orange-400" title="Merch Store">
-        <ShoppingBag className="h-4 w-4" />
-      </Link>
-    </>
-  );
-}
-
 // ═══════════════════════════════════════════════════════════
 // MAIN APP
 // ═══════════════════════════════════════════════════════════
@@ -146,6 +101,17 @@ export default function TunogKalyePathways() {
   const [pathwayStep, setPathwayStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitResult, setSubmitResult] = useState<{ success: boolean; message: string } | null>(null);
+  const [siteSettings, setSiteSettings] = useState<Record<string, string>>({});
+
+  // Fetch site settings on mount
+  useEffect(() => {
+    fetch("/api/site-settings")
+      .then((res) => res.ok ? res.json() : null)
+      .then((data) => {
+        if (data?.settings) setSiteSettings(data.settings);
+      })
+      .catch(() => { /* silently use fallbacks */ });
+  }, []);
 
   const navigateTo = useCallback((f: PathwayId) => {
     setActivePathway(f); setPathwayStep(1); setSubmitResult(null);
@@ -156,39 +122,18 @@ export default function TunogKalyePathways() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
+
+
+  const footerText = siteSettings.footer_text || "Tunog Kalye Radio \u00a9 2026. All rights reserved.";
+
   return (
     <div className="flex min-h-screen flex-col bg-[#0a0a0f] text-white">
-      {/* NAVBAR */}
-      <nav className="sticky top-0 z-50 border-b border-white/10 bg-[#0a0a0f]/80 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
-          <button onClick={goHome} className="flex items-center gap-2 transition-opacity hover:opacity-80">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/tunog-kalye-logo.png" alt="Tunog Kalye Radio" className="h-10 w-10 object-contain" />
-            <span className="hidden text-lg font-bold tracking-tight sm:inline">
-              TUNOG KALYE<span className="text-red-400"> RADIO</span>
-            </span>
-          </button>
-
-          {activePathway !== "home" ? (
-            <div className="flex items-center gap-2 text-sm">
-              <button onClick={goHome} className="text-slate-400 transition-colors hover:text-white">Pathways</button>
-              <ChevronRight className="h-4 w-4 text-slate-600" />
-              <span className="font-medium text-white">{FM[activePathway]?.label}</span>
-            </div>
-          ) : (
-            <div className="flex items-center gap-1">
-              <button onClick={() => navigateTo("submit")} className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-white/5 hover:text-red-400" title="Submit Music"><Mic2 className="h-4 w-4" /></button>
-              <button onClick={() => navigateTo("sponsor")} className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-white/5 hover:text-amber-400" title="Sponsor"><DollarSign className="h-4 w-4" /></button>
-              <button onClick={() => navigateTo("donate")} className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-white/5 hover:text-rose-400" title="Donate"><Heart className="h-4 w-4" /></button>
-              <AuthNavLinks />
-            </div>
-          )}
-        </div>
-      </nav>
+      {/* NAVBAR — shared component */}
+      <Navbar />
 
       {/* MAIN */}
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:px-6">
-        {activePathway === "home" && <HomePage onSelect={navigateTo} />}
+        {activePathway === "home" && <HomePage onSelect={navigateTo} siteSettings={siteSettings} />}
         {activePathway === "submit" && <SubmitPathway step={pathwayStep} setStep={setPathwayStep} goHome={goHome} isSubmitting={isSubmitting} setIsSubmitting={setIsSubmitting} submitResult={submitResult} setSubmitResult={setSubmitResult} />}
         {activePathway === "sponsor" && <SponsorPathway step={pathwayStep} setStep={setPathwayStep} goHome={goHome} isSubmitting={isSubmitting} setIsSubmitting={setIsSubmitting} submitResult={submitResult} setSubmitResult={setSubmitResult} />}
         {activePathway === "donate" && <DonatePathway step={pathwayStep} setStep={setPathwayStep} goHome={goHome} navigateTo={navigateTo} isSubmitting={isSubmitting} setIsSubmitting={setIsSubmitting} submitResult={submitResult} setSubmitResult={setSubmitResult} />}
@@ -200,12 +145,12 @@ export default function TunogKalyePathways() {
           <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-between">
             <div className="flex items-center gap-2">
               <Radio className="h-4 w-4 text-red-400" />
-              <span className="text-sm text-slate-500">Tunog Kalye Radio &copy; 2026. All rights reserved.</span>
+              <span className="text-sm text-slate-500">{footerText}</span>
             </div>
             <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs text-slate-600">
-              <span>tunogkalye.net</span><span className="text-slate-700">|</span>
-              <span>video.tunogkalye.net</span><span className="text-slate-700">|</span>
-              <span>Surrey, BC, Canada</span>
+              <span>{siteSettings.footer_website || "tunogkalye.net"}</span><span className="text-slate-700">|</span>
+              <span>{siteSettings.footer_video || "video.tunogkalye.net"}</span><span className="text-slate-700">|</span>
+              <span>{siteSettings.footer_location || "Surrey, BC, Canada"}</span>
               <span className="hidden sm:inline text-slate-700">|</span>
               <Link href="/about" className="transition-colors hover:text-slate-400">About</Link>
               <span className="text-slate-700">|</span>
@@ -227,9 +172,18 @@ export default function TunogKalyePathways() {
 }
 
 // ═══════════════════════════════════════════════════════════
-// HOME PAGE
+// HOME PAGE (with dynamic site settings)
 // ═══════════════════════════════════════════════════════════
-function HomePage({ onSelect }: { onSelect: (f: PathwayId) => void }) {
+function HomePage({ onSelect, siteSettings: settings }: { onSelect: (f: PathwayId) => void; siteSettings?: Record<string, string> }) {
+  // Dynamic settings with hardcoded fallbacks
+  const heroTagline = settings?.hero_tagline || "The Premier Grassroots Network for Filipino Independent Music";
+  const heroSubtitle = settings?.hero_subtitle || "Bridging 90s Pinoy Rock with modern indie. Curated by humans, not algorithms.";
+  const statsListeners = settings?.stats_listeners || "24/7";
+  const statsReach = settings?.stats_global_reach || "Worldwide";
+  const statsArtists = settings?.stats_indie_artists || "Growing";
+  const statsCommission = settings?.stats_commission || "0%";
+  const footerText = settings?.footer_text || "Tunog Kalye Radio \u00a9 2026. All rights reserved.";
+
   return (
     <div className="flex flex-col gap-16">
       {/* HERO */}
@@ -254,10 +208,10 @@ function HomePage({ onSelect }: { onSelect: (f: PathwayId) => void }) {
                 <span className="bg-gradient-to-r from-red-500 to-orange-400 bg-clip-text text-transparent">RADIO</span>
               </h1>
               <p className="mb-2 max-w-2xl text-lg text-slate-300 sm:text-xl">
-                The Premier Grassroots Network for Filipino Independent Music
+                {heroTagline}
               </p>
               <p className="max-w-xl text-sm text-slate-500">
-                Bridging 90s Pinoy Rock with modern indie. Curated by humans, not algorithms.
+                {heroSubtitle}
               </p>
             </div>
           </div>
@@ -385,10 +339,10 @@ function HomePage({ onSelect }: { onSelect: (f: PathwayId) => void }) {
       <section className="rounded-2xl border border-white/10 bg-[#12121a] p-6 sm:p-8">
         <div className="grid grid-cols-2 gap-6 sm:grid-cols-4">
           {[
-            { label: "Live Listeners", value: "24/7", icon: Headphones },
-            { label: "Global Reach", value: "Worldwide", icon: Globe },
-            { label: "Indie Artists", value: "Growing", icon: Music },
-            { label: "Commission", value: "0%", icon: Star },
+            { label: "Live Listeners", value: statsListeners, icon: Headphones },
+            { label: "Global Reach", value: statsReach, icon: Globe },
+            { label: "Indie Artists", value: statsArtists, icon: Music },
+            { label: "Commission", value: statsCommission, icon: Star },
           ].map((s) => (
             <div key={s.label} className="text-center">
               <s.icon className="mx-auto mb-2 h-5 w-5 text-red-400" />

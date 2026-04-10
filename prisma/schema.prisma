@@ -366,6 +366,17 @@ model Tip {
   @@index([fromUserId])
 }
 
+// ─── Site Settings (Admin-configurable) ──────────────────────────────────────
+
+model SiteSetting {
+  id        Int      @id @default(autoincrement())
+  key       String   @unique  // e.g. "station_name", "hero_tagline", "sponsor_name_1"
+  value     String   // the setting value (text, HTML, JSON, etc.)
+  label     String   // display label for admin UI, e.g. "Station Name"
+  group     String   @default("general") // "general", "sponsor", "content"
+  updatedAt DateTime @updatedAt
+}
+
 // ─── Badge (Gamification) ───────────────────────────────────────────────────
 
 model Badge {

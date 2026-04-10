@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import {
   Settings,
-  Radio,
   ShieldCheck,
   Info,
   User,
@@ -12,6 +11,9 @@ import {
   Save,
   CheckCircle2,
   AlertCircle,
+  Globe,
+  Megaphone,
+  FileText,
 } from "lucide-react";
 import {
   Card,
@@ -21,15 +23,31 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+interface SiteSettingItem {
+  key: string;
+  value: string;
+  label: string;
+  group: string;
+}
+
+const GROUP_CONFIG = {
+  general: { label: "General", icon: Globe, color: "text-red-400" },
+  sponsor: { label: "Sponsors & Partners", icon: Megaphone, color: "text-amber-400" },
+  content: { label: "Content", icon: FileText, color: "text-emerald-400" },
+} as const;
+
+type SettingGroup = keyof typeof GROUP_CONFIG;
 
 export default function AdminSettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [activeTab, setActiveTab] = useState<string>("general");
 
   // Profile fields
   const [name, setName] = useState("");
@@ -43,6 +61,12 @@ export default function AdminSettingsPage() {
   const [passwordSuccess, setPasswordSuccess] = useState(false);
   const [savingPassword, setSavingPassword] = useState(false);
 
+  // Site settings
+  const [siteSettings, setSiteSettings] = useState<SiteSettingItem[]>([]);
+  const [settingsValues, setSettingsValues] = useState<Record<string, string>>({});
+  const [settingsSaving, setSettingsSaving] = useState(false);
+  const [settingsSaved, setSettingsSaved] = useState(false);
+
   useEffect(() => {
     fetchSettings();
   }, []);
@@ -54,6 +78,15 @@ export default function AdminSettingsPage() {
         const data = await res.json();
         setName(data.user?.name || "");
         setEmail(data.user?.email || "");
+
+        if (data.siteSettings) {
+          setSiteSettings(data.siteSettings);
+          const values: Record<string, string> = {};
+          for (const s of data.siteSettings) {
+            values[s.key] = s.value;
+          }
+          setSettingsValues(values);
+        }
       }
     } catch {
       // silently fail
@@ -130,6 +163,38 @@ export default function AdminSettingsPage() {
     }
   };
 
+  const saveSiteSettings = async () => {
+    setSettingsSaving(true);
+    setSettingsSaved(false);
+    try {
+      const res = await fetch("/api/admin/settings", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ siteSettings: settingsValues }),
+      });
+      if (res.ok) {
+        setSettingsSaved(true);
+        setTimeout(() => setSettingsSaved(false), 3000);
+      }
+    } catch {
+      // silently fail
+    } finally {
+      setSettingsSaving(false);
+    }
+  };
+
+  const updateSettingValue = (key: string, value: string) => {
+    setSettingsValues((prev) => ({ ...prev, [key]: value }));
+  };
+
+  // Group settings by group
+  const groupedSettings = siteSettings.reduce<Record<string, SiteSettingItem[]>>((acc, s) => {
+    const group = s.group || "general";
+    if (!acc[group]) acc[group] = [];
+    acc[group].push(s);
+    return acc;
+  }, {});
+
   if (loading) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
@@ -146,65 +211,89 @@ export default function AdminSettingsPage() {
           Settings
         </h1>
         <p className="mt-1 text-sm text-slate-400">
-          Admin panel settings and configuration
+          Manage station content, admin account, and site configuration
         </p>
       </div>
 
-      {/* Station Info (display-only) */}
+      {/* ═══ SITE SETTINGS (Admin-configurable content) ═══ */}
       <Card className="border-white/10 bg-[#12121a]">
         <CardHeader className="pb-2">
-          <div className="flex items-center gap-2">
-            <Radio className="h-4 w-4 text-red-400" />
-            <CardTitle className="text-base">Station Information</CardTitle>
-          </div>
-          <CardDescription className="flex items-center gap-1.5">
-            Station settings managed via environment variables
-            <Badge className="bg-white/5 text-[9px] text-slate-500 border-white/10" variant="outline">
-              READ ONLY
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Settings className="h-4 w-4 text-red-400" />
+              <CardTitle className="text-base">Site Settings</CardTitle>
+            </div>
+            <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
+              LIVE EDITABLE
             </Badge>
+          </div>
+          <CardDescription className="text-xs text-slate-500">
+            Changes here update the website instantly. No code changes needed.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="flex items-center justify-between rounded-lg border border-white/5 bg-white/5 p-3">
-            <div>
-              <p className="text-sm font-medium text-white">Station Name</p>
-              <p className="text-xs text-slate-500">Primary branding</p>
-            </div>
-            <span className="text-sm text-slate-300">Tunog Kalye Radio</span>
-          </div>
-          <div className="flex items-center justify-between rounded-lg border border-white/5 bg-white/5 p-3">
-            <div>
-              <p className="text-sm font-medium text-white">Website</p>
-              <p className="text-xs text-slate-500">Main hub URL</p>
-            </div>
-            <span className="text-sm text-red-400">hub.tunogkalye.net</span>
-          </div>
-          <div className="flex items-center justify-between rounded-lg border border-white/5 bg-white/5 p-3">
-            <div>
-              <p className="text-sm font-medium text-white">Broadcast</p>
-              <p className="text-xs text-slate-500">AzuraCast station</p>
-            </div>
-            <span className="text-sm text-slate-300">www.tunogkalye.net</span>
-          </div>
-          <div className="flex items-center justify-between rounded-lg border border-white/5 bg-white/5 p-3">
-            <div>
-              <p className="text-sm font-medium text-white">Revenue Split</p>
-              <p className="text-xs text-slate-500">Platform / Artist</p>
-            </div>
-            <div className="flex items-center gap-2">
-              <Badge className="bg-red-500/20 text-red-400 border-red-500/30">
-                10%
-              </Badge>
-              <span className="text-xs text-slate-500">/</span>
-              <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
-                90%
-              </Badge>
-            </div>
-          </div>
+        <CardContent>
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+            <TabsList className="bg-white/5 border border-white/10">
+              {Object.entries(GROUP_CONFIG).map(([group, config]) => (
+                <TabsTrigger
+                  key={group}
+                  value={group}
+                  className="data-[state=active]:bg-white/10 data-[state=active]:text-white text-slate-500"
+                >
+                  <config.icon className={`mr-1.5 h-3.5 w-3.5 ${config.color}`} />
+                  {config.label}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+
+            {Object.entries(GROUP_CONFIG).map(([group, config]) => (
+              <TabsContent key={group} value={group} className="space-y-4">
+                {groupedSettings[group] && groupedSettings[group].length > 0 ? (
+                  <>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      {groupedSettings[group].map((setting) => (
+                        <div key={setting.key} className="space-y-1.5">
+                          <Label className="text-xs text-slate-400">
+                            {setting.label}
+                          </Label>
+                          <Input
+                            value={settingsValues[setting.key] || ""}
+                            onChange={(e) => updateSettingValue(setting.key, e.target.value)}
+                            placeholder={setting.label}
+                            className="border-white/10 bg-white/5 text-sm text-white placeholder:text-slate-600 focus:border-red-500/50 focus:ring-red-500/30"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                    <div className="flex items-center gap-3 pt-2">
+                      <Button
+                        onClick={saveSiteSettings}
+                        disabled={settingsSaving}
+                        className="bg-gradient-to-r from-red-600 to-orange-500 text-sm font-bold text-white hover:from-red-500 hover:to-orange-400"
+                      >
+                        {settingsSaving ? (
+                          <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Saving...</>
+                        ) : settingsSaved ? (
+                          <><CheckCircle2 className="mr-2 h-4 w-4" />Saved!</>
+                        ) : (
+                          <><Save className="mr-2 h-4 w-4" />Save {config.label} Settings</>
+                        )}
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex items-center gap-2 rounded-lg border border-white/5 bg-white/5 p-4 text-sm text-slate-500">
+                    <Info className="h-4 w-4 shrink-0" />
+                    No settings in this group yet.
+                  </div>
+                )}
+              </TabsContent>
+            ))}
+          </Tabs>
         </CardContent>
       </Card>
 
-      {/* Admin Account (editable) */}
+      {/* ═══ ADMIN ACCOUNT ═══ */}
       <Card className="border-white/10 bg-[#12121a]">
         <CardHeader className="pb-2">
           <div className="flex items-center gap-2">
@@ -250,27 +339,18 @@ export default function AdminSettingsPage() {
               className="bg-gradient-to-r from-red-600 to-orange-500 text-sm font-bold text-white hover:from-red-500 hover:to-orange-400 disabled:opacity-50"
             >
               {saved ? (
-                <>
-                  <CheckCircle2 className="mr-2 h-4 w-4" />
-                  Saved!
-                </>
+                <><CheckCircle2 className="mr-2 h-4 w-4" />Saved!</>
               ) : saving ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Saving...
-                </>
+                <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Saving...</>
               ) : (
-                <>
-                  <Save className="mr-2 h-4 w-4" />
-                  Save Changes
-                </>
+                <><Save className="mr-2 h-4 w-4" />Save Changes</>
               )}
             </Button>
           </div>
         </CardContent>
       </Card>
 
-      {/* Change Password */}
+      {/* ═══ CHANGE PASSWORD ═══ */}
       <Card className="border-white/10 bg-[#12121a]">
         <CardHeader className="pb-2">
           <div className="flex items-center gap-2">
@@ -339,10 +419,7 @@ export default function AdminSettingsPage() {
               className="border-white/10 bg-white/5 text-sm text-white hover:bg-white/10 disabled:opacity-50"
             >
               {savingPassword ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Changing...
-                </>
+                <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Changing...</>
               ) : (
                 "Change Password"
               )}

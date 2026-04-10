@@ -3,10 +3,16 @@ import { requireRole } from "@/lib/auth-utils";
 import { db } from "@/lib/db";
 import bcrypt from "bcryptjs";
 
-// GET: Return admin settings
+// GET: Return admin settings + site settings
 export async function GET() {
   try {
     const user = await requireRole("ADMIN");
+
+    // Fetch all site settings
+    const siteSettings = await db.siteSetting.findMany({
+      select: { key: true, value: true, label: true, group: true },
+      orderBy: { key: "asc" },
+    });
 
     return NextResponse.json({
       user: {
@@ -15,6 +21,7 @@ export async function GET() {
         email: user.email,
         role: user.role,
       },
+      siteSettings,
     });
   } catch (error) {
     if (error instanceof Error && error.message.includes("Access denied")) {
@@ -31,12 +38,12 @@ export async function GET() {
   }
 }
 
-// PATCH: Update admin name or password
+// PATCH: Update admin name, password, or site settings
 export async function PATCH(request: NextRequest) {
   try {
     const user = await requireRole("ADMIN");
     const body = await request.json();
-    const { name, changePassword } = body;
+    const { name, changePassword, siteSettings } = body;
 
     // Handle name update
     if (name !== undefined && typeof name === "string" && name.trim()) {
@@ -94,6 +101,32 @@ export async function PATCH(request: NextRequest) {
       });
 
       return NextResponse.json({ message: "Password changed successfully" });
+    }
+
+    // Handle site settings update
+    if (siteSettings && typeof siteSettings === "object") {
+      const updates: { key: string; value: string }[] = [];
+
+      for (const [key, value] of Object.entries(siteSettings)) {
+        if (typeof key === "string" && typeof value === "string") {
+          updates.push({ key, value });
+        }
+      }
+
+      // Use transaction for atomic updates
+      await db.$transaction(
+        updates.map(({ key, value }) =>
+          db.siteSetting.upsert({
+            where: { key },
+            update: { value },
+            create: { key, value, label: key, group: "general" },
+          })
+        )
+      );
+
+      return NextResponse.json({
+        message: `Updated ${updates.length} site settings`,
+      });
     }
 
     return NextResponse.json({ error: "No valid fields to update" }, { status: 400 });
