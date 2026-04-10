@@ -251,7 +251,7 @@ export default function KantoFundPage() {
           <section>
             <div className="mb-8 text-center">
               <h2 className="mb-2 text-2xl font-bold tracking-tight sm:text-3xl">How to Contribute</h2>
-              <p className="text-sm text-slate-500">Every purchase and donation strengthens the fund.</p>
+              <p className="text-sm text-slate-500">Every merch purchase and sponsorship dollar strengthens the fund.</p>
             </div>
             <div className="mx-auto max-w-3xl space-y-4">
               {[
@@ -262,8 +262,8 @@ export default function KantoFundPage() {
                 },
                 {
                   icon: Heart,
-                  title: "Direct Donations",
-                  desc: "Use the \"Support the Kanto\" pathway on our hub to make a direct donation. Every peso donated goes into the Kanto Fund pool.",
+                  title: "Infrastructure Support",
+                  desc: "Use the \"Support the Station\" pathway on our hub to contribute toward server hosting and bandwidth. A portion is allocated to the Kanto Fund pool.",
                 },
                 {
                   icon: CheckCircle2,
@@ -295,7 +295,7 @@ export default function KantoFundPage() {
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <Button size="lg" className="bg-gradient-to-r from-emerald-600 to-teal-500 px-6 font-bold text-white shadow-lg shadow-emerald-500/20 hover:from-emerald-500 hover:to-teal-400">
-                <Heart className="mr-2 h-5 w-5" /> Support the Kanto
+                <Heart className="mr-2 h-5 w-5" /> Support the Fund
               </Button>
               <Button size="lg" variant="outline" className="border-white/20 bg-white/5 px-6 text-white hover:bg-white/10">
                 <ShoppingBag className="mr-2 h-5 w-5" /> Browse Merch Store
@@ -315,8 +315,6 @@ export default function KantoFundPage() {
             </div>
             <div className="flex gap-4 text-xs text-slate-600">
               <Link href="/about" className="transition-colors hover:text-slate-400">About</Link>
-              <span className="text-slate-700">|</span>
-              <Link href="/lean-canvas" className="transition-colors hover:text-slate-400">Lean Canvas</Link>
               <span className="text-slate-700">|</span>
               <Link href="/kanto-fund" className="transition-colors hover:text-slate-400">Kanto Fund</Link>
               <span className="text-slate-700">|</span>

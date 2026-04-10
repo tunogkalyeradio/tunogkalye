@@ -451,8 +451,8 @@ export async function POST(request: globalThis.Request) {
     // Seed site settings
     const defaultSettings = [
       { key: "station_name", value: "Tunog Kalye Radio", label: "Station Name", group: "general" },
-      { key: "station_tagline", value: "The Premier Grassroots Network for Filipino Independent Music", label: "Station Tagline", group: "general" },
-      { key: "hero_tagline", value: "The Premier Grassroots Network for Filipino Independent Music", label: "Hero Tagline", group: "general" },
+      { key: "station_tagline", value: "The Premier Broadcasting Network for Filipino Independent Music", label: "Station Tagline", group: "general" },
+      { key: "hero_tagline", value: "The Premier Broadcasting Network for Filipino Independent Music", label: "Hero Tagline", group: "general" },
       { key: "hero_subtitle", value: "Bridging 90s Pinoy Rock with modern indie. Curated by humans, not algorithms.", label: "Hero Subtitle", group: "general" },
       { key: "hero_badge", value: "24/7 GLOBAL BROADCAST", label: "Hero Badge Text", group: "general" },
       { key: "footer_text", value: "Tunog Kalye Radio \u00A9 2026. All rights reserved.", label: "Footer Copyright Text", group: "general" },

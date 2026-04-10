@@ -11,8 +11,8 @@ export default function TermsPage() {
       title: "1. Introduction",
       content: [
         "Welcome to Tunog Kalye Radio, accessible at hub.tunogkalye.net (the \"Hub\"). These Terms of Service (\"Terms\") govern your use of the Hub, including all features, services, and content provided therein.",
-        "Tunog Kalye Radio is a grassroots broadcasting network and community platform dedicated to Filipino independent music. By accessing or using the Hub, you agree to be bound by these Terms. If you do not agree with any part of these Terms, you must not use the Hub.",
-        "The Hub includes, but is not limited to: the merch store, music submission portal, artist dashboards, customer dashboards, donation pathways, sponsorship inquiry forms, and all associated content and functionality.",
+        "Tunog Kalye Radio is a broadcasting network and media platform dedicated to Filipino independent music. By accessing or using the Hub, you agree to be bound by these Terms. If you do not agree with any part of these Terms, you must not use the Hub.",
+        "The Hub includes, but is not limited to: the merch store, music submission portal, artist dashboards, customer dashboards, infrastructure support pathways, sponsorship inquiry forms, and all associated content and functionality.",
       ],
     },
     {
@@ -60,7 +60,7 @@ export default function TermsPage() {
         "Impersonating any person or entity, or falsely claiming an affiliation with any person or entity.",
         "Interfering with or disrupting the Hub or servers or networks connected to the Hub.",
         "Harassing, threatening, intimidating, or impersonating other users or artists.",
-        "We expect all users to treat each other and the community with respect. Tunog Kalye Radio is a community built on mutual support and a shared love for Filipino independent music.",
+        "We expect all users to treat each other with respect. Tunog Kalye Radio is a professional media platform that serves the Filipino independent music community.",
       ],
     },
     {
@@ -71,12 +71,23 @@ export default function TermsPage() {
         "By making a purchase on the Hub, you agree to Stripe's Terms of Service and Privacy Policy, which are available at stripe.com.",
         "Prices are displayed in Philippine Pesos (₱) and are inclusive of applicable taxes unless otherwise stated. Shipping fees, where applicable, are calculated at checkout and are the responsibility of the buyer.",
         "Artist payouts are processed via Stripe Connect. Payout timing depends on Stripe's standard processing schedule and the artist's account configuration. Tunog Kalye is not liable for delays caused by Stripe's processing.",
-        "Donations made through the \"Support the Kanto\" pathway are non-refundable. Merchandise purchases follow the individual artist's return and refund policy.",
+        "Infrastructure support contributions made through the \"Support the Station\" pathway are non-refundable. Merchandise purchases follow the individual artist's return and refund policy.",
+      ],
+    },
+    {
+      id: "revenue-model",
+      title: "7. Revenue Model and Financial Transparency",
+      content: [
+        "Tunog Kalye Radio operates as a lean, sustainable media business. We believe in full transparency about how we generate revenue and how funds are allocated. Our revenue model consists of the following pillars:",
+        "B2B Local Sponsorships (Primary Revenue): We sell targeted audio advertisements and digital banner placements to local businesses, including Pinoy restaurants, real estate agents, event promoters, and other businesses targeting the Filipino-Canadian demographic. Sponsorship packages start at $50/month.",
+        "Merchandise Store Revenue: For each merchandise sale on the Hub, 90% of the sale price (minus applicable taxes and payment processing fees) is transferred directly to the artist via Stripe Connect. The remaining 10% is allocated to the Kanto Fund.",
+        "Infrastructure Support Contributions: Listeners may contribute toward server hosting (Oracle Cloud, Cloudflare CDN), bandwidth costs, and station maintenance through the \"Support the Station\" pathway. These contributions are strictly operational and are not the primary funding source for the platform.",
+        "The Kanto Fund: 100% of the Kanto Fund pool (derived from merchandise sales) is distributed quarterly to top-charting independent artists. No portion of infrastructure support contributions or sponsorship revenue is diverted for personal use — all funds are reinvested into platform operations, artist development, and community growth.",
       ],
     },
     {
       id: "intellectual-property",
-      title: "7. Intellectual Property",
+      title: "8. Intellectual Property",
       content: [
         "All content, features, and functionality of the Hub — including but not limited to text, graphics, logos, icons, images, audio, video, software, and the overall design — are the exclusive property of Tunog Kalye Radio and are protected by international copyright, trademark, and other intellectual property laws.",
         "Artists retain full ownership and copyright of all original works they submit, list, or sell through the Hub. By listing products, artists grant Tunog Kalye a limited, non-exclusive license to display product images and descriptions on the Hub for the purpose of facilitating sales.",
@@ -86,7 +97,7 @@ export default function TermsPage() {
     },
     {
       id: "limitation-of-liability",
-      title: "8. Limitation of Liability",
+      title: "9. Limitation of Liability",
       content: [
         "To the fullest extent permitted by applicable law, Tunog Kalye Radio and its operators, directors, employees, and agents shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including but not limited to loss of profits, data, or goodwill, arising out of or related to your use of the Hub.",
         "Tunog Kalye Radio does not guarantee uninterrupted or error-free operation of the Hub. We are not liable for any downtime, server errors, or technical issues.",
@@ -96,7 +107,7 @@ export default function TermsPage() {
     },
     {
       id: "changes-to-terms",
-      title: "9. Changes to Terms",
+      title: "10. Changes to Terms",
       content: [
         "We reserve the right to modify or replace these Terms at any time at our sole discretion. If a revision is material, we will provide at least 30 days' notice prior to any new terms taking effect. What constitutes a material change will be determined at our sole discretion.",
         "By continuing to access or use the Hub after any revisions become effective, you agree to be bound by the revised Terms. If you do not agree to the new Terms, you must stop using the Hub.",
@@ -105,7 +116,7 @@ export default function TermsPage() {
     },
     {
       id: "contact",
-      title: "10. Contact Information",
+      title: "11. Contact Information",
       content: [
         "If you have any questions about these Terms of Service, please contact us at:",
         "Email: hello@tunogkalye.net",
@@ -162,7 +173,7 @@ export default function TermsPage() {
             Terms of{" "}
             <span className="bg-gradient-to-r from-red-500 to-orange-400 bg-clip-text text-transparent">Service</span>
           </h1>
-          <p className="text-sm text-slate-500">Last updated: January 2026</p>
+          <p className="text-sm text-slate-500">Last updated: April 2026</p>
         </div>
 
         {/* Sections */}

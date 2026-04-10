@@ -175,7 +175,7 @@ export default function PrivacyPage() {
             Privacy{" "}
             <span className="bg-gradient-to-r from-red-500 to-orange-400 bg-clip-text text-transparent">Policy</span>
           </h1>
-          <p className="text-sm text-slate-500">Last updated: January 2026</p>
+          <p className="text-sm text-slate-500">Last updated: April 2026</p>
         </div>
 
         {/* Sections */}

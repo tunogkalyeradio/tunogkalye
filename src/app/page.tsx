@@ -36,7 +36,7 @@ interface FormData {
 const FM = {
   submit: { label: "Submit Your Music", btn: "bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-500 hover:to-orange-400 text-white", dot: "bg-red-500", line: "bg-red-500/30" },
   sponsor: { label: "Sponsor My Station", btn: "bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-400 hover:to-yellow-300 text-black", dot: "bg-amber-500", line: "bg-amber-500/30" },
-  donate: { label: "Support the Kanto", btn: "bg-gradient-to-r from-rose-500 to-pink-400 hover:from-rose-400 hover:to-pink-300 text-white", dot: "bg-rose-500", line: "bg-rose-500/30" },
+  donate: { label: "Support the Station", btn: "bg-gradient-to-r from-rose-500 to-pink-400 hover:from-rose-400 hover:to-pink-300 text-white", dot: "bg-rose-500", line: "bg-rose-500/30" },
 };
 
 // ─── Progress Bar Component ──────────────────────────────
@@ -154,8 +154,6 @@ export default function TunogKalyePathways() {
               <span className="hidden sm:inline text-slate-700">|</span>
               <Link href="/about" className="transition-colors hover:text-slate-400">About</Link>
               <span className="text-slate-700">|</span>
-              <Link href="/lean-canvas" className="transition-colors hover:text-slate-400">Lean Canvas</Link>
-              <span className="text-slate-700">|</span>
               <Link href="/kanto-fund" className="transition-colors hover:text-slate-400">Kanto Fund</Link>
               <span className="text-slate-700">|</span>
               <Link href="/terms" className="transition-colors hover:text-slate-400">Terms</Link>
@@ -178,7 +176,7 @@ export default function TunogKalyePathways() {
 // ═══════════════════════════════════════════════════════════
 function HomePage({ onSelect, siteSettings: settings }: { onSelect: (f: PathwayId) => void; siteSettings?: Record<string, string> }) {
   // Dynamic settings with hardcoded fallbacks
-  const heroTagline = settings?.hero_tagline || "The Premier Grassroots Network for Filipino Independent Music";
+  const heroTagline = settings?.hero_tagline || "The Premier Broadcasting Network for Filipino Independent Music";
   const heroSubtitle = settings?.hero_subtitle || "Bridging 90s Pinoy Rock with modern indie. Curated by humans, not algorithms.";
   const statsListeners = settings?.stats_listeners || "24/7";
   const statsReach = settings?.stats_global_reach || "Worldwide";
@@ -313,11 +311,11 @@ function HomePage({ onSelect, siteSettings: settings }: { onSelect: (f: PathwayI
             {[
               { q: "Do I keep my copyright?", a: "Absolutely. You retain 100% of your copyrights at all times. We only ask for non-exclusive digital broadcasting rights, which means you can simultaneously distribute your music on Spotify, Apple Music, YouTube, or any other platform. There are no advance recoupment clauses, no territorial restrictions, and no minimum commitment periods." },
               { q: "How long until my song airs?", a: "Our team reviews every submission within one week. If your track is approved, we'll email you with the good news and schedule it into our rotation. Once approved, you'll typically hear your song on air within 2-3 days as our DJs program it into themed blocks and time slots." },
-              { q: "What is the Kanto Fund?", a: "The Kanto Fund is our transparent revenue-sharing model. A dedicated percentage of all advertising revenue, sponsorships, and fan donations is pooled quarterly and distributed directly to our top-charting independent artists. This fund helps artists pay for their next recording session, music video, or live gig — and we show exactly how the money is allocated." },
+              { q: "What is the Kanto Fund?", a: "The Kanto Fund is our transparent revenue-sharing model. A dedicated percentage of all B2B advertising revenue and sponsorships is pooled quarterly and distributed directly to our top-charting independent artists. This fund helps artists pay for their next recording session, music video, or live gig — and we show exactly how the money is allocated." },
               { q: "How do sponsorships work?", a: "We offer three sponsorship tiers: Shoutout ($50/month) for daily on-air mentions, Banner ($100/month) which adds a website banner plus everything in Shoutout, and Premium ($200/month) for a sponsored hour, custom DJ intro, and exclusive category sponsorship. All plans include measurable metrics and can be cancelled anytime." },
               { q: "Who can submit music?", a: "Any independent Filipino artist or band can submit. You don't need to be signed to a label. You don't need a professional recording. If you're making Pinoy music — whether it's 90s alt-rock, modern indie, post-rock, or any genre — we want to hear it. Unsigned and independent artists are our priority." },
               { q: "Does Tunog Kalye take a commission from artist sales?", a: "Zero. Tunog Kalye takes absolutely no commission from artist merchandise, tips, album sales, or gig tickets. When fans discover an artist through our station and buy their merch or tip them directly, 100% of that money goes to the artist. This is a core principle of our platform." },
-              { q: "I'm signed to a record label (or a digital distributor). Can I still submit my music?", a: "Yes, but with a quick check. Submitting to Tunog Kalye is for Non-Interactive Radio Broadcasting only. This is different from Digital Distribution (Spotify/Apple Music). Most independent label contracts allow radio play. However, out of respect for your label, please inform them you are submitting to a Canadian internet radio station. If your label manager has questions, tell them to email us at hello@tunogkalye.net. We are happy to prove we are a legal, non-commercial broadcast, not a digital distributor." },
+              { q: "I'm signed to a record label (or a digital distributor). Can I still submit my music?", a: "Yes, but with a quick check. Submitting to Tunog Kalye is for Non-Interactive Radio Broadcasting only. This is different from Digital Distribution (Spotify/Apple Music). Most independent label contracts allow radio play. However, out of respect for your label, please inform them you are submitting to a Canadian internet radio station. If your label manager has questions, tell them to email us at hello@tunogkalye.net. We are happy to clarify that we are a radio broadcaster, not a digital distributor." },
               { q: "Will putting my song on Tunog Kalye mess up my Spotify or YouTube monetization?", a: "Absolutely not. In fact, it does the opposite. We are a radio station. We do not take your digital distribution rights. We do not upload your songs to Spotify. When we play your song, the \"Now Playing\" widget shows your name, which drives fans to search for you on Spotify, which actually increases your stream count and revenue." },
               { q: "What exactly are you taking from me? What are my rights?", a: "We operate under the \"Open Kanto Policy.\" We require a Non-Exclusive Digital Broadcasting Right. This means: You own 100% of your copyright. You can sell your song, sign to a major label, or take it off our station at any time. We are simply borrowing it to play on our radio stream. That's it." },
               { q: "How does the 0% Commission on Merch actually work? Where does the money go?", a: "We don't touch your money. When a fan buys your shirt or album on our Hub, the payment goes through a secure system (Stripe Connect) that automatically routes the funds directly into your bank account or GCash. Tunog Kalye takes exactly 0 pesos. We act as your free digital storefront to reach the Canadian diaspora." },
@@ -909,7 +907,7 @@ function DonatePathway({ step, setStep, goHome, navigateTo, isSubmitting, setIsS
         ))}
       </div>
       <div className="mt-8 rounded-xl border border-white/5 bg-[#12121a] p-4 text-center">
-        <p className="text-xs text-slate-500">Secure payments processed via Stripe or PayPal. Tunog Kalye Radio is a passion project — every cent goes to keeping the music alive.</p>
+        <p className="text-xs text-slate-500">Secure payments processed via Stripe or PayPal. Your contribution goes strictly toward server hosting (Oracle/Cloudflare), bandwidth, and station maintenance.</p>
       </div>
     </div>
   );
@@ -934,7 +932,7 @@ function DonatePathway({ step, setStep, goHome, navigateTo, isSubmitting, setIsS
           <div className="space-y-2"><Label className="text-sm text-slate-300">Email (Optional)</Label><Input type="email" placeholder="your.email@example.com" value={info.email} onChange={(e) => uf("email", e.target.value)} className="border-white/10 bg-white/5 text-white placeholder:text-slate-600 focus:border-rose-500/50 focus:ring-rose-500/30" /></div>
           <div className="space-y-2"><Label className="text-sm text-slate-300">Message (Optional)</Label><Textarea placeholder="Any message for the station or the artists?" rows={2} value={info.message} onChange={(e) => uf("message", e.target.value)} className="border-white/10 bg-white/5 text-white placeholder:text-slate-600 focus:border-rose-500/50 focus:ring-rose-500/30" /></div>
           <Button onClick={handleDonate} disabled={isSubmitting || !tier} className="w-full bg-gradient-to-r from-rose-500 to-pink-400 py-5 text-lg font-bold text-white shadow-lg shadow-rose-500/20 hover:from-rose-400 hover:to-pink-300 disabled:opacity-50">
-            {isSubmitting ? <><Loader2 className="mr-2 h-5 w-5 animate-spin" />Processing...</> : <><Heart className="mr-2 h-5 w-5" />Confirm Donation — {selectedTier?.price}</>}
+            {isSubmitting ? <><Loader2 className="mr-2 h-5 w-5 animate-spin" />Processing...</> : <><Heart className="mr-2 h-5 w-5" />Confirm Support — {selectedTier?.price}</>}
           </Button>
           <p className="text-center text-xs text-slate-600">Secure payment via Stripe or PayPal. Tax receipts available upon request.</p>
         </div>
@@ -950,7 +948,7 @@ function DonatePathway({ step, setStep, goHome, navigateTo, isSubmitting, setIsS
         <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-rose-500/10">
           <Heart className="h-10 w-10 text-rose-400" />
         </div>
-        <Badge className="mb-3 border-rose-500/30 bg-rose-500/20 text-rose-400">DONATION CONFIRMED</Badge>
+        <Badge className="mb-3 border-rose-500/30 bg-rose-500/20 text-rose-400">SUPPORT CONFIRMED</Badge>
         <h2 className="mb-2 text-3xl font-black text-white">MARAMING SALAMAT!</h2>
         <p className="mb-2 text-slate-300">
           {selectedTier?.id === "kanto"
