@@ -1,6 +1,6 @@
 {
   "framework": "nextjs",
   "buildCommand": "prisma generate && next build",
-  "installCommand": "npm install",
+  "installCommand": "bun install --no-save",
   "outputDirectory": ".next"
 }
