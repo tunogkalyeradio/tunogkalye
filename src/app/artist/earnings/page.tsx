@@ -63,48 +63,61 @@ export default async function ArtistEarningsPage() {
   const availableAmount = deliveredItems._sum.subtotal || 0;
 
   // Monthly breakdown
-  const twelveMonthsAgo = new Date();
-  twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
-  twelveMonthsAgo.setDate(1);
-  twelveMonthsAgo.setHours(0, 0, 0, 0);
+  let monthlyEntries: [string, { earnings: number; orders: number }][] = [];
+  try {
+    const twelveMonthsAgo = new Date();
+    twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
+    twelveMonthsAgo.setDate(1);
+    twelveMonthsAgo.setHours(0, 0, 0, 0);
 
-  const monthlyData = await db.orderItem.groupBy({
-    by: ["createdAt"],
-    where: {
-      artistId: artistProfile.id,
-      createdAt: { gte: twelveMonthsAgo },
-    },
-    _sum: { subtotal: true },
-    _count: { id: true },
-  });
+    const monthlyData = await db.orderItem.groupBy({
+      by: ["createdAt"],
+      where: {
+        artistId: artistProfile.id,
+        createdAt: { gte: twelveMonthsAgo },
+      },
+      _sum: { subtotal: true },
+      _count: { id: true },
+    });
 
-  // Aggregate by month
-  const monthlyMap: Record<string, { earnings: number; orders: number }> = {};
-  for (const item of monthlyData) {
-    const key = `${item.createdAt.getFullYear()}-${String(item.createdAt.getMonth() + 1).padStart(2, "0")}`;
-    if (!monthlyMap[key]) {
-      monthlyMap[key] = { earnings: 0, orders: 0 };
+    // Aggregate by month
+    const monthlyMap: Record<string, { earnings: number; orders: number }> = {};
+    for (const item of monthlyData) {
+      const d = item.createdAt instanceof Date ? item.createdAt : new Date(item.createdAt);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+      if (!monthlyMap[key]) {
+        monthlyMap[key] = { earnings: 0, orders: 0 };
+      }
+      monthlyMap[key].earnings += item._sum.subtotal || 0;
+      monthlyMap[key].orders += item._count.id;
     }
-    monthlyMap[key].earnings += item._sum.subtotal || 0;
-    monthlyMap[key].orders += item._count.id;
+
+    monthlyEntries = Object.entries(monthlyMap).sort((a, b) =>
+      b[0].localeCompare(a[0])
+    );
+  } catch (error) {
+    console.error("[EarningsPage] Monthly breakdown error:", error);
+    monthlyEntries = [];
   }
 
-  const monthlyEntries = Object.entries(monthlyMap).sort((a, b) =>
-    b[0].localeCompare(a[0])
-  );
-
   // Per-product earnings ranking
-  const productEarnings = await db.orderItem.groupBy({
-    by: ["productId", "productName"],
-    where: { artistId: artistProfile.id },
-    _sum: { subtotal: true, quantity: true },
-    _count: { id: true },
-    orderBy: { _sum: { subtotal: "desc" } },
-    take: 10,
-  });
+  let productEarnings: any[] = [];
+  try {
+    productEarnings = await db.orderItem.groupBy({
+      by: ["productId", "productName"],
+      where: { artistId: artistProfile.id },
+      _sum: { subtotal: true, quantity: true },
+      _count: { id: true },
+      orderBy: { _sum: { subtotal: "desc" } },
+      take: 10,
+    });
+  } catch (error) {
+    console.error("[EarningsPage] Product earnings error:", error);
+    productEarnings = [];
+  }
 
   const maxBarValue = Math.max(
-    ...productEarnings.map((p) => p._sum.subtotal || 0),
+    ...productEarnings.map((p: any) => p._sum.subtotal || 0),
     1
   );
 
@@ -276,7 +289,7 @@ export default async function ArtistEarningsPage() {
               <div className="space-y-3 max-h-96 overflow-y-auto">
                 {productEarnings.map((product, index) => {
                   const barWidth =
-                    ((product._sum.artistCut || 0) / maxBarValue) * 100;
+                    ((product._sum.subtotal || 0) / maxBarValue) * 100;
                   return (
                     <div key={product.productId} className="space-y-1.5">
                       <div className="flex items-center justify-between">

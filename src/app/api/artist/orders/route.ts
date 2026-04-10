@@ -27,6 +27,8 @@ export async function GET() {
             status: true,
             createdAt: true,
             trackingNumber: true,
+            guestName: true,
+            guestEmail: true,
             customer: { select: { name: true } },
           },
         },
@@ -64,7 +66,7 @@ export async function GET() {
         orderMap.set(orderId, {
           orderId,
           orderNumber: item.order.orderNumber,
-          customerName: item.order.customer.name,
+          customerName: item.order.customer?.name || (item.order as any).guestName || "Guest",
           status: item.order.status,
           createdAt: item.order.createdAt,
           trackingNumber: item.order.trackingNumber,
@@ -73,6 +75,7 @@ export async function GET() {
         });
       }
 
+      const artistCut = (item.subtotal || 0) * 0.9;
       const group = orderMap.get(orderId)!;
       group.items.push({
         id: item.id,
@@ -80,12 +83,12 @@ export async function GET() {
         productImage: item.productImage,
         quantity: item.quantity,
         unitPrice: item.unitPrice,
-        artistCut: item.artistCut,
+        artistCut,
         fulfillmentMode: item.fulfillmentMode,
         shippingFee: item.shippingFee,
         status: item.status,
       });
-      group.totalArtistCut += item.artistCut;
+      group.totalArtistCut += artistCut;
     }
 
     // Convert dates to strings for serialization

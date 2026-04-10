@@ -30,12 +30,14 @@ export default async function OrdersPage() {
   // Serialize: handle null customer (guest orders) by falling back to guestName/guestEmail
   const serializedOrders = orders.map((o: any) => ({
     id: o.id,
-    orderNumber: o.orderNumber,
+    orderNumber: o.orderNumber || "",
     totalAmount: o.totalAmount ?? 0,
     platformRevenue: o.platformRevenue ?? 0,
     artistRevenueTotal: o.artistRevenueTotal ?? 0,
-    status: o.status,
-    createdAt: o.createdAt ? o.createdAt.toISOString() : new Date().toISOString(),
+    status: o.status || "PENDING",
+    createdAt: o.createdAt
+      ? new Date(o.createdAt).toISOString()
+      : new Date().toISOString(),
     customerName: o.customer?.name || o.guestName || "Guest",
     customerEmail: o.customer?.email || o.guestEmail || "—",
     _count: o._count || { orderItems: 0 },

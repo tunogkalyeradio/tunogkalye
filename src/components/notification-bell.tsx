@@ -202,7 +202,7 @@ export default function NotificationBell() {
           {/* Footer */}
           <div className="border-t border-white/10 px-4 py-2">
             <a
-              href={typeof window !== "undefined" ? "/dashboard/notifications" : "#"}
+              href={typeof window !== "undefined" && window.location?.pathname?.startsWith("/admin") ? "/admin/notifications" : "/dashboard/notifications"}
               onClick={() => setIsOpen(false)}
               className="flex items-center justify-center gap-1.5 text-xs text-slate-400 transition-colors hover:text-white"
             >

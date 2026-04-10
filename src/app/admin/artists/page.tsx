@@ -32,12 +32,21 @@ export default async function ArtistsPage() {
   }
 
   // Serialize dates for client component
-  const serializedArtists = artists.map((a) => ({
+  const serializedArtists = artists.map((a: any) => ({
     ...a,
-    createdAt: a.createdAt ? a.createdAt.toISOString() : new Date().toISOString(),
+    createdAt: a.createdAt
+      ? new Date(a.createdAt).toISOString()
+      : new Date().toISOString(),
+    updatedAt: a.updatedAt
+      ? new Date(a.updatedAt).toISOString()
+      : new Date().toISOString(),
     user: a.user
       ? { ...a.user }
       : { email: "", name: "Unknown" },
+    isVerified: a.isVerified ?? false,
+    stripeOnboardingComplete: a.stripeOnboardingComplete ?? false,
+    storeStatus: a.storeStatus || "PENDING",
+    _count: a._count || { products: 0, orderItems: 0 },
   }));
 
   return <ArtistsContent artists={serializedArtists} />;

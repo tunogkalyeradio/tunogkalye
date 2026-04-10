@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireRole } from "@/lib/auth-utils";
 import { db } from "@/lib/db";
+import { sendEmail, artistVerifiedEmail } from "@/lib/email";
 
 export async function PATCH(
   request: NextRequest,
@@ -37,6 +38,26 @@ export async function PATCH(
       data: { isVerified: !artist.isVerified },
       select: { id: true, bandName: true, isVerified: true },
     });
+
+    // Send verification email when newly verified
+    if (updated.isVerified) {
+      try {
+        const artistWithUser = await db.artistProfile.findUnique({
+          where: { id: artistId },
+          include: { user: { select: { email: true, name: true } } },
+        });
+        if (artistWithUser?.user?.email) {
+          await sendEmail({
+            to: artistWithUser.user.email,
+            ...artistVerifiedEmail(artistWithUser.user.name, updated.bandName),
+          });
+          console.log(`[Verify] Verification email sent to ${artistWithUser.user.email}`);
+        }
+      } catch (emailError) {
+        console.error("[Verify] Failed to send verification email:", emailError);
+        // Don't fail the request if email fails
+      }
+    }
 
     return NextResponse.json({
       message: updated.isVerified

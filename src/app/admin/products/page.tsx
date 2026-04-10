@@ -27,12 +27,21 @@ export default async function ProductsPage() {
     products = [];
   }
 
-  const categories = [...new Set(products.map((p: any) => p.category))].sort();
+  const categories = [...new Set(products.map((p: any) => p.category).filter(Boolean))].sort();
 
   const serializedProducts = products.map((p: any) => ({
     ...p,
-    createdAt: p.createdAt ? p.createdAt.toISOString() : new Date().toISOString(),
-    artist: p.artist ? { ...p.artist } : { id: 0, bandName: "Unknown" },
+    createdAt: p.createdAt
+      ? new Date(p.createdAt).toISOString()
+      : new Date().toISOString(),
+    price: p.price ?? 0,
+    stock: p.stock ?? 0,
+    isActive: p.isActive ?? true,
+    fulfillmentMode: p.fulfillmentMode || "PLATFORM_DELIVERY",
+    artist: p.artist
+      ? { ...p.artist }
+      : { id: 0, bandName: "Unknown" },
+    _count: p._count || { orderItems: 0 },
   }));
 
   return (

@@ -33,7 +33,7 @@ export default async function RevenuePage() {
   }
 
   // Total revenue
-  let totalRevenue: any = { _sum: {}, _count: 0 };
+  let totalRevenue: any = { _sum: { platformRevenue: 0, artistRevenueTotal: 0, totalAmount: 0 }, _count: 0 };
   try {
     totalRevenue = await db.order.aggregate({
       _sum: { platformRevenue: true, artistRevenueTotal: true, totalAmount: true },
@@ -42,7 +42,6 @@ export default async function RevenuePage() {
     });
   } catch (error) {
     console.error("[RevenuePage] Error fetching total revenue:", error);
-    totalRevenue = { _sum: { platformRevenue: 0, artistRevenueTotal: 0, totalAmount: 0 }, _count: 0 };
   }
 
   // Monthly breakdown (last 12 months)
@@ -55,7 +54,7 @@ export default async function RevenuePage() {
   }[] = [];
   try {
     monthlyRevenue = await db.$queryRawUnsafe(`
-      SELECT 
+      SELECT
         substr(createdAt, 1, 7) as month,
         SUM(platformRevenue) as platformRevenue,
         SUM(artistRevenueTotal) as artistRevenue,
@@ -66,19 +65,12 @@ export default async function RevenuePage() {
       GROUP BY substr(createdAt, 1, 7)
       ORDER BY month DESC
       LIMIT 12
-    `) as {
-      month: string;
-      platformRevenue: number;
-      artistRevenue: number;
-      totalAmount: number;
-      orderCount: number;
-    }[];
+    `) as any;
   } catch (error) {
     console.error("[RevenuePage] Error fetching monthly revenue:", error);
-    monthlyRevenue = [];
   }
 
-  const monthlyData = [...monthlyRevenue].reverse();
+  const monthlyData = [...(monthlyRevenue || [])].reverse();
 
   // Per-artist revenue breakdown
   let artistRevenue: any[] = [];
@@ -100,23 +92,22 @@ export default async function RevenuePage() {
     });
   } catch (error) {
     console.error("[RevenuePage] Error fetching artist revenue:", error);
-    artistRevenue = [];
   }
 
   // Platform cut is 10%, artist gets 90%
   const PLATFORM_CUT = 0.1;
 
-  const artistBreakdown = artistRevenue
+  const artistBreakdown = (artistRevenue || [])
     .map((a: any) => {
-      const totalSales = a.orderItems.reduce((s: number, i: any) => s + (i.subtotal || 0), 0);
+      const totalSales = (a.orderItems || []).reduce((s: number, i: any) => s + (i.subtotal || 0), 0);
       return {
         id: a.id,
-        bandName: a.bandName,
-        city: a.city,
+        bandName: a.bandName || "Unknown",
+        city: a.city || "",
         totalSales,
         artistEarnings: totalSales * (1 - PLATFORM_CUT),
         platformEarnings: totalSales * PLATFORM_CUT,
-        itemsSold: a.orderItems.length,
+        itemsSold: (a.orderItems || []).length,
       };
     })
     .sort((a: any, b: any) => b.totalSales - a.totalSales);
@@ -143,22 +134,21 @@ export default async function RevenuePage() {
     });
   } catch (error) {
     console.error("[RevenuePage] Error fetching top products:", error);
-    topProducts = [];
   }
 
-  const topProductsData = topProducts
+  const topProductsData = (topProducts || [])
     .map((p: any) => ({
       id: p.id,
-      name: p.name,
-      price: p.price,
-      category: p.category,
-      totalSold: p.orderItems.reduce((s: number, i: any) => s + (i.quantity || 0), 0),
-      totalRevenue: p.orderItems.reduce((s: number, i: any) => s + (i.subtotal || 0), 0),
+      name: p.name || "Unknown",
+      price: p.price ?? 0,
+      category: p.category || "",
+      totalSold: (p.orderItems || []).reduce((s: number, i: any) => s + (i.quantity || 0), 0),
+      totalRevenue: (p.orderItems || []).reduce((s: number, i: any) => s + (i.subtotal || 0), 0),
     }))
     .sort((a: any, b: any) => b.totalRevenue - a.totalRevenue);
 
   const maxMonthlyRevenue = Math.max(
-    ...monthlyData.map((m) => m.totalAmount || 0),
+    ...(monthlyData || []).map((m: any) => m.totalAmount || 0),
     1
   );
 
@@ -184,7 +174,7 @@ export default async function RevenuePage() {
               </div>
               <div>
                 <p className="text-xl font-bold text-white">
-                  {formatPeso(totalRevenue._sum.platformRevenue || 0)}
+                  {formatPeso(totalRevenue._sum?.platformRevenue || 0)}
                 </p>
                 <p className="text-xs text-slate-500">
                   Total Platform Revenue
@@ -201,7 +191,7 @@ export default async function RevenuePage() {
               </div>
               <div>
                 <p className="text-xl font-bold text-white">
-                  {formatPeso(totalRevenue._sum.artistRevenueTotal || 0)}
+                  {formatPeso(totalRevenue._sum?.artistRevenueTotal || 0)}
                 </p>
                 <p className="text-xs text-slate-500">
                   Total Artist Payouts
@@ -218,7 +208,7 @@ export default async function RevenuePage() {
               </div>
               <div>
                 <p className="text-xl font-bold text-white">
-                  {formatPeso(totalRevenue._sum.totalAmount || 0)}
+                  {formatPeso(totalRevenue._sum?.totalAmount || 0)}
                 </p>
                 <p className="text-xs text-slate-500">Total Gross Sales</p>
               </div>
@@ -258,7 +248,7 @@ export default async function RevenuePage() {
             <>
               {/* Bar Chart */}
               <div className="mb-6 flex items-end gap-2 h-44">
-                {monthlyData.map((m) => {
+                {monthlyData.map((m: any) => {
                   const height = Math.max(
                     ((m.totalAmount || 0) / maxMonthlyRevenue) * 100,
                     3
@@ -333,7 +323,7 @@ export default async function RevenuePage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/5">
-                    {[...monthlyData].reverse().map((m) => (
+                    {[...monthlyData].reverse().map((m: any) => (
                       <tr key={m.month} className="hover:bg-white/5">
                         <td className="py-2 font-medium text-white">
                           {m.month}
@@ -501,7 +491,7 @@ export default async function RevenuePage() {
               <div className="mt-4 flex flex-wrap gap-6">
                 <div>
                   <p className="text-2xl font-bold text-red-400">
-                    {formatPeso(totalRevenue._sum.platformRevenue || 0)}
+                    {formatPeso(totalRevenue._sum?.platformRevenue || 0)}
                   </p>
                   <p className="text-xs text-slate-500">
                     Total Kanto Fund Contributions

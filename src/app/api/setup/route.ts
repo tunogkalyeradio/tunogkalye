@@ -20,6 +20,128 @@ async function runRaw(db: any, sql: string) {
   await db.$executeRawUnsafe(sql);
 }
 
+async function addColumnIfNotExists(db: any, table: string, column: string, type: string, defaultVal?: string) {
+  try {
+    const cols: any[] = await db.$queryRawUnsafe(`PRAGMA table_info("${table}")`);
+    const exists = cols.some((c: any) => c.name === column);
+    if (!exists) {
+      const def = defaultVal ? ` DEFAULT ${defaultVal}` : "";
+      await db.$executeRawUnsafe(`ALTER TABLE "${table}" ADD COLUMN "${column}" ${type}${def};`);
+      console.log(`[MIGRATE] Added ${table}.${column}`);
+    }
+  } catch (e: any) {
+    console.warn(`[MIGRATE] Could not add ${table}.${column}: ${e.message?.substring(0, 100)}`);
+  }
+}
+
+// PATCH: Run migrations or create admin
+export async function PATCH(request: globalThis.Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const key = searchParams.get("key");
+    if (key !== SETUP_KEY) return NextResponse.json({ error: "Invalid setup key" }, { status: 403 });
+
+    const action = searchParams.get("action");
+
+    if (action === "migrate") {
+      const db = getDb();
+      const migrations = [
+        // User table
+        ["User", "provider", "TEXT", "'credentials'"],
+        ["User", "address", "TEXT"],
+        // ArtistProfile table
+        ["ArtistProfile", "stripeAccountId", "TEXT"],
+        ["ArtistProfile", "stripeOnboardingComplete", "INTEGER", "0"],
+        ["ArtistProfile", "isVerified", "INTEGER", "0"],
+        ["ArtistProfile", "storeStatus", "TEXT", "'PENDING'"],
+        ["ArtistProfile", "storeRejectedReason", "TEXT"],
+        ["ArtistProfile", "totalSales", "REAL", "0"],
+        ["ArtistProfile", "totalAirplays", "INTEGER", "0"],
+        ["ArtistProfile", "socialLinks", "TEXT"],
+        ["ArtistProfile", "imageUrl", "TEXT"],
+        // Product table
+        ["Product", "compareAtPrice", "REAL"],
+        ["Product", "productType", "TEXT", "'PHYSICAL'"],
+        ["Product", "sizes", "TEXT"],
+        ["Product", "colors", "TEXT"],
+        ["Product", "isStation", "INTEGER", "0"],
+        ["Product", "isFlagged", "INTEGER", "0"],
+        ["Product", "flagReason", "TEXT"],
+        ["Product", "downloadUrl", "TEXT"],
+        ["Product", "fileSize", "TEXT"],
+        ["Product", "fileFormat", "TEXT"],
+        // Order table
+        ["Order", "guestEmail", "TEXT"],
+        ["Order", "guestName", "TEXT"],
+        ["Order", "platformRevenue", "REAL", "0"],
+        ["Order", "artistRevenueTotal", "REAL", "0"],
+        ["Order", "trackingNumber", "TEXT"],
+        ["Order", "notes", "TEXT"],
+        // OrderItem table
+        ["OrderItem", "createdAt", "DATETIME", "CURRENT_TIMESTAMP"],
+        ["OrderItem", "isStationMerch", "INTEGER", "0"],
+        ["OrderItem", "isDigital", "INTEGER", "0"],
+        ["OrderItem", "downloadUrl", "TEXT"],
+        ["OrderItem", "shippingFee", "REAL", "0"],
+        // Cart table
+        ["Cart", "sessionId", "TEXT"],
+        ["Cart", "size", "TEXT"],
+      ];
+
+      const results: string[] = [];
+      for (const [table, column, type, defaultVal] of migrations) {
+        try {
+          const cols: any[] = await db.$queryRawUnsafe(`PRAGMA table_info("${table}")`);
+          const exists = cols.some((c: any) => c.name === column);
+          if (!exists) {
+            const def = defaultVal ? ` DEFAULT ${defaultVal}` : "";
+            await db.$executeRawUnsafe(`ALTER TABLE "${table}" ADD COLUMN "${column}" ${type}${def};`);
+            results.push(`Added ${table}.${column}`);
+          }
+        } catch (e: any) {
+          results.push(`Skipped ${table}.${column}: ${e.message?.substring(0, 80)}`);
+        }
+      }
+
+      await db.$disconnect();
+      return NextResponse.json({ success: true, migrations: results, message: `Migration complete. ${results.filter(r => r.startsWith("Added")).length} columns added.` });
+    }
+
+    if (action === "admin") {
+      const db = getDb();
+
+      // Check if admin exists
+      const existing = await db.user.findUnique({ where: { email: "admin@tunogkalye.net" } });
+      if (existing) {
+        await db.$disconnect();
+        return NextResponse.json({ message: "Admin account already exists", email: existing.email });
+      }
+
+      const hashedPassword = await bcrypt.hash("Tunog1990s!", 12);
+      const admin = await db.user.create({
+        data: {
+          email: "admin@tunogkalye.net",
+          name: "TKR Admin",
+          password: hashedPassword,
+          role: "ADMIN",
+          provider: "credentials",
+        },
+      });
+
+      await db.$disconnect();
+      return NextResponse.json({
+        success: true,
+        message: "Admin account created successfully",
+        admin: { id: admin.id, email: admin.email, name: admin.name, role: admin.role },
+      });
+    }
+
+    return NextResponse.json({ error: "Unknown action. Use action=migrate or action=admin" }, { status: 400 });
+  } catch (error: any) {
+    return NextResponse.json({ error: "Action failed: " + (error.message?.substring(0, 200) || "Unknown error") }, { status: 500 });
+  }
+}
+
 // GET: Check database state
 export async function GET(request: globalThis.Request) {
   try {
@@ -174,6 +296,7 @@ export async function POST(request: globalThis.Request) {
       "status" TEXT NOT NULL DEFAULT 'PENDING',
       "isStationMerch" INTEGER NOT NULL DEFAULT 0, "isDigital" INTEGER NOT NULL DEFAULT 0,
       "downloadUrl" TEXT,
+      "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY ("orderId") REFERENCES "Order"("id") ON DELETE CASCADE,
       FOREIGN KEY ("productId") REFERENCES "Product"("id"),
       FOREIGN KEY ("artistId") REFERENCES "ArtistProfile"("id")
