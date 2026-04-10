@@ -173,16 +173,19 @@ export default function StorePageClient({
         </div>
       </section>
 
-      {/* OFFICIAL TKR MERCH */}
+      {/* OFFICIAL TKR MERCH — GA&A EVENTS */}
       {stationProducts && stationProducts.length > 0 && (
         <section>
           <div className="mb-6 flex items-center justify-between">
             <div>
+              <div className="mb-1 flex items-center gap-2">
+                <span className="text-xs font-bold uppercase tracking-widest text-amber-400">Presented by</span>
+              </div>
               <h2 className="flex items-center gap-2 text-xl font-bold tracking-tight sm:text-2xl">
                 <Radio className="h-5 w-5 text-red-400" />
-                Official Tunog Kalye Radio Merch
+                GA&A Events — Official TKR Merch
               </h2>
-              <p className="mt-1 text-sm text-slate-500">100% of proceeds support the station</p>
+              <p className="mt-1 text-sm text-slate-500">Premium station merchandise. 100% of proceeds support operations.</p>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
@@ -206,8 +209,8 @@ export default function StorePageClient({
                           -{spDiscount}%
                         </Badge>
                       )}
-                      <Badge className="absolute right-2 top-2 border-0 bg-red-500/80 px-1.5 py-0 text-[9px] font-bold text-white backdrop-blur-sm">
-                        Official TKR
+                      <Badge className="absolute right-2 top-2 border-0 bg-amber-500/80 px-1.5 py-0 text-[9px] font-bold text-black backdrop-blur-sm">
+                        GA&A Events
                       </Badge>
                     </div>
                     <CardContent className="p-3">

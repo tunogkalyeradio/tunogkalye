@@ -192,7 +192,111 @@ export async function PATCH(request: globalThis.Request) {
       });
     }
 
-    return NextResponse.json({ error: "Unknown action. Use action=migrate or action=admin" }, { status: 400 });
+    if (action === "merch") {
+      const db = getDb();
+      const results: string[] = [];
+
+      // Find or create the station artist profile
+      let stationArtist: any = null;
+      try {
+        stationArtist = await db.$queryRawUnsafe(`SELECT * FROM "ArtistProfile" WHERE "bandName" = 'Tunog Kalye Radio' LIMIT 1`);
+      } catch { /* table may not exist */ }
+
+      let artistId: number;
+      if (stationArtist && stationArtist.length > 0) {
+        artistId = stationArtist[0].id;
+        results.push("Using existing station artist profile");
+      } else {
+        // Get admin user
+        const adminUser: any = await db.$queryRawUnsafe(`SELECT * FROM "User" WHERE "role" = 'ADMIN' LIMIT 1`);
+        if (!adminUser || adminUser.length === 0) {
+          return NextResponse.json({ error: "No admin user found. Create admin first." }, { status: 400 });
+        }
+        const insertResult: any = await db.$queryRawUnsafe(
+          `INSERT INTO "ArtistProfile" ("userId", "bandName", "realName", "city", "storeStatus", "isVerified") VALUES (${adminUser[0].id}, 'Tunog Kalye Radio', 'TKR Official', 'Surrey, BC', 'APPROVED', 1) RETURNING id`
+        );
+        artistId = insertResult[0].id;
+        results.push("Created station artist profile");
+      }
+
+      // Delete existing station merch to avoid duplicates
+      await db.$executeRawUnsafe(`DELETE FROM "Product" WHERE "isStation" = 1`);
+      results.push("Cleared existing station merch");
+
+      const BASE_URL = "https://hub.tunogkalye.net";
+
+      const merchItems = [
+        {
+          name: "TKR Logo T-Shirt",
+          description: "Premium black cotton t-shirt featuring the Tunog Kalye Radio logo. A must-have for every member of the Kanto. Comfortable, durable, and built to represent the station that puts artists first.",
+          price: 450,
+          compareAtPrice: 550,
+          category: "T-Shirt",
+          images: JSON.stringify([`${BASE_URL}/merch/tkr-tshirt.png`]),
+          sizes: JSON.stringify(["S", "M", "L", "XL", "XXL"]),
+          colors: JSON.stringify(["Black"]),
+          stock: 50,
+          shippingFee: 80,
+        },
+        {
+          name: "TKR Logo Hoodie",
+          description: "Heavyweight black pullover hoodie with the Tunog Kalye Radio embroidered logo. Perfect for those cold Surrey nights or studio sessions. Premium fleece lining for maximum comfort.",
+          price: 899,
+          compareAtPrice: 1100,
+          category: "Hoodie",
+          images: JSON.stringify([`${BASE_URL}/merch/tkr-hoodie.png`]),
+          sizes: JSON.stringify(["S", "M", "L", "XL", "XXL"]),
+          colors: JSON.stringify(["Black"]),
+          stock: 30,
+          shippingFee: 100,
+        },
+        {
+          name: "TKR Logo Cap",
+          description: "Structured black baseball cap with the Tunog Kalye Radio embroidered logo. One size fits all with adjustable snapback closure. Rep the station wherever you go.",
+          price: 350,
+          compareAtPrice: 420,
+          category: "Cap",
+          images: JSON.stringify([`${BASE_URL}/merch/tkr-hat.png`]),
+          sizes: JSON.stringify(["One Size"]),
+          colors: JSON.stringify(["Black"]),
+          stock: 40,
+          shippingFee: 60,
+        },
+        {
+          name: "TKR Logo Tumbler",
+          description: "Double-walled insulated ceramic tumbler with the Tunog Kalye Radio logo. Keeps your coffee hot during those late-night listening sessions. 16oz capacity, microwave and dishwasher safe.",
+          price: 299,
+          compareAtPrice: 380,
+          category: "Tumbler",
+          images: JSON.stringify([`${BASE_URL}/merch/tkr-tumbler.png`]),
+          sizes: null,
+          colors: JSON.stringify(["Black"]),
+          stock: 35,
+          shippingFee: 70,
+        },
+      ];
+
+      for (const item of merchItems) {
+        const imagesStr = item.images.replace(/'/g, "''");
+        const sizesStr = item.sizes ? item.sizes.replace(/'/g, "''") : "NULL";
+        const colorsStr = item.colors.replace(/'/g, "''");
+
+        await db.$executeRawUnsafe(
+          `INSERT INTO "Product" ("artistId", "name", "description", "price", "compareAtPrice", "category", "productType", "images", "sizes", "colors", "stock", "fulfillmentMode", "shippingFee", "isActive", "isStation")
+           VALUES (${artistId}, '${item.name.replace(/'/g, "''")}', '${item.description.replace(/'/g, "''")}', ${item.price}, ${item.compareAtPrice}, '${item.category}', 'PHYSICAL', '${imagesStr}', ${sizesStr}, '${colorsStr}', ${item.stock}, 'PLATFORM_DELIVERY', ${item.shippingFee}, 1, 1)`
+        );
+        results.push(`Created: ${item.name}`);
+      }
+
+      await db.$disconnect();
+      return NextResponse.json({
+        success: true,
+        message: `Station merch seeded successfully (${merchItems.length} products)`,
+        details: results,
+      });
+    }
+
+    return NextResponse.json({ error: "Unknown action. Use action=migrate, action=admin, or action=merch" }, { status: 400 });
   } catch (error: any) {
     return NextResponse.json({ error: "Action failed: " + (error.message?.substring(0, 200) || "Unknown error") }, { status: 500 });
   }
