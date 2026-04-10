@@ -16,10 +16,14 @@ const defaultSettings = [
   // Sponsor
   { key: "sponsor_name_1", value: "", label: "Sponsor Name 1 (Restaurant/Business)", group: "sponsor" },
   { key: "sponsor_link_1", value: "", label: "Sponsor Link 1 (Website URL)", group: "sponsor" },
+  { key: "sponsor_description_1", value: "", label: "Sponsor Tagline 1 (e.g. The best Pinoy food in Surrey!)", group: "sponsor" },
   { key: "sponsor_name_2", value: "", label: "Sponsor Name 2", group: "sponsor" },
   { key: "sponsor_link_2", value: "", label: "Sponsor Link 2", group: "sponsor" },
+  { key: "sponsor_description_2", value: "", label: "Sponsor Tagline 2", group: "sponsor" },
   { key: "sponsor_name_3", value: "", label: "Sponsor Name 3", group: "sponsor" },
   { key: "sponsor_link_3", value: "", label: "Sponsor Link 3", group: "sponsor" },
+  { key: "sponsor_description_3", value: "", label: "Sponsor Tagline 3", group: "sponsor" },
+  { key: "sponsor_enabled", value: "true", label: "Show Sponsor Banner on Radio Page", group: "sponsor" },
 
   // Content
   { key: "submit_hero_title", value: "ATTENTION LOCAL PINOY BANDS", label: "Submit Page Hero Title", group: "content" },

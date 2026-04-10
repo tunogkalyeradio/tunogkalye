@@ -35,3 +35,23 @@ Stage Summary:
 - Login page updated: `/home/z/my-project/src/app/auth/login/page.tsx`
 - Prisma schema updated with SiteSetting model
 - 20 default site settings seeded into database
+
+---
+Task ID: 2
+Agent: Main Agent
+Task: Dynamic sponsor banner for AzuraCast — admin can change restaurant/sponsor names without code changes
+
+Work Log:
+- Analyzed existing AzuraCast page at tunogkalye.net/public/tunog-kalye — found hardcoded `[Your Restaurant Name]` sponsor banner
+- Added `sponsor_description_1/2/3` fields and `sponsor_enabled` toggle to seed data (prisma/seed-settings.ts)
+- Created public API endpoint `/api/sponsor-widget` with CORS support for cross-origin AzuraCast requests
+- Rewrote azuracast-custom-widget.html to be 100% dynamic — fetches sponsor data from Hub API
+- Widget includes fallback: if API is unreachable, renders static banner without sponsors
+- Seeded 24 default site settings to database (up from 20)
+
+Stage Summary:
+- New sponsor widget API: `/home/z/my-project/src/app/api/sponsor-widget/route.ts`
+- Updated seed data: `/home/z/my-project/prisma/seed-settings.ts`
+- Updated AzuraCast widget: `/home/z/my-project/download/azuracast-custom-widget.html`
+- Admin can now manage sponsors at /admin/settings → "Sponsors & Partners" tab
+- To deploy: paste new widget HTML into AzuraCast Station Pages → Custom HTML

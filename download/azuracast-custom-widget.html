@@ -1,29 +1,57 @@
 <!--
   ═══════════════════════════════════════════════════════════
-  AZURACAST CUSTOM HTML WIDGET
+  AZURACAST CUSTOM HTML WIDGET — DYNAMIC VERSION
   Paste this into your AzuraCast Station Page → Custom HTML
   (Administration → Station Pages → Custom HTML)
   
-  This adds funnel links to your AzuraCast homepage that
-  point to hub.tunogkalye.net
+  This widget is 100% dynamic:
+  - Sponsor names, links, and descriptions are loaded from
+    the Hub admin dashboard — NO code changes needed!
+  - Admin updates sponsors at: hub.tunogkalye.net/admin/settings
+    under the "Sponsors & Partners" tab
+  
+  HOW IT WORKS:
+  1. Widget loads and fetches data from hub.tunogkalye.net/api/sponsor-widget
+  2. Renders the Tunog Kalye Hub banner with funnel links
+  3. If sponsors are configured, shows a sponsor banner above
+  4. If the API is unreachable, falls back to default static content
   ═══════════════════════════════════════════════════════════
 -->
 
 <style>
+  /* THIS IS THE MAGIC FIX FOR "FIRST VIEW" */
+  .tk-hub-wrapper {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    z-index: 1000;
+    background: #050505;
+    padding-top: 10px;
+    box-shadow: 0 -5px 20px rgba(0,0,0,0.8);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  }
+
+  body {
+    padding-bottom: 240px;
+  }
+
   .tk-hub-banner {
     background: linear-gradient(135deg, #1a0000 0%, #0a0a0f 50%, #1a0a00 100%);
     border: 1px solid rgba(255,255,255,0.1);
     border-radius: 12px;
-    padding: 24px;
-    margin: 20px 0;
+    padding: 20px;
+    margin: 0 auto 10px auto;
     text-align: center;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    max-width: 800px;
+    box-sizing: border-box;
   }
   .tk-hub-banner h3 {
-    color: #fff;
-    font-size: 18px;
-    font-weight: 800;
-    margin: 0 0 4px 0;
+    color: #fff !important;
+    font-size: 18px !important;
+    font-weight: 800 !important;
+    margin: 0 0 4px 0 !important;
     letter-spacing: -0.02em;
   }
   .tk-hub-banner h3 span {
@@ -33,9 +61,9 @@
     background-clip: text;
   }
   .tk-hub-banner p {
-    color: #94a3b8;
-    font-size: 13px;
-    margin: 0 0 16px 0;
+    color: #94a3b8 !important;
+    font-size: 13px !important;
+    margin: 0 0 12px 0 !important;
   }
   .tk-hub-buttons {
     display: flex;
@@ -49,10 +77,10 @@
     gap: 6px;
     padding: 10px 20px;
     border-radius: 8px;
-    font-size: 13px;
-    font-weight: 700;
-    text-decoration: none;
-    color: #fff;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    text-decoration: none !important;
+    color: #fff !important;
     transition: all 0.2s ease;
     cursor: pointer;
     border: none;
@@ -67,25 +95,148 @@
   .tk-hub-btn-secondary {
     background: rgba(255,255,255,0.08);
     border: 1px solid rgba(255,255,255,0.15);
-    color: #e2e8f0;
+    color: #e2e8f0 !important;
   }
   .tk-hub-btn-secondary:hover {
     background: rgba(255,255,255,0.12);
   }
+  .tk-hub-footer {
+    border-top: 1px solid rgba(255,255,255,0.08);
+    padding: 10px 20px;
+    text-align: center;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .tk-hub-footer p {
+    color: #475569 !important;
+    font-size: 11px !important;
+    margin: 0 0 6px 0 !important;
+  }
+  .tk-hub-footer-links {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    flex-wrap: wrap;
+  }
+  .tk-hub-footer-links a {
+    color: #64748b !important;
+    text-decoration: none !important;
+    font-size: 11px !important;
+    font-weight: 500 !important;
+    transition: color 0.2s ease;
+  }
+  .tk-hub-footer-links a:hover {
+    color: #ef4444 !important;
+  }
+
+  /* SPONSOR BANNER */
+  .tk-sponsor-banner {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    padding: 8px 15px;
+    margin: 0 auto 10px auto;
+    text-align: center;
+    max-width: 800px;
+  }
+  .tk-sponsor-banner p {
+    color: #94a3b8 !important;
+    font-size: 12px !important;
+    margin: 0 !important;
+  }
+  .tk-sponsor-banner a {
+    color: #f97316 !important;
+    text-decoration: none !important;
+    font-weight: 700 !important;
+  }
+  .tk-sponsor-banner a:hover {
+    text-decoration: underline !important;
+  }
+
+  /* Loading state */
+  .tk-sponsor-banner.tk-loading::after {
+    content: '...';
+    animation: tk-dots 1s steps(4, end) infinite;
+  }
+  @keyframes tk-dots {
+    0%, 20% { opacity: 0; }
+    50% { opacity: 1; }
+  }
+
+  /* Mobile Fix */
+  @media (max-width: 768px) {
+    body { padding-bottom: 280px; }
+    .tk-hub-banner { padding: 15px 10px; margin: 0 10px 10px 10px; }
+    .tk-hub-btn { width: 100%; justify-content: center; margin-bottom: 5px; }
+    .tk-sponsor-banner { margin: 0 10px 10px 10px; }
+  }
 </style>
 
-<div class="tk-hub-banner">
-  <h3>🎤 TUNOG KALYE <span>HUB</span></h3>
-  <p>Submit your music, support the station, or become a sponsor</p>
-  <div class="tk-hub-buttons">
-    <a href="https://hub.tunogkalye.net" class="tk-hub-btn tk-hub-btn-primary" target="_blank">
-      🎵 Submit Your Music
-    </a>
-    <a href="https://hub.tunogkalye.net" class="tk-hub-btn tk-hub-btn-secondary" target="_blank">
-      ❤️ Support the Station
-    </a>
-    <a href="https://hub.tunogkalye.net" class="tk-hub-btn tk-hub-btn-secondary" target="_blank">
-      💰 Sponsor Us
-    </a>
-  </div>
-</div>
+<script>
+(function() {
+  // Configuration — change HUB_URL if your Hub domain changes
+  var HUB_URL = 'https://hub.tunogkalye.net';
+
+  // Build the widget HTML
+  function renderWidget(data) {
+    var sponsorsHtml = '';
+
+    // Sponsor banner(s) — only show if enabled and sponsors exist
+    if (data.sponsor_enabled && data.sponsors && data.sponsors.length > 0) {
+      for (var i = 0; i < data.sponsors.length; i++) {
+        var s = data.sponsors[i];
+        var link = s.link ? '<a href="' + s.link + '" target="_blank" rel="noopener">' + s.name + '</a>' : s.name;
+        var desc = s.description ? ' \u2014 ' + s.description : '';
+        sponsorsHtml += '<div class="tk-sponsor-banner"><p>Sponsored by ' + link + desc + '</p></div>';
+      }
+    }
+
+    var html = '<div class="tk-hub-wrapper">'
+      + sponsorsHtml
+      + '<div class="tk-hub-banner">'
+      + '<h3>\uD83C\uDFA4 TUNOG KALYE <span>HUB</span></h3>'
+      + '<p>Submit your music, support the station, or become a sponsor</p>'
+      + '<div class="tk-hub-buttons">'
+      + '<a href="' + HUB_URL + '" class="tk-hub-btn tk-hub-btn-primary" target="_blank">\uD83C\uDFB5 Submit Your Music</a>'
+      + '<a href="' + HUB_URL + '" class="tk-hub-btn tk-hub-btn-secondary" target="_blank">\u2764\uFE0F Support the Station</a>'
+      + '<a href="' + HUB_URL + '" class="tk-hub-btn tk-hub-btn-secondary" target="_blank">\uD83D\uDCB0 Sponsor Us</a>'
+      + '</div>'
+      + '</div>'
+      + '<div class="tk-hub-footer">'
+      + '<p>\u00A9 ' + new Date().getFullYear() + ' Tunog Kalye Radio. All Rights Reserved.</p>'
+      + '<div class="tk-hub-footer-links">'
+      + '<a href="' + HUB_URL + '/about" target="_blank">About Us</a>'
+      + '<a href="' + HUB_URL + '/kanto-fund" target="_blank">Kanto Fund</a>'
+      + '<a href="' + HUB_URL + '/terms" target="_blank">Terms of Service</a>'
+      + '<a href="' + HUB_URL + '/privacy" target="_blank">Privacy Policy</a>'
+      + '</div>'
+      + '</div>'
+      + '</div>';
+
+    // Inject into page
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function() {
+        document.body.insertAdjacentHTML('beforeend', html);
+      });
+    } else {
+      document.body.insertAdjacentHTML('beforeend', html);
+    }
+  }
+
+  // Fetch sponsor data from Hub API (with fallback)
+  fetch(HUB_URL + '/api/sponsor-widget')
+    .then(function(res) { return res.ok ? res.json() : null; })
+    .then(function(data) {
+      if (data) {
+        renderWidget(data);
+      } else {
+        // Fallback: render without sponsors
+        renderWidget({ sponsor_enabled: false, sponsors: [] });
+      }
+    })
+    .catch(function() {
+      // Fallback if API unreachable — render static widget
+      renderWidget({ sponsor_enabled: false, sponsors: [] });
+    });
+})();
+</script>
