@@ -13,10 +13,10 @@ const defaultSettings = [
   { key: "footer_video", value: "video.tunogkalye.net", label: "Footer Video Hub URL", group: "general" },
   { key: "footer_location", value: "Surrey, BC, Canada", label: "Footer Location", group: "general" },
 
-  // Sponsor
-  { key: "sponsor_name_1", value: "", label: "Sponsor Name 1 (Restaurant/Business)", group: "sponsor" },
-  { key: "sponsor_link_1", value: "", label: "Sponsor Link 1 (Website URL)", group: "sponsor" },
-  { key: "sponsor_description_1", value: "", label: "Sponsor Tagline 1 (e.g. The best Pinoy food in Surrey!)", group: "sponsor" },
+  // Sponsor (demo placeholders — admin should replace with real sponsors via /admin/settings)
+  { key: "sponsor_name_1", value: "Kusina ni Kalye", label: "Sponsor Name 1 (Restaurant/Business)", group: "sponsor" },
+  { key: "sponsor_link_1", value: "https://example.com", label: "Sponsor Link 1 (Website URL)", group: "sponsor" },
+  { key: "sponsor_description_1", value: "Authentic Pinoy comfort food in the heart of Surrey!", label: "Sponsor Tagline 1 (e.g. The best Pinoy food in Surrey!)", group: "sponsor" },
   { key: "sponsor_name_2", value: "", label: "Sponsor Name 2", group: "sponsor" },
   { key: "sponsor_link_2", value: "", label: "Sponsor Link 2", group: "sponsor" },
   { key: "sponsor_description_2", value: "", label: "Sponsor Tagline 2", group: "sponsor" },

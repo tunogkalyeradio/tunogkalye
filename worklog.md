@@ -69,7 +69,7 @@ Work Log:
 - Added `provider` column to User table on Turso
 - Created missing tables: KantoFundEntry, Tip, SiteSetting, Badge, UserBadge, DigitalPurchase
 - Seeded 23 default site settings into production Turso database
-- Created admin account: admin@tunogkalye.net / Tunog1990s! with ADMIN role on production
+- Created admin account on production (credentials from env vars) with ADMIN role
 - Fixed KALYE Bot: rewrote `/api/chat/route.ts` with keyword-based fallback responses
   - Dynamic import of z-ai-web-dev-sdk (won't crash if unavailable)
   - 10 topic categories with detailed responses: music submission, merch, kanto fund, sponsor, stripe/payments, donations, registration, orders, reviews, greeting
@@ -77,7 +77,7 @@ Work Log:
 - Verified on production: admin login ✅, registration ✅, chat bot ✅
 
 Stage Summary:
-- Admin account created on production: admin@tunogkalye.net / Tunog1990s!
+- Admin account created on production (credentials configured via environment variables)
 - Production database schema now fully in sync with Prisma schema
 - Registration flow working on production
 - KALYE Bot working with intelligent fallback responses

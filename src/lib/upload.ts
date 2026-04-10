@@ -1,8 +1,11 @@
-import { writeFile, mkdir } from "fs/promises";
+import { writeFile, mkdir, unlink } from "fs/promises";
 import path from "path";
 
 export const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp", "image/jpg"];
 export const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+
+// Detect storage mode: Cloudinary for production (Vercel), local for dev
+const STORAGE_MODE = process.env.CLOUDINARY_URL ? "cloudinary" : "local";
 
 function generateFilename(originalName: string): string {
   const ext = path.extname(originalName).toLowerCase() || ".png";
@@ -11,21 +14,107 @@ function generateFilename(originalName: string): string {
   return `${timestamp}-${random}${ext}`;
 }
 
-export async function saveUploadedFile(file: File): Promise<{ url: string; filename: string }> {
-  // Validate type
-  if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
-    throw new Error(`Invalid file type: ${file.type}. Allowed: ${ALLOWED_IMAGE_TYPES.join(", ")}`);
+// ─── Cloudinary Upload ────────────────────────────────────────────────────────
+
+interface CloudinaryUploadResult {
+  url: string;
+  secure_url: string;
+  public_id: string;
+}
+
+async function uploadToCloudinary(
+  file: File,
+  folder: string = "tunogkalye"
+): Promise<{ url: string; publicId: string }> {
+  const CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME;
+  const API_KEY = process.env.CLOUDINARY_API_KEY;
+  const API_SECRET = process.env.CLOUDINARY_API_SECRET;
+
+  if (!CLOUD_NAME || !API_KEY || !API_SECRET) {
+    throw new Error(
+      "Cloudinary env vars missing. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET."
+    );
   }
 
-  // Validate size
-  if (file.size > MAX_FILE_SIZE) {
-    throw new Error(`File too large: ${(file.size / 1024 / 1024).toFixed(1)}MB. Maximum: 5MB`);
+  const bytes = await file.arrayBuffer();
+  const buffer = Buffer.from(bytes);
+  const base64 = `data:${file.type};base64,${buffer.toString("base64")}`;
+
+  // Generate a unique public_id
+  const timestamp = Date.now();
+  const random = Math.random().toString(36).substring(2, 8);
+  const ext = path.extname(file.name).toLowerCase() || ".png";
+  const publicId = `${folder}/${timestamp}-${random}`;
+
+  // Build signature string
+  const crypto = await import("crypto");
+  const signatureStr = `folder=${folder}&public_id=${publicId}&timestamp=${timestamp}${API_SECRET}`;
+  const signature = crypto.createHash("sha1").update(signatureStr).digest("hex");
+
+  const formData = new FormData();
+  formData.append("file", base64);
+  formData.append("folder", folder);
+  formData.append("public_id", publicId);
+  formData.append("timestamp", timestamp.toString());
+  formData.append("api_key", API_KEY);
+  formData.append("signature", signature);
+
+  const response = await fetch(
+    `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
+    {
+      method: "POST",
+      body: formData,
+    }
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(
+      `Cloudinary upload failed: ${errorData.error?.message || response.statusText}`
+    );
   }
 
+  const result: CloudinaryUploadResult = await response.json();
+  return {
+    url: result.secure_url,
+    publicId: result.public_id,
+  };
+}
+
+async function deleteFromCloudinary(publicId: string): Promise<void> {
+  const CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME;
+  const API_KEY = process.env.CLOUDINARY_API_KEY;
+  const API_SECRET = process.env.CLOUDINARY_API_SECRET;
+
+  if (!CLOUD_NAME || !API_KEY || !API_SECRET) return;
+
+  const timestamp = Date.now().toString();
+  const crypto = await import("crypto");
+  const signatureStr = `public_id=${publicId}&timestamp=${timestamp}${API_SECRET}`;
+  const signature = crypto.createHash("sha1").update(signatureStr).digest("hex");
+
+  const formData = new FormData();
+  formData.append("public_id", publicId);
+  formData.append("timestamp", timestamp);
+  formData.append("api_key", API_KEY);
+  formData.append("signature", signature);
+
+  await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/destroy`, {
+    method: "POST",
+    body: formData,
+  }).catch(() => {
+    // Silently ignore deletion errors
+  });
+}
+
+// ─── Local File Upload ────────────────────────────────────────────────────────
+
+async function saveToLocal(
+  file: File
+): Promise<{ url: string; filename: string }> {
   const filename = generateFilename(file.name);
   const uploadsDir = path.join(process.cwd(), "public", "uploads");
 
-  // Ensure directory exists
   await mkdir(uploadsDir, { recursive: true });
 
   const filePath = path.join(uploadsDir, filename);
@@ -40,12 +129,67 @@ export async function saveUploadedFile(file: File): Promise<{ url: string; filen
   };
 }
 
-export async function deleteUploadedFile(filename: string): Promise<void> {
+async function deleteFromLocal(filename: string): Promise<void> {
   try {
     const filePath = path.join(process.cwd(), "public", "uploads", filename);
-    const { unlink } = await import("fs/promises");
     await unlink(filePath);
   } catch {
     // File might not exist — ignore
+  }
+}
+
+// ─── Public API ───────────────────────────────────────────────────────────────
+
+export interface UploadResult {
+  url: string;
+  publicId?: string; // Cloudinary public_id for deletion
+  filename?: string; // Local filename for deletion
+  storage: "cloudinary" | "local";
+}
+
+export async function saveUploadedFile(file: File): Promise<UploadResult> {
+  // Validate type
+  if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+    throw new Error(
+      `Invalid file type: ${file.type}. Allowed: ${ALLOWED_IMAGE_TYPES.join(", ")}`
+    );
+  }
+
+  // Validate size
+  if (file.size > MAX_FILE_SIZE) {
+    throw new Error(
+      `File too large: ${(file.size / 1024 / 1024).toFixed(1)}MB. Maximum: 5MB`
+    );
+  }
+
+  if (STORAGE_MODE === "cloudinary") {
+    const result = await uploadToCloudinary(file);
+    return {
+      url: result.url,
+      publicId: result.publicId,
+      storage: "cloudinary",
+    };
+  }
+
+  const result = await saveToLocal(file);
+  return {
+    url: result.url,
+    filename: result.filename,
+    storage: "local",
+  };
+}
+
+export async function deleteUploadedFile(
+  identifier: string,
+  storage?: "cloudinary" | "local"
+): Promise<void> {
+  const mode = storage || STORAGE_MODE;
+
+  if (mode === "cloudinary") {
+    // identifier is a publicId or URL containing the publicId
+    await deleteFromCloudinary(identifier);
+  } else {
+    // identifier is a local filename
+    await deleteFromLocal(identifier);
   }
 }

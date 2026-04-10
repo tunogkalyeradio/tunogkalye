@@ -3,7 +3,10 @@ import { PrismaClient } from "@prisma/client";
 import { PrismaLibSQL } from "@prisma/adapter-libsql";
 import bcrypt from "bcryptjs";
 
-const SETUP_KEY = process.env.ADMIN_SETUP_KEY || "tunog-kalye-setup-2026";
+const SETUP_KEY = process.env.ADMIN_SETUP_KEY;
+if (!SETUP_KEY) {
+  console.warn("[SECURITY] ADMIN_SETUP_KEY env var is not set. Setup endpoints will be disabled.");
+}
 
 function getDb() {
   const tursoUrl = process.env.STORAGE_TURSO_DATABASE_URL;
@@ -39,7 +42,7 @@ export async function PATCH(request: globalThis.Request) {
   try {
     const { searchParams } = new URL(request.url);
     const key = searchParams.get("key");
-    if (key !== SETUP_KEY) return NextResponse.json({ error: "Invalid setup key" }, { status: 403 });
+    if (!SETUP_KEY || key !== SETUP_KEY) return NextResponse.json({ error: "Invalid setup key" }, { status: 403 });
 
     const action = searchParams.get("action");
 
@@ -164,20 +167,28 @@ export async function PATCH(request: globalThis.Request) {
     }
 
     if (action === "admin") {
+      const adminEmail = process.env.ADMIN_EMAIL;
+      const adminPassword = process.env.ADMIN_PASSWORD;
+      const adminName = process.env.ADMIN_NAME || "TKR Admin";
+
+      if (!adminEmail || !adminPassword) {
+        return NextResponse.json({ error: "ADMIN_EMAIL and ADMIN_PASSWORD env vars must be set" }, { status: 400 });
+      }
+
       const db = getDb();
 
       // Check if admin exists
-      const existing = await db.user.findUnique({ where: { email: "admin@tunogkalye.net" } });
+      const existing = await db.user.findUnique({ where: { email: adminEmail } });
       if (existing) {
         await db.$disconnect();
         return NextResponse.json({ message: "Admin account already exists", email: existing.email });
       }
 
-      const hashedPassword = await bcrypt.hash("Tunog1990s!", 12);
+      const hashedPassword = await bcrypt.hash(adminPassword, 12);
       const admin = await db.user.create({
         data: {
-          email: "admin@tunogkalye.net",
-          name: "TKR Admin",
+          email: adminEmail,
+          name: adminName,
           password: hashedPassword,
           role: "ADMIN",
           provider: "credentials",
@@ -307,7 +318,7 @@ export async function GET(request: globalThis.Request) {
   try {
     const { searchParams } = new URL(request.url);
     const key = searchParams.get("key");
-    if (key !== SETUP_KEY) return NextResponse.json({ error: "Invalid setup key" }, { status: 403 });
+    if (!SETUP_KEY || key !== SETUP_KEY) return NextResponse.json({ error: "Invalid setup key" }, { status: 403 });
     const db = getDb();
     const tables = await db.$queryRawUnsafe(`SELECT name FROM sqlite_master WHERE type='table'`);
     return NextResponse.json({ tables });
@@ -323,7 +334,7 @@ export async function POST(request: globalThis.Request) {
   try {
     const { searchParams } = new URL(request.url);
     const key = searchParams.get("key");
-    if (key !== SETUP_KEY) return NextResponse.json({ error: "Invalid setup key" }, { status: 403 });
+    if (!SETUP_KEY || key !== SETUP_KEY) return NextResponse.json({ error: "Invalid setup key" }, { status: 403 });
 
     const body = await request.json();
     const { adminEmail, adminPassword, adminName } = body;
@@ -563,9 +574,9 @@ export async function POST(request: globalThis.Request) {
       { key: "footer_website", value: "tunogkalye.net", label: "Footer Website URL", group: "general" },
       { key: "footer_video", value: "video.tunogkalye.net", label: "Footer Video Hub URL", group: "general" },
       { key: "footer_location", value: "Surrey, BC, Canada", label: "Footer Location", group: "general" },
-      { key: "sponsor_name_1", value: "", label: "Sponsor Name 1", group: "sponsor" },
-      { key: "sponsor_link_1", value: "", label: "Sponsor Link 1", group: "sponsor" },
-      { key: "sponsor_description_1", value: "", label: "Sponsor Tagline 1", group: "sponsor" },
+      { key: "sponsor_name_1", value: "Kusina ni Kalye", label: "Sponsor Name 1", group: "sponsor" },
+      { key: "sponsor_link_1", value: "https://example.com", label: "Sponsor Link 1", group: "sponsor" },
+      { key: "sponsor_description_1", value: "Authentic Pinoy comfort food in the heart of Surrey!", label: "Sponsor Tagline 1", group: "sponsor" },
       { key: "sponsor_name_2", value: "", label: "Sponsor Name 2", group: "sponsor" },
       { key: "sponsor_link_2", value: "", label: "Sponsor Link 2", group: "sponsor" },
       { key: "sponsor_description_2", value: "", label: "Sponsor Tagline 2", group: "sponsor" },
