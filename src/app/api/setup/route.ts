@@ -145,7 +145,6 @@ export async function PATCH(request: globalThis.Request) {
         ["Cart", "size", "TEXT"],
       ];
 
-      const results: string[] = [];
       for (const [table, column, type, defaultVal] of migrations) {
         try {
           const cols: any[] = await db.$queryRawUnsafe(`PRAGMA table_info("${table}")`);
