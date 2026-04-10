@@ -278,12 +278,12 @@ export async function PATCH(request: globalThis.Request) {
 
       for (const item of merchItems) {
         const imagesStr = item.images.replace(/'/g, "''");
-        const sizesStr = item.sizes ? item.sizes.replace(/'/g, "''") : "NULL";
-        const colorsStr = item.colors.replace(/'/g, "''");
+        const sizesStr = item.sizes ? `'${item.sizes.replace(/'/g, "''")}'` : "NULL";
+        const colorsStr = `'${item.colors.replace(/'/g, "''")}'`;
 
         await db.$executeRawUnsafe(
           `INSERT INTO "Product" ("artistId", "name", "description", "price", "compareAtPrice", "category", "productType", "images", "sizes", "colors", "stock", "fulfillmentMode", "shippingFee", "isActive", "isStation", "createdAt", "updatedAt")
-           VALUES (${artistId}, '${item.name.replace(/'/g, "''")}', '${item.description.replace(/'/g, "''")}', ${item.price}, ${item.compareAtPrice}, '${item.category}', 'PHYSICAL', '${imagesStr}', ${sizesStr}, '${colorsStr}', ${item.stock}, 'PLATFORM_DELIVERY', ${item.shippingFee}, 1, 1, datetime('now'), datetime('now'))`
+           VALUES (${artistId}, '${item.name.replace(/'/g, "''")}', '${item.description.replace(/'/g, "''")}', ${item.price}, ${item.compareAtPrice}, '${item.category}', 'PHYSICAL', '${imagesStr}', ${sizesStr}, ${colorsStr}, ${item.stock}, 'PLATFORM_DELIVERY', ${item.shippingFee}, 1, 1, datetime('now'), datetime('now'))`
         );
         results.push(`Created: ${item.name}`);
       }
