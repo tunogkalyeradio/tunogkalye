@@ -51,7 +51,7 @@ export default function AboutPage() {
                 <span className="bg-gradient-to-r from-red-500 to-orange-400 bg-clip-text text-transparent">Radio</span>
               </h1>
               <p className="mx-auto max-w-2xl text-lg text-slate-300">
-                The premier grassroots broadcasting network for Filipino independent music. Born from the streets, powered by the community.
+                The premier broadcasting network for Filipino independent music. Corporate-free. Artist-first. Built to last.
               </p>
             </div>
           </section>
@@ -66,7 +66,7 @@ export default function AboutPage() {
             </div>
             <div className="mx-auto max-w-3xl space-y-5 text-slate-300 leading-relaxed">
               <p>
-                <span className="font-bold text-white">Tunog Kalye</span> literally means <span className="font-bold text-orange-400">&ldquo;street sound&rdquo;</span> in Tagalog — and that&apos;s exactly where we started. Born from the <em>kanto</em> (street corner), Tunog Kalye Radio was founded as a passion project with a singular mission: to give Filipino independent artists the global stage they deserve.
+                <span className="font-bold text-white">Tunog Kalye</span> literally means <span className="font-bold text-orange-400">&ldquo;street sound&rdquo;</span> in Tagalog — and that&apos;s exactly where we started. Born from the <em>kanto</em> (street corner), Tunog Kalye Radio was built as a lean, sustainable media operation with a singular mission: to give Filipino independent artists the global stage they deserve.
               </p>
               <p>
                 We bridge two worlds — the golden era of 90s OPM alt-rock that shaped a generation, and today&apos;s modern indie movement that&apos;s redefining what Pinoy music can be. From grunge-inspired riffs to bedroom-produced lo-fi beats, we celebrate it all. If it&apos;s Filipino, independent, and authentic, it belongs on our airwaves.
@@ -176,26 +176,26 @@ export default function AboutPage() {
             </div>
           </section>
 
-          {/* OUR TEAM */}
+          {/* ENGINEERED FOR INDEPENDENCE */}
           <section className="rounded-2xl border border-white/10 bg-[#12121a] p-8 sm:p-12 text-center">
             <div className="mb-4 flex justify-center">
               <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-red-600 to-orange-500 shadow-lg shadow-red-500/20">
-                <Users className="h-8 w-8 text-white" />
+                <Cpu className="h-8 w-8 text-white" />
               </div>
             </div>
-            <h2 className="mb-3 text-2xl font-bold tracking-tight sm:text-3xl">Built by Music Lovers, for Music Lovers</h2>
+            <h2 className="mb-3 text-2xl font-bold tracking-tight sm:text-3xl">Engineered for Independence</h2>
             <p className="mx-auto max-w-2xl text-slate-400 leading-relaxed">
-              Tunog Kalye Radio is powered by a small but passionate team of Filipino music enthusiasts, DJs, developers, and designers. We&apos;re volunteers, indie artists ourselves, and people who believe that the Filipino indie music scene deserves world-class infrastructure. No corporate overlords. Just people who love music.
+              Tunog Kalye Radio is operated by a dedicated collective of broadcast architects, audio engineers, and media strategists. By leveraging enterprise-grade open-source infrastructure (like our custom Kanto Broadcast Engine) instead of bloated corporate software, we run a globally distributed radio network at a fraction of traditional costs. We aren&apos;t a charity; we are a lean, sustainable media business. By keeping our overhead low, we can offer artists 0% commission and provide sponsors with high-ROI local advertising, proving that independent media can be highly profitable without exploiting the creators.
             </p>
             <div className="mt-6 flex justify-center gap-4">
               <Badge variant="outline" className="border-white/10 text-slate-400">
-                <Star className="mr-1 h-3 w-3" /> Passionate
+                <Cpu className="mr-1 h-3 w-3" /> Enterprise-Grade
               </Badge>
               <Badge variant="outline" className="border-white/10 text-slate-400">
-                <Music className="mr-1 h-3 w-3" /> Independent
+                <Music className="mr-1 h-3 w-3" /> 0% Commission
               </Badge>
               <Badge variant="outline" className="border-white/10 text-slate-400">
-                <Globe className="mr-1 h-3 w-3" /> Worldwide
+                <Globe className="mr-1 h-3 w-3" /> Globally Distributed
               </Badge>
             </div>
           </section>
@@ -241,9 +241,9 @@ export default function AboutPage() {
                   <Send className="mr-2 h-5 w-5" /> Submit Your Music
                 </Button>
               </Link>
-              <Link href="/">
+              <Link href="/kanto-fund">
                 <Button size="lg" variant="outline" className="border-white/20 bg-white/5 px-6 text-white hover:bg-white/10">
-                  <Heart className="mr-2 h-5 w-5 text-rose-400" /> Support the Kanto
+                  <Heart className="mr-2 h-5 w-5 text-rose-400" /> Support the Station
                 </Button>
               </Link>
               <Link href="/store">
@@ -266,6 +266,8 @@ export default function AboutPage() {
             </div>
             <div className="flex gap-4 text-xs text-slate-600">
               <Link href="/about" className="transition-colors hover:text-slate-400">About</Link>
+              <span className="text-slate-700">|</span>
+              <Link href="/lean-canvas" className="transition-colors hover:text-slate-400">Lean Canvas</Link>
               <span className="text-slate-700">|</span>
               <Link href="/kanto-fund" className="transition-colors hover:text-slate-400">Kanto Fund</Link>
               <span className="text-slate-700">|</span>

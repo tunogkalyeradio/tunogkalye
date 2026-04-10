@@ -17,9 +17,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Tunog Kalye Radio — Submit, Sponsor, Support",
+  title: "Tunog Kalye Radio — The Premier Broadcasting Network for Filipino Indie Music",
   description:
-    "The premier grassroots broadcasting network for Filipino independent music. Submit your music, become a sponsor, or support the Kanto.",
+    "A lean, sustainable media business providing enterprise-grade global reach for Filipino independent music. 0% Artist Commission. Corporate-Free. B2B-funded.",
   keywords: [
     "Tunog Kalye",
     "OPM Radio",
@@ -29,6 +29,9 @@ export const metadata: Metadata = {
     "Submit Music",
     "Filipino Radio",
     "Surrey BC Radio",
+    "Filipino Indie Broadcasting",
+    "OPM Advertising",
+    "Pinoy Diaspora Radio",
   ],
   icons: {
     icon: [

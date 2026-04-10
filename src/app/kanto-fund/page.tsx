@@ -316,6 +316,8 @@ export default function KantoFundPage() {
             <div className="flex gap-4 text-xs text-slate-600">
               <Link href="/about" className="transition-colors hover:text-slate-400">About</Link>
               <span className="text-slate-700">|</span>
+              <Link href="/lean-canvas" className="transition-colors hover:text-slate-400">Lean Canvas</Link>
+              <span className="text-slate-700">|</span>
               <Link href="/kanto-fund" className="transition-colors hover:text-slate-400">Kanto Fund</Link>
               <span className="text-slate-700">|</span>
               <Link href="/terms" className="transition-colors hover:text-slate-400">Terms</Link>

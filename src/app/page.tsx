@@ -7,7 +7,7 @@ import {
   BarChart3, CreditCard, Coffee, Zap, Star, ArrowRight, Volume2,
   AlertCircle, Loader2, Clock, Mail, PartyPopper, Share2, Shield,
   CircleDot, HelpCircle, ChevronDown, Play, Pause, VolumeX, Volume1,
-  X, ShoppingBag, ShieldCheck,
+  X, ShoppingBag, ShieldCheck, Server,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Navbar from "@/components/navbar";
@@ -154,6 +154,8 @@ export default function TunogKalyePathways() {
               <span className="hidden sm:inline text-slate-700">|</span>
               <Link href="/about" className="transition-colors hover:text-slate-400">About</Link>
               <span className="text-slate-700">|</span>
+              <Link href="/lean-canvas" className="transition-colors hover:text-slate-400">Lean Canvas</Link>
+              <span className="text-slate-700">|</span>
               <Link href="/kanto-fund" className="transition-colors hover:text-slate-400">Kanto Fund</Link>
               <span className="text-slate-700">|</span>
               <Link href="/terms" className="transition-colors hover:text-slate-400">Terms</Link>
@@ -235,8 +237,8 @@ function HomePage({ onSelect, siteSettings: settings }: { onSelect: (f: PathwayI
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           {[
             { id: "submit" as PathwayId, icon: Mic2, gradient: "from-red-600 to-orange-500", shadow: "shadow-red-500/20", border: "hover:border-red-500/40", title: "Submit Your Music", desc: "Get your music played on 24/7 global radio. We're always looking for fresh Filipino talent.", checks: ["100% copyright retained", "Non-exclusive broadcasting rights", "Reviewed within one week"], btn: FM.submit.btn },
-            { id: "sponsor" as PathwayId, icon: DollarSign, gradient: "from-amber-500 to-yellow-400", shadow: "shadow-amber-500/20", border: "hover:border-amber-500/40", title: "Sponsor My Station", desc: "Reach the Filipino diaspora and 90s OPM lovers with targeted advertising.", checks: ["On-air shoutouts", "Website banner placement", "Plans from $50/month"], btn: FM.sponsor.btn },
-            { id: "donate" as PathwayId, icon: Heart, gradient: "from-rose-500 to-pink-400", shadow: "shadow-rose-500/20", border: "hover:border-rose-500/40", title: "Support the Kanto", desc: "Keep independent OPM alive. Every contribution goes directly to the artists and the station.", checks: ["Zero commission to artists", "Funds the Kanto Fund", "Starting from $5"], btn: FM.donate.btn },
+            { id: "sponsor" as PathwayId, icon: DollarSign, gradient: "from-amber-500 to-yellow-400", shadow: "shadow-amber-500/20", border: "hover:border-amber-500/40", title: "Advertise With Us", desc: "Reach the Filipino-Canadian diaspora with high-ROI, targeted audio ads and banner placements.", checks: ["On-air shoutouts", "Website banner placement", "Plans from $50/month"], btn: FM.sponsor.btn },
+            { id: "donate" as PathwayId, icon: Heart, gradient: "from-rose-500 to-pink-400", shadow: "shadow-rose-500/20", border: "hover:border-rose-500/40", title: "Support the Station", desc: "Fund the infrastructure that keeps independent OPM broadcasting 24/7. Contributions go strictly to server hosting and bandwidth.", checks: ["B2B sponsorships are our primary revenue", "Funds the Kanto Fund for artists", "Infrastructure support only"], btn: FM.donate.btn },
             { id: "store" as string, icon: ShoppingBag, gradient: "from-emerald-500 to-teal-400", shadow: "shadow-emerald-500/20", border: "hover:border-emerald-500/40", title: "Browse Merch Store", desc: "Support Filipino indie artists by buying their merch. 90% goes directly to them.", checks: ["Curated by artists", "Secure checkout", "Fast delivery"], btn: "bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white", isLink: true, href: "/store" },
           ].map((card) => (
             <Card key={card.id} onClick={() => card.isLink ? undefined : onSelect(card.id as PathwayId)} className={`group cursor-pointer border-white/10 bg-[#12121a] transition-all duration-300 ${card.border} hover:bg-[#14141f] hover:shadow-lg hover:${card.shadow}`}>
@@ -264,7 +266,7 @@ function HomePage({ onSelect, siteSettings: settings }: { onSelect: (f: PathwayI
                   </Link>
                 ) : (
                   <Button className={`w-full font-bold ${card.btn}`}>
-                    {card.id === "submit" ? "Start Submission" : card.id === "sponsor" ? "View Packages" : "Support Now"}
+                    {card.id === "submit" ? "Start Submission" : card.id === "sponsor" ? "View Ad Packages" : "Support Now"}
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 )}
@@ -551,6 +553,28 @@ function SponsorPathway({ step, setStep, goHome, isSubmitting, setIsSubmitting, 
   if (step === 1) return (
     <div className="mx-auto max-w-3xl">
       <ProgressBar steps={sponsorSteps} current={1} colors={FM.sponsor} />
+
+      {/* ADVERTISING WITH PURPOSE */}
+      <div className="mb-8 rounded-2xl border border-amber-500/20 bg-[#12121a] p-6 sm:p-8">
+        <h3 className="mb-4 text-center text-lg font-bold text-white">Advertising with Purpose</h3>
+        <p className="mb-5 text-center text-sm text-slate-400 leading-relaxed">
+          When you advertise with a mainstream platform, 70% of your budget goes to corporate overhead. When you advertise with Tunog Kalye Radio, you are directly funding the Filipino-Canadian community.
+        </p>
+        <div className="grid gap-4 sm:grid-cols-3">
+          {[
+            { label: "Our Audience", value: "100% targeted", desc: "Filipino diaspora, OPM lovers, ages 25-55, primarily in Surrey/Vancouver but streaming globally." },
+            { label: "Our Rates", value: "A fraction of mainstream", desc: "A fraction of mainstream radio because we don't have a corporate office to pay for." },
+            { label: "Your ROI", value: "Un-skippable integration", desc: "Your ad isn't skipped in 5 seconds like on Spotify. It's integrated into a live, human-curated radio experience." },
+          ].map((item) => (
+            <div key={item.label} className="rounded-xl border border-amber-500/10 bg-white/[0.02] p-4 text-center">
+              <div className="text-xs font-bold uppercase tracking-wider text-amber-500/70">{item.label}</div>
+              <div className="mt-1 text-sm font-bold text-white">{item.value}</div>
+              <p className="mt-2 text-xs leading-relaxed text-slate-500">{item.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
       <div className="rounded-2xl border border-white/10 bg-[#12121a] overflow-hidden">
         <div className="relative px-6 py-12 sm:px-12 sm:py-16 text-center">
           <div className="absolute inset-0 bg-gradient-to-br from-amber-950/40 to-yellow-950/30" />
@@ -559,10 +583,10 @@ function SponsorPathway({ step, setStep, goHome, isSubmitting, setIsSubmitting, 
               <DollarSign className="mr-1 h-3 w-3" /> ADVERTISING OPPORTUNITY
             </Badge>
             <h2 className="mb-3 text-3xl font-black leading-tight tracking-tight sm:text-4xl">
-              Advertise on{" "}
+              Partner with{" "}
               <span className="bg-gradient-to-r from-amber-400 to-yellow-400 bg-clip-text text-transparent">Tunog Kalye Radio</span>
             </h2>
-            <p className="mb-6 text-lg text-slate-300">Reach the Filipino diaspora and 90s OPM lovers <span className="font-bold text-white">24/7</span>.</p>
+            <p className="mb-6 text-lg text-slate-300">Reach a highly targeted, loyal Filipino-Canadian audience <span className="font-bold text-white">24/7</span> — at a fraction of mainstream radio costs.</p>
             <div className="mx-auto mb-8 grid max-w-lg grid-cols-2 gap-4 text-left">
               {[
                 { icon: Users, title: "Targeted Audience", desc: "Filipino-Canadian community and OPM enthusiasts worldwide" },
@@ -784,6 +808,58 @@ function DonatePathway({ step, setStep, goHome, navigateTo, isSubmitting, setIsS
   if (step === 1) return (
     <div className="mx-auto max-w-3xl">
       <ProgressBar steps={["Support", "Choose", "Done"]} current={1} colors={FM.donate} />
+
+      {/* HOW TUNOG KALYE SUSTAINS ITSELF */}
+      <div className="mb-8 rounded-2xl border border-emerald-500/20 bg-[#12121a] p-6 sm:p-8">
+        <h3 className="mb-4 text-center text-lg font-bold text-white">How Tunog Kalye Sustains Itself</h3>
+        <p className="mb-5 text-center text-sm text-slate-400 leading-relaxed">
+          Traditional radio makes money by taking 50% of an artist&apos;s merch or charging them to play their music. We refuse to do that. Instead, Tunog Kalye operates on a modern, three-pillar business model:
+        </p>
+        <div className="grid gap-4 sm:grid-cols-3">
+          {[
+            {
+              icon: DollarSign,
+              title: "B2B Local Sponsorships",
+              subtitle: "Primary Revenue",
+              desc: "We sell highly targeted audio ads and digital banner placements to local businesses — Pinoy restaurants in Surrey, local real estate, event promoters. This is the engine that pays our operational costs and funds the Kanto Fund.",
+              color: "from-amber-500 to-yellow-400",
+              border: "border-amber-500/20",
+              iconBg: "bg-amber-500/10",
+              iconColor: "text-amber-400",
+            },
+            {
+              icon: Server,
+              title: "Community Infrastructure Support",
+              subtitle: "Operational",
+              desc: "For listeners who want to support the platform directly, these contributions go strictly toward server hosting (Oracle/Cloudflare), bandwidth, and studio maintenance. Every dollar is accounted for.",
+              color: "from-blue-500 to-cyan-400",
+              border: "border-blue-500/20",
+              iconBg: "bg-blue-500/10",
+              iconColor: "text-blue-400",
+            },
+            {
+              icon: ShoppingBag,
+              title: "E-Commerce Volume Pipeline",
+              subtitle: "Volume Growth",
+              desc: "While we take a strict 0% commission on artist merch, driving thousands of listeners through our Hub creates massive e-commerce volume, making us the most valuable digital partner for independent Pinoy artists.",
+              color: "from-emerald-500 to-teal-400",
+              border: "border-emerald-500/20",
+              iconBg: "bg-emerald-500/10",
+              iconColor: "text-emerald-400",
+            },
+          ].map((pillar) => (
+            <div key={pillar.title} className={`rounded-xl border ${pillar.border} bg-white/[0.02] p-4 text-center`}>
+              <div className={`mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl ${pillar.iconBg}`}>
+                <pillar.icon className={`h-5 w-5 ${pillar.iconColor}`} />
+              </div>
+              <div className="text-xs font-bold uppercase tracking-wider text-slate-500">{pillar.subtitle}</div>
+              <div className="mt-1 text-sm font-bold text-white">{pillar.title}</div>
+              <p className="mt-2 text-xs leading-relaxed text-slate-500">{pillar.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
       <div className="rounded-2xl border border-white/10 bg-[#12121a] overflow-hidden">
         <div className="relative px-6 py-12 sm:px-12 sm:py-16 text-center">
           <div className="absolute inset-0 bg-gradient-to-br from-rose-950/40 to-pink-950/30" />
@@ -793,11 +869,11 @@ function DonatePathway({ step, setStep, goHome, navigateTo, isSubmitting, setIsS
             </Badge>
             <h2 className="mb-3 text-3xl font-black leading-tight tracking-tight sm:text-4xl">
               Keep the{" "}
-              <span className="bg-gradient-to-r from-rose-500 to-pink-400 bg-clip-text text-transparent">Kanto Alive</span>
+              <span className="bg-gradient-to-r from-rose-500 to-pink-400 bg-clip-text text-transparent">Transmitter Running</span>
             </h2>
-            <p className="mb-6 text-lg text-slate-300">Support Independent OPM. Every dollar goes directly to the station and the artists who make the music you love.</p>
+            <p className="mb-6 text-lg text-slate-300">Support the infrastructure that keeps independent OPM on air, 24/7. Every contribution goes directly to server hosting, bandwidth, and station maintenance.</p>
             <div className="mx-auto mb-8 max-w-md space-y-3 text-left">
-              {["Zero commission. We don't take a cut from artists.", "The Kanto Fund distributes directly to indie artists.", "Your contribution keeps 24/7 OPM broadcasting alive.", "Every supporter gets a shoutout on air."].map((item, i) => (
+              {["B2B sponsorships fund our operations — we don't rely on donations to survive.", "The Kanto Fund redistributes sponsorship revenue to top-charting artists.", "Your infrastructure support keeps Oracle/Cloudflare servers running 24/7.", "Every supporter is recognized on air and on our website."].map((item, i) => (
                 <div key={i} className="flex items-start gap-3"><Heart className="mt-0.5 h-4 w-4 shrink-0 text-rose-400" /><span className="text-sm text-slate-300">{item}</span></div>
               ))}
             </div>
