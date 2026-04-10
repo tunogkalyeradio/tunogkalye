@@ -27,7 +27,7 @@ export async function GET(request: globalThis.Request) {
     const key = searchParams.get("key");
     if (key !== SETUP_KEY) return NextResponse.json({ error: "Invalid setup key" }, { status: 403 });
     const db = getDb();
-    const tables = await db.$queryRawUnsafe("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name;");
+    const tables = await db.$queryRawUnsafe(`SELECT name FROM sqlite_master WHERE type='table'`);
     return NextResponse.json({ tables });
   } catch (error: any) {
     return NextResponse.json({ error: error.message?.substring(0, 200) }, { status: 500 });
@@ -133,8 +133,6 @@ export async function POST(request: globalThis.Request) {
       "updatedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE
     );`);
-    await runRaw(db, `CREATE INDEX "ArtistProfile_userId_idx" ON "ArtistProfile"("userId");`);
-    await runRaw(db, `CREATE INDEX "ArtistProfile_storeStatus_idx" ON "ArtistProfile"("storeStatus");`);
 
     await runRaw(db, `CREATE TABLE "Product" (
       "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
