@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import { db } from "@/lib/db";
 import { requireRole } from "@/lib/auth-utils";
 import ArtistsContent from "./artists-content";
