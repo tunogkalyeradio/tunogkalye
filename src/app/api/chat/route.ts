@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import ZAI from "z-ai-web-dev-sdk";
 
 const SYSTEM_PROMPT = `You are KALYE Bot, the friendly AI assistant for Tunog Kalye Radio — the premier grassroots broadcasting network for Filipino independent music, based in Surrey, BC, Canada.
 
@@ -58,6 +57,84 @@ const CONTEXT_OVERRIDES: Record<string, string> = {
     "\n\nThe user is a CUSTOMER/FAN on Tunog Kalye Radio. Focus on fan-related topics: browsing merch, placing orders, tracking shipments, writing reviews, donating, discovering new music. Be enthusiastic about supporting indie Filipino artists.",
 };
 
+// ─── Keyword-based fallback responses ─────────────────────────
+const FALLBACK_RESPONSES: { keywords: string[]; response: string }[] = [
+  {
+    keywords: ["submit", "music", "song", "upload", "send music", "demo"],
+    response:
+      "Great question! 🎵 To submit your music to Tunog Kalye Radio:\n\n1. **Sign up** or log in at hub.tunogkalye.net\n2. Click **\"Submit Your Music\"** on the homepage\n3. Fill in your details: band name, real name, email, city, genre\n4. Add your Spotify/SoundCloud links\n5. Hit submit!\n\nOur real DJs will review your submission within **1 week**. Once approved, we'll email you when your song airs so you can share it with your fans! 📻\n\nRemember: You keep **100% of your copyrights** under our Open Kanto Policy.",
+  },
+  {
+    keywords: ["merch", "store", "buy", "shop", "product", "t-shirt", "hoodie"],
+    response:
+      "Welcome to the Tunog Kalye merch store! 🛍️\n\n**For Buyers:**\n- Browse merch at hub.tunogkalye.net/store\n- Filter by category, search by name, sort by price\n- Add to cart and checkout with your shipping address\n- Track your orders in your Dashboard\n\n**For Artists:**\n- Go to your Artist Dashboard → Products\n- Add products with name, description, price, images, sizes & stock\n- Choose fulfillment: Self-delivery or Platform delivery\n- You earn **90%** of every sale — automatically deposited via Stripe Connect!\n\nZero commission on merch sold through external platforms. Only 10% on sales through our hub.",
+  },
+  {
+    keywords: ["kanto fund", "fund", "revenue", "quarterly"],
+    response:
+      "The **Kanto Fund** is our way of giving back to the community! 💰\n\n- **10%** of all hub merch sales are pooled quarterly\n- Distributed to top-charting independent artists\n- Funds help pay for recording sessions, music videos, and live gigs\n- Fully transparent — artists can see how funds are allocated\n\nIt's our commitment to making sure the artists who make Tunog Kalye great also benefit from its success. Salamat sa musika! 🎶",
+  },
+  {
+    keywords: ["sponsor", "advertise", "banner", "shoutout", "partner"],
+    response:
+      "Want to support Pinoy indie music and get your brand heard? 📢\n\nWe offer **3 sponsorship tiers**:\n\n🎸 **Shoutout** — $50/mo\n- On-air shoutouts during broadcasts\n\n📺 **Banner** — $100/mo\n- Website banner placement + on-air shoutouts\n\n⭐ **Premium** — $200/mo\n- Banner + shoutouts + sponsored hour segments\n\nClick **\"Sponsor My Station\"** on the homepage to get started, or email us at tunogkalye.net!",
+  },
+  {
+    keywords: ["stripe", "payout", "payment", "earn", "money", "income"],
+    response:
+      "Great question about payments! 💳\n\n**For Artists:**\n- We use **Stripe Connect** for automatic payouts\n- You earn **90%** of every merch sale through the hub\n- Payouts are **auto-deposited** — no manual requests needed\n- Set up your Stripe account in Artist Dashboard → Stripe Connect\n\n**For Customers:**\n- Secure checkout powered by Stripe\n- We accept major credit/debit cards\n- All transactions are encrypted and safe\n\nNeed help? Check your Dashboard or contact our support team.",
+  },
+  {
+    keywords: ["donate", "donation", "support", "tip", "give"],
+    response:
+      "Thank you for wanting to support Tunog Kalye Radio! 🙏\n\nWe have **4 donation tiers**:\n\n☕ **$5 — Coffee** — Fuel a DJ's shift\n🎙️ **$20 — An Hour** — Fund an hour of broadcast\n📡 **$50 — A Day** — Keep the station running for a day\n🏆 **$100 — Kanto Champion** — Become a station champion!\n\nClick **\"Donate\"** on the homepage to contribute. Every peso helps keep Filipino indie music on the air!",
+  },
+  {
+    keywords: ["register", "sign up", "create account", "join"],
+    response:
+      "Joining Tunog Kalye Radio is easy and free! 🎉\n\n1. Go to hub.tunogkalye.net/auth/register\n2. Choose your role: **Fan/Customer** or **Artist/Band**\n3. Fill in your name, email, and password\n4. If you're an artist, add your band name and city\n5. Click **Create Account**!\n\nYou can also sign up with **Google** or **Facebook** if you prefer.\n\nWelcome to the Kanto! 🎵",
+  },
+  {
+    keywords: ["order", "track", "shipping", "deliver"],
+    response:
+      "Here's how to manage your orders: 📦\n\n**Track an Order:**\n- Log in and go to **Dashboard → Orders**\n- You'll see real-time status: Pending → Paid → Processing → Shipped → Delivered\n\n**Order Issues:**\n- Contact the artist directly through the order page\n- Or reach out to Tunog Kalye support\n\nOrders from different artists may arrive separately depending on the fulfillment method chosen by each artist.",
+  },
+  {
+    keywords: ["review", "rating", "feedback"],
+    response:
+      "We love hearing from our community! ⭐\n\n**Write a Review:**\n- Go to any product page in the Store\n- If you've purchased the item, you can leave a rating (1-5 stars) and a comment\n- Your reviews help other fans discover great merch and support artists!\n\nReviews can be found on each product page. Honest feedback helps our artists improve! 🎶",
+  },
+  {
+    keywords: ["hello", "hi", "hey", "kamusta", "what's up"],
+    response:
+      "Kamusta! 🎵 Welcome to Tunog Kalye Radio — your home for Filipino independent music!\n\nI'm KALYE Bot, and I can help you with:\n- 🎵 Submitting your music\n- 🛍️ Browsing or selling merch\n- 💰 Donations and sponsorships\n- 📦 Order tracking\n- 🎸 Artist profiles and earnings\n\nJust ask me anything! What would you like to know?",
+  },
+];
+
+// ─── Build a smart fallback response ──────────────────────────
+function getFallbackResponse(userMessage: string): string {
+  const lower = userMessage.toLowerCase();
+
+  // Find the best matching response
+  let bestMatch: string | null = null;
+  let bestScore = 0;
+
+  for (const item of FALLBACK_RESPONSES) {
+    const score = item.keywords.filter((kw) => lower.includes(kw)).length;
+    if (score > bestScore) {
+      bestScore = score;
+      bestMatch = item.response;
+    }
+  }
+
+  if (bestMatch) {
+    return bestMatch;
+  }
+
+  // Generic fallback
+  return `Thanks for reaching out! 🎵\n\nI'm not quite sure about that specific topic, but here's what I can help with:\n\n- 🎵 **Music Submissions** — How to get your songs on air\n- 🛍️ **Merch Store** — Buying or selling products\n- 💰 **Kanto Fund** — Revenue sharing for artists\n- 📢 **Sponsorships** — Partner with us\n- 💳 **Payments** — Stripe Connect, earnings, donations\n\nFeel free to ask about any of these, or contact the Tunog Kalye team directly at tunogkalye.net for more specific inquiries!`;
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
@@ -85,33 +162,49 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Build system prompt with optional context override
-    let systemContent = SYSTEM_PROMPT;
-    if (context && CONTEXT_OVERRIDES[context]) {
-      systemContent += CONTEXT_OVERRIDES[context];
+    // Get the last user message for fallback
+    const lastUserMessage = [...messages]
+      .reverse()
+      .find((m: { role: string }) => m.role === "user")?.content || "";
+
+    // Try AI SDK first
+    try {
+      // Dynamic import so it doesn't crash if the module isn't available
+      const ZAI = (await import("z-ai-web-dev-sdk")).default;
+      const zai = await ZAI.create();
+
+      // Build system prompt with optional context override
+      let systemContent = SYSTEM_PROMPT;
+      if (context && CONTEXT_OVERRIDES[context]) {
+        systemContent += CONTEXT_OVERRIDES[context];
+      }
+
+      const completion = await zai.chat.completions.create({
+        messages: [
+          { role: "system", content: systemContent },
+          ...messages.map((m: { role: string; content: string }) => ({
+            role: m.role as "user" | "assistant",
+            content: m.content,
+          })),
+        ],
+        temperature: 0.7,
+        max_tokens: 1000,
+      });
+
+      const assistantMessage =
+        completion?.choices?.[0]?.message?.content ||
+        completion?.message?.content;
+
+      if (assistantMessage) {
+        return NextResponse.json({ message: assistantMessage });
+      }
+    } catch (aiError) {
+      console.error("AI SDK error, using fallback:", aiError);
     }
 
-    // Initialize SDK and create completion
-    const zai = await ZAI.create();
-    const completion = await zai.chat.completions.create({
-      messages: [
-        { role: "system", content: systemContent },
-        ...messages.map((m: { role: string; content: string }) => ({
-          role: m.role as "user" | "assistant",
-          content: m.content,
-        })),
-      ],
-      temperature: 0.7,
-      max_tokens: 1000,
-    });
-
-    // Extract the assistant's response
-    const assistantMessage =
-      completion?.choices?.[0]?.message?.content ||
-      completion?.message?.content ||
-      "Sorry, I wasn't able to generate a response. Please try again.";
-
-    return NextResponse.json({ message: assistantMessage });
+    // Fallback: keyword-based response
+    const fallbackResponse = getFallbackResponse(lastUserMessage);
+    return NextResponse.json({ message: fallbackResponse });
   } catch (error) {
     console.error("Chat API error:", error);
     return NextResponse.json(
