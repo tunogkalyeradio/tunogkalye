@@ -195,7 +195,7 @@ export async function POST(request: globalThis.Request) {
       "rating" INTEGER NOT NULL, "comment" TEXT,
       "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
       "updatedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY ("productId") REFERENCES "Product("id") ON DELETE CASCADE,
+      FOREIGN KEY ("productId") REFERENCES "Product"("id") ON DELETE CASCADE,
       FOREIGN KEY ("customerId") REFERENCES "User"("id")
     );`);
 
