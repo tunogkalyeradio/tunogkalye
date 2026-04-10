@@ -213,7 +213,7 @@ export async function PATCH(request: globalThis.Request) {
           return NextResponse.json({ error: "No admin user found. Create admin first." }, { status: 400 });
         }
         const insertResult: any = await db.$queryRawUnsafe(
-          `INSERT INTO "ArtistProfile" ("userId", "bandName", "realName", "city", "storeStatus", "isVerified") VALUES (${adminUser[0].id}, 'Tunog Kalye Radio', 'TKR Official', 'Surrey, BC', 'APPROVED', 1) RETURNING id`
+          `INSERT INTO "ArtistProfile" ("userId", "bandName", "realName", "city", "storeStatus", "isVerified", "createdAt", "updatedAt") VALUES (${adminUser[0].id}, 'Tunog Kalye Radio', 'TKR Official', 'Surrey, BC', 'APPROVED', 1, datetime('now'), datetime('now')) RETURNING id`
         );
         artistId = insertResult[0].id;
         results.push("Created station artist profile");
@@ -282,8 +282,8 @@ export async function PATCH(request: globalThis.Request) {
         const colorsStr = item.colors.replace(/'/g, "''");
 
         await db.$executeRawUnsafe(
-          `INSERT INTO "Product" ("artistId", "name", "description", "price", "compareAtPrice", "category", "productType", "images", "sizes", "colors", "stock", "fulfillmentMode", "shippingFee", "isActive", "isStation")
-           VALUES (${artistId}, '${item.name.replace(/'/g, "''")}', '${item.description.replace(/'/g, "''")}', ${item.price}, ${item.compareAtPrice}, '${item.category}', 'PHYSICAL', '${imagesStr}', ${sizesStr}, '${colorsStr}', ${item.stock}, 'PLATFORM_DELIVERY', ${item.shippingFee}, 1, 1)`
+          `INSERT INTO "Product" ("artistId", "name", "description", "price", "compareAtPrice", "category", "productType", "images", "sizes", "colors", "stock", "fulfillmentMode", "shippingFee", "isActive", "isStation", "createdAt", "updatedAt")
+           VALUES (${artistId}, '${item.name.replace(/'/g, "''")}', '${item.description.replace(/'/g, "''")}', ${item.price}, ${item.compareAtPrice}, '${item.category}', 'PHYSICAL', '${imagesStr}', ${sizesStr}, '${colorsStr}', ${item.stock}, 'PLATFORM_DELIVERY', ${item.shippingFee}, 1, 1, datetime('now'), datetime('now'))`
         );
         results.push(`Created: ${item.name}`);
       }
