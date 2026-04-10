@@ -1,6 +1,4 @@
 import { PrismaClient } from "@prisma/client";
-import { PrismaLibSQL } from "@prisma/adapter-libsql";
-import { createClient, type Client } from "@libsql/client";
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
@@ -11,23 +9,20 @@ function createPrismaClient() {
   const tursoToken = process.env.STORAGE_TURSO_AUTH_TOKEN;
 
   if (tursoUrl && tursoToken) {
-    // Create libsql client explicitly and pass to adapter
-    const libsql: Client = createClient({
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { PrismaLibSQL } = require("@prisma/adapter-libsql");
+
+    // IMPORTANT: PrismaLibSQL is a factory that expects a CONFIG OBJECT, not a Client.
+    // It will create its own libsql client internally using this config.
+    // The factory's connect() method passes this config to libsql's createClient().
+    const config = {
       url: tursoUrl,
       authToken: tursoToken,
-    });
+    };
 
-    const adapter = new PrismaLibSQL(libsql);
+    const adapter = new PrismaLibSQL(config);
 
-    return new PrismaClient({
-      adapter,
-      // Suppress the DATABASE_URL requirement since we're using the adapter
-      datasources: {
-        db: {
-          url: tursoUrl,
-        },
-      },
-    } as any);
+    return new PrismaClient({ adapter } as any);
   }
 
   // Development: Local SQLite
