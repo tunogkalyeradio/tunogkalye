@@ -26,11 +26,7 @@ export default function AboutPage() {
             </Link>
             <div className="h-4 w-px bg-white/10" />
             <div className="flex items-center gap-2">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/tunog-kalye-logo.png" alt="Tunog Kalye Radio" className="h-10 w-10 object-contain" />
-              <span className="text-sm font-bold tracking-tight">
-                TUNOG KALYE<span className="text-red-400"> RADIO</span>
-              </span>
+              <img src="/tunog-kalye-horizontal.png" alt="Tunog Kalye Radio" className="h-8 w-auto object-contain" />
             </div>
           </div>
         </div>

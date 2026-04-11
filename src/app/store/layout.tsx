@@ -30,7 +30,7 @@ export default async function StoreLayout({
               className="flex items-center gap-2 transition-opacity hover:opacity-80"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/tunog-kalye-logo.png" alt="Tunog Kalye Radio" className="h-10 w-10 object-contain" />
+              <img src="/tunog-kalye-horizontal.png" alt="Tunog Kalye Radio" className="h-8 w-auto object-contain" />
               <span className="text-sm font-bold tracking-tight">
                 MERCH <span className="text-red-400">STORE</span>
               </span>

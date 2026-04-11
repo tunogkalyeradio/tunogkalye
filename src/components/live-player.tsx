@@ -189,13 +189,12 @@ export default function LivePlayer() {
           {/* LEFT: Station info */}
           <div className="flex items-center gap-3 min-w-0 flex-1">
             {/* Logo */}
-            <div className="relative flex h-10 w-10 shrink-0 items-center justify-center">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/tunog-kalye-logo.png" alt="TKR" className="h-12 w-12 object-contain" />
+            <div className="relative flex shrink-0 items-center gap-2">
+              <img src="/tunog-kalye-horizontal.png" alt="TKR" className="h-10 w-auto object-contain" />
               {isOnline && (
-                <span className="absolute -right-1 -top-1 flex h-3 w-3">
+                <span className="flex h-2.5 w-2.5">
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
-                  <span className="relative inline-flex h-3 w-3 rounded-full bg-red-500" />
+                  <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-500" />
                 </span>
               )}
             </div>

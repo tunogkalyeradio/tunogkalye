@@ -80,7 +80,7 @@ export default function DashboardShell({ children, user }: DashboardShellProps) 
         <div className="flex items-center justify-between p-4">
           <Link href="/" className="flex items-center gap-2.5">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/tunog-kalye-logo.png" alt="Tunog Kalye Radio" className="h-10 w-10 object-contain" />
+            <img src="/tunog-kalye-horizontal.png" alt="Tunog Kalye Radio" className="h-8 w-auto object-contain" />
             <div>
               <span className="text-sm font-bold tracking-tight">TUNOG KALYE</span>
               <span className="ml-1 text-xs text-red-400">RADIO</span>

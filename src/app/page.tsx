@@ -193,11 +193,10 @@ function HomePage({ onSelect, siteSettings: settings }: { onSelect: (f: PathwayI
         <div className="relative z-10 px-6 py-16 sm:px-12 sm:py-24 lg:py-28">
           <div className="flex flex-col items-start gap-6 sm:flex-row sm:items-center sm:gap-8">
             {/* Logo */}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/tunog-kalye-logo.png"
+              src="/tunog-kalye-horizontal.png"
               alt="Tunog Kalye Radio"
-              className="h-24 w-24 object-contain sm:h-28 sm:w-28"
+              className="h-20 w-auto object-contain sm:h-24"
             />
             <div className="flex-1 min-w-0">
               <Badge className="mb-3 border-red-500/30 bg-red-500/20 px-3 py-1 text-xs font-medium text-red-400 backdrop-blur-sm">

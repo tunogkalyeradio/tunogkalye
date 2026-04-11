@@ -66,7 +66,7 @@ function SidebarContent({
       {/* Logo */}
       <div className="flex items-center gap-3 px-5 py-5">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/tunog-kalye-logo.png" alt="Tunog Kalye Radio" className="h-10 w-10 object-contain" />
+        <img src="/tunog-kalye-horizontal.png" alt="Tunog Kalye Radio" className="h-8 w-auto object-contain" />
         <div className="flex flex-col">
           <span className="text-sm font-bold tracking-tight text-white">
             TUNOG KALYE

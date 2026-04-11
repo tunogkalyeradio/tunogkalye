@@ -121,8 +121,7 @@ export default function RegisterPage() {
         {/* Branding */}
         <div className="mb-8 text-center">
           <Link href="/" className="inline-flex items-center gap-3 transition-opacity hover:opacity-80">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/tunog-kalye-logo.png" alt="Tunog Kalye Radio" className="h-14 w-14 object-contain" />
+            <img src="/tunog-kalye-horizontal.png" alt="Tunog Kalye Radio" className="h-14 w-auto object-contain" />
           </Link>
           <h1 className="mt-4 text-2xl font-black tracking-tight text-white sm:text-3xl">
             Join{" "}
