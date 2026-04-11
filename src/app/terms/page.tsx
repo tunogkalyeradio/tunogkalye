@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Radio, ArrowLeft, FileText } from "lucide-react";
+import { ArrowLeft, FileText } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 export default function TermsPage() {
@@ -145,14 +145,9 @@ export default function TermsPage() {
               <span className="hidden sm:inline">Back to Hub</span>
             </Link>
             <div className="h-4 w-px bg-white/10" />
-            <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-red-600 to-orange-500">
-                <Radio className="h-4 w-4 text-white" />
-              </div>
-              <span className="text-sm font-bold tracking-tight">
-                TUNOG KALYE<span className="text-red-400"> RADIO</span>
-              </span>
-            </div>
+            <Link href="/" className="flex items-center gap-2 transition-opacity hover:opacity-80">
+              <img src="/tunog-kalye-horizontal.png" alt="Tunog Kalye Radio" className="h-8 w-auto object-contain" />
+            </Link>
           </div>
         </div>
       </nav>
