@@ -104,3 +104,30 @@ Stage Summary:
 - Admin dashboard now loads with graceful error handling
 - All database schema columns verified in sync
 - Files modified: src/app/admin/page.tsx, src/lib/auth-utils.ts, src/app/api/setup/admin/route.ts
+
+---
+Task ID: 5
+Agent: Main Agent
+Task: Rebrand all old square logo to horizontal wordmark + set GitHub repo description
+
+Work Log:
+- Searched entire codebase for `tunog-kalye-logo.png` references
+- Replaced all old square logo references with `tunog-kalye-horizontal.png` across:
+  - src/components/navbar.tsx (horizontal logo + text)
+  - src/components/live-player.tsx (horizontal logo)
+  - src/app/page.tsx (hero banner)
+  - src/app/auth/login/page.tsx
+  - src/app/auth/register/page.tsx
+  - Admin sidebar, Artist sidebar, Dashboard sidebar, Store header
+  - src/app/about/page.tsx
+- All footer sections (page.tsx, store/layout.tsx, about, kanto-fund, terms, privacy) already had horizontal logo
+- Deleted old `public/tunog-kalye-logo.png` file entirely
+- Generated all favicon/PWA icon sizes from wheel logo
+- Set GitHub repo description: "24/7 Filipino independent music internet radio + multi-vendor marketplace. Zero-commission store for Pinoy indie artists. Powered by AzuraCast."
+- Set GitHub repo homepage: "https://hub.tunogkalye.net"
+- Added 12 repo topics: radio, filipino, pinoy, indie-music, azuracast, nextjs, marketplace, streaming, opm, independent-artists, stripe, vercel
+
+Stage Summary:
+- Zero remaining references to old square logo in codebase
+- GitHub repo now has professional description, homepage URL, and discoverability topics
+- All 6 original issues resolved

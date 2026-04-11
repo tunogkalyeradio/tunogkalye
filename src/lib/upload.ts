@@ -4,8 +4,22 @@ import path from "path";
 export const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp", "image/jpg"];
 export const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
-// Detect storage mode: Cloudinary for production (Vercel), local for dev
-const STORAGE_MODE = process.env.CLOUDINARY_URL ? "cloudinary" : "local";
+// Detect storage mode:
+// 1. If any Cloudinary env var is set → Cloudinary (works on Vercel)
+// 2. If running on Vercel (VERCEL env) → FORCE Cloudinary (local writes impossible)
+// 3. Otherwise → local filesystem (dev)
+function detectStorageMode(): "cloudinary" | "local" {
+  const hasCloudinary =
+    process.env.CLOUDINARY_URL ||
+    process.env.CLOUDINARY_CLOUD_NAME;
+  const isVercel = !!process.env.VERCEL;
+
+  if (hasCloudinary) return "cloudinary";
+  if (isVercel) return "cloudinary"; // Will fail with clear error if vars missing
+  return "local";
+}
+
+const STORAGE_MODE = detectStorageMode();
 
 function generateFilename(originalName: string): string {
   const ext = path.extname(originalName).toLowerCase() || ".png";
@@ -30,9 +44,35 @@ async function uploadToCloudinary(
   const API_KEY = process.env.CLOUDINARY_API_KEY;
   const API_SECRET = process.env.CLOUDINARY_API_SECRET;
 
+  // Also try parsing CLOUDINARY_URL (cloudinary://key:secret@cloud_name)
   if (!CLOUD_NAME || !API_KEY || !API_SECRET) {
+    const url = process.env.CLOUDINARY_URL;
+    if (url) {
+      try {
+        const parsed = new URL(url);
+        const parts = parsed.username ? parsed.username.split(":") : [];
+        if (!CLOUD_NAME && parsed.hostname) {
+          (process.env as Record<string, string>).CLOUDINARY_CLOUD_NAME = parsed.hostname;
+        }
+        if (!API_KEY && parts[0]) {
+          (process.env as Record<string, string>).CLOUDINARY_API_KEY = parts[0];
+        }
+        if (!API_SECRET && parsed.password) {
+          (process.env as Record<string, string>).CLOUDINARY_API_SECRET = parsed.password;
+        }
+      } catch {
+        // Invalid CLOUDINARY_URL format
+      }
+    }
+  }
+
+  const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+  const apiKey = process.env.CLOUDINARY_API_KEY;
+  const apiSecret = process.env.CLOUDINARY_API_SECRET;
+
+  if (!cloudName || !apiKey || !apiSecret) {
     throw new Error(
-      "Cloudinary env vars missing. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET."
+      "Image uploads require Cloudinary on Vercel. Please set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET in your Vercel project environment variables. Get free credentials at https://cloudinary.com/users/register_free"
     );
   }
 
@@ -43,12 +83,11 @@ async function uploadToCloudinary(
   // Generate a unique public_id
   const timestamp = Date.now();
   const random = Math.random().toString(36).substring(2, 8);
-  const ext = path.extname(file.name).toLowerCase() || ".png";
   const publicId = `${folder}/${timestamp}-${random}`;
 
   // Build signature string
   const crypto = await import("crypto");
-  const signatureStr = `folder=${folder}&public_id=${publicId}&timestamp=${timestamp}${API_SECRET}`;
+  const signatureStr = `folder=${folder}&public_id=${publicId}&timestamp=${timestamp}${apiSecret}`;
   const signature = crypto.createHash("sha1").update(signatureStr).digest("hex");
 
   const formData = new FormData();
@@ -56,11 +95,11 @@ async function uploadToCloudinary(
   formData.append("folder", folder);
   formData.append("public_id", publicId);
   formData.append("timestamp", timestamp.toString());
-  formData.append("api_key", API_KEY);
+  formData.append("api_key", apiKey);
   formData.append("signature", signature);
 
   const response = await fetch(
-    `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
+    `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
     {
       method: "POST",
       body: formData,
@@ -82,24 +121,24 @@ async function uploadToCloudinary(
 }
 
 async function deleteFromCloudinary(publicId: string): Promise<void> {
-  const CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME;
-  const API_KEY = process.env.CLOUDINARY_API_KEY;
-  const API_SECRET = process.env.CLOUDINARY_API_SECRET;
+  const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+  const apiKey = process.env.CLOUDINARY_API_KEY;
+  const apiSecret = process.env.CLOUDINARY_API_SECRET;
 
-  if (!CLOUD_NAME || !API_KEY || !API_SECRET) return;
+  if (!cloudName || !apiKey || !apiSecret) return;
 
   const timestamp = Date.now().toString();
   const crypto = await import("crypto");
-  const signatureStr = `public_id=${publicId}&timestamp=${timestamp}${API_SECRET}`;
+  const signatureStr = `public_id=${publicId}&timestamp=${timestamp}${apiSecret}`;
   const signature = crypto.createHash("sha1").update(signatureStr).digest("hex");
 
   const formData = new FormData();
   formData.append("public_id", publicId);
   formData.append("timestamp", timestamp);
-  formData.append("api_key", API_KEY);
+  formData.append("api_key", apiKey);
   formData.append("signature", signature);
 
-  await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/destroy`, {
+  await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/destroy`, {
     method: "POST",
     body: formData,
   }).catch(() => {
@@ -107,7 +146,7 @@ async function deleteFromCloudinary(publicId: string): Promise<void> {
   });
 }
 
-// ─── Local File Upload ────────────────────────────────────────────────────────
+// ─── Local File Upload (dev only) ──────────────────────────────────────────────
 
 async function saveToLocal(
   file: File

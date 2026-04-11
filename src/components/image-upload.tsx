@@ -10,6 +10,7 @@ interface ImageUploadProps {
   multiple?: boolean;
   maxImages?: number;
   className?: string;
+  accent?: "red" | "blue" | "green";
 }
 
 export default function ImageUpload({
@@ -19,7 +20,14 @@ export default function ImageUpload({
   multiple = false,
   maxImages = 5,
   className = "",
+  accent = "red",
 }: ImageUploadProps) {
+  const accentColor = accent === "blue" ? "blue" : accent === "green" ? "green" : "red";
+  const accentClasses = {
+    red: { border: "border-red-500/50", bg: "bg-red-500/5", spinner: "text-red-400" },
+    blue: { border: "border-blue-500/50", bg: "bg-blue-500/5", spinner: "text-blue-400" },
+    green: { border: "border-green-500/50", bg: "bg-green-500/5", spinner: "text-green-400" },
+  }[accentColor];
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState(false);
@@ -140,12 +148,12 @@ export default function ImageUpload({
           onClick={() => inputRef.current?.click()}
           className={`flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed p-6 transition-all ${
             dragOver
-              ? "border-red-500/50 bg-red-500/5"
+              ? `${accentClasses.border} ${accentClasses.bg}`
               : "border-white/15 bg-white/5 hover:border-white/30 hover:bg-white/10"
           } ${isUploading ? "pointer-events-none opacity-50" : ""}`}
         >
           {isUploading ? (
-            <Loader2 className="mb-2 h-8 w-8 animate-spin text-red-400" />
+            <Loader2 className={`mb-2 h-8 w-8 animate-spin ${accentClasses.spinner}`} />
           ) : (
             <ImageIcon className="mb-2 h-8 w-8 text-slate-500" />
           )}
