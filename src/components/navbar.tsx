@@ -142,9 +142,15 @@ export default function Navbar() {
     <nav className="sticky top-0 z-50 border-b border-white/10 bg-[#0a0a0f]/80 backdrop-blur-xl">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
         {/* Logo */}
-        <Link href="/" className="flex items-center transition-opacity hover:opacity-80">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/tunog-kalye-horizontal.png" alt="Tunog Kalye Radio" className="h-10 w-auto object-contain sm:h-12" />
+        <Link href="/" className="flex items-center gap-3 transition-opacity hover:opacity-80">
+          {/* Horizontal TKR wordmark */}
+          <img src="/tunog-kalye-horizontal.png" alt="TKR" className="h-10 w-auto object-contain sm:h-12" />
+          {/* Brand name text */}
+          <div className="flex flex-col leading-none">
+            <span className="text-lg font-bold tracking-tight text-white sm:text-xl">
+              TUNOG KALYE<span className="text-red-400"> RADIO</span>
+            </span>
+          </div>
         </Link>
 
         {/* Desktop: Center nav + Auth */}
