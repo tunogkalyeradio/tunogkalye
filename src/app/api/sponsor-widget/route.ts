@@ -12,10 +12,11 @@ export async function OPTIONS() {
   return new NextResponse(null, { status: 204, headers: corsHeaders });
 }
 
-// GET: Public endpoint — returns sponsor data for the AzuraCast widget
+// GET: Public endpoint — returns sponsor data + recent donations for the AzuraCast widget
 // No authentication required. Called from tunogkalye.net/public/tunog-kalye
 export async function GET() {
   try {
+    // Fetch sponsor settings
     const settings = await db.siteSetting.findMany({
       where: {
         OR: [
@@ -44,11 +45,46 @@ export async function GET() {
       }
     }
 
+    // Fetch recent donations (latest 20, exclude emails for privacy)
+    const donations = await db.donation.findMany({
+      take: 20,
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        name: true,
+        amount: true,
+        tier: true,
+        message: true,
+        createdAt: true,
+      },
+    });
+
+    // Calculate donation stats
+    const totalDonations = await db.donation.aggregate({
+      _sum: { amount: true },
+      _count: true,
+    });
+
+    // Sanitize — hide email, anonymize if name is null
+    const recentDonations = donations.map((d) => ({
+      id: d.id,
+      name: d.name || "Anonymous Supporter",
+      amount: d.amount,
+      tier: d.tier,
+      message: d.message,
+      createdAt: d.createdAt.toISOString(),
+    }));
+
     return NextResponse.json(
       {
         station_name: map.station_name || "Tunog Kalye Radio",
         sponsor_enabled: map.sponsor_enabled !== "false",
         sponsors,
+        donations: recentDonations,
+        donationStats: {
+          totalAmount: totalDonations._sum.amount || 0,
+          totalCount: totalDonations._count,
+        },
       },
       { headers: corsHeaders }
     );

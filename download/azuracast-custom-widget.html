@@ -3,18 +3,20 @@
   AZURACAST CUSTOM HTML WIDGET — DYNAMIC VERSION
   Paste this into your AzuraCast Station Page → Custom HTML
   (Administration → Station Pages → Custom HTML)
-  
+
   This widget is 100% dynamic:
   - Sponsor names, links, and descriptions are loaded from
     the Hub admin dashboard — NO code changes needed!
+  - Recent donations appear live from the Hub
   - Admin updates sponsors at: hub.tunogkalye.net/admin/settings
     under the "Sponsors & Partners" tab
-  
+
   HOW IT WORKS:
   1. Widget loads and fetches data from hub.tunogkalye.net/api/sponsor-widget
   2. Renders the Tunog Kalye Hub banner with funnel links
-  3. If sponsors are configured, shows a sponsor banner above
-  4. If the API is unreachable, falls back to default static content
+  3. If sponsors are configured, shows sponsor banners
+  4. Shows a live feed of recent donations
+  5. If the API is unreachable, falls back to default static content
   ═══════════════════════════════════════════════════════════
 -->
 
@@ -153,6 +155,171 @@
     text-decoration: underline !important;
   }
 
+  /* ─── DONATIONS FEED ──────────────────────────────────── */
+  .tk-donations-section {
+    max-width: 800px;
+    margin: 0 auto 10px auto;
+    box-sizing: border-box;
+  }
+  .tk-donations-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 4px;
+    margin-bottom: 8px;
+  }
+  .tk-donations-header h4 {
+    color: #e2e8f0 !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    margin: 0 !important;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .tk-donations-header h4 span {
+    background: linear-gradient(to right, #10b981, #14b8a6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .tk-donations-stats {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .tk-donations-stat {
+    color: #64748b !important;
+    font-size: 11px !important;
+    font-weight: 500 !important;
+  }
+  .tk-donations-stat strong {
+    color: #10b981 !important;
+    font-weight: 700 !important;
+  }
+  .tk-donations-feed {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding-bottom: 6px;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+  .tk-donations-feed::-webkit-scrollbar {
+    height: 3px;
+  }
+  .tk-donations-feed::-webkit-scrollbar-track {
+    background: rgba(255,255,255,0.03);
+    border-radius: 3px;
+  }
+  .tk-donations-feed::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.1);
+    border-radius: 3px;
+  }
+  .tk-donation-card {
+    flex-shrink: 0;
+    min-width: 180px;
+    max-width: 220px;
+    background: rgba(16, 185, 129, 0.05);
+    border: 1px solid rgba(16, 185, 129, 0.15);
+    border-radius: 10px;
+    padding: 10px 12px;
+    transition: all 0.2s ease;
+  }
+  .tk-donation-card:hover {
+    border-color: rgba(16, 185, 129, 0.3);
+    background: rgba(16, 185, 129, 0.08);
+  }
+  .tk-donation-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 4px;
+  }
+  .tk-donation-name {
+    color: #fff !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 110px;
+  }
+  .tk-donation-amount {
+    color: #10b981 !important;
+    font-size: 14px !important;
+    font-weight: 800 !important;
+  }
+  .tk-donation-tier {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-size: 10px !important;
+    font-weight: 600 !important;
+    margin-bottom: 3px;
+  }
+  .tk-donation-tier-coffee {
+    background: rgba(251, 191, 36, 0.15);
+    color: #fbbf24 !important;
+    border: 1px solid rgba(251, 191, 36, 0.25);
+  }
+  .tk-donation-tier-hour {
+    background: rgba(59, 130, 246, 0.15);
+    color: #60a5fa !important;
+    border: 1px solid rgba(59, 130, 246, 0.25);
+  }
+  .tk-donation-tier-day {
+    background: rgba(168, 85, 247, 0.15);
+    color: #c084fc !important;
+    border: 1px solid rgba(168, 85, 247, 0.25);
+  }
+  .tk-donation-tier-champion {
+    background: rgba(245, 158, 11, 0.15);
+    color: #fbbf24 !important;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+  }
+  .tk-donation-tier-default {
+    background: rgba(16, 185, 129, 0.15);
+    color: #34d399 !important;
+    border: 1px solid rgba(16, 185, 129, 0.25);
+  }
+  .tk-donation-message {
+    color: #94a3b8 !important;
+    font-size: 11px !important;
+    font-style: italic !important;
+    margin: 3px 0 0 0 !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .tk-donation-time {
+    color: #475569 !important;
+    font-size: 10px !important;
+    margin: 3px 0 0 0 !important;
+  }
+  .tk-donations-empty {
+    color: #64748b !important;
+    font-size: 12px !important;
+    text-align: center;
+    padding: 12px !important;
+    font-style: italic !important;
+  }
+  .tk-donations-cta {
+    text-align: center;
+    margin-top: 6px;
+  }
+  .tk-donations-cta a {
+    color: #10b981 !important;
+    text-decoration: none !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    transition: color 0.2s ease;
+  }
+  .tk-donations-cta a:hover {
+    color: #34d399 !important;
+    text-decoration: underline !important;
+  }
+
   /* Loading state */
   .tk-sponsor-banner.tk-loading::after {
     content: '...';
@@ -165,10 +332,12 @@
 
   /* Mobile Fix */
   @media (max-width: 768px) {
-    body { padding-bottom: 280px; }
+    body { padding-bottom: 320px; }
     .tk-hub-banner { padding: 15px 10px; margin: 0 10px 10px 10px; }
     .tk-hub-btn { width: 100%; justify-content: center; margin-bottom: 5px; }
     .tk-sponsor-banner { margin: 0 10px 10px 10px; }
+    .tk-donations-section { margin: 0 10px 10px 10px; }
+    .tk-donation-card { min-width: 160px; }
   }
 </style>
 
@@ -177,9 +346,37 @@
   // Configuration — change HUB_URL if your Hub domain changes
   var HUB_URL = 'https://hub.tunogkalye.net';
 
+  // Tier display names and CSS classes
+  var TIER_CONFIG = {
+    'coffee':     { label: 'Buy Us a Coffee', css: 'tk-donation-tier-coffee' },
+    'hour':       { label: 'Sponsor an Hour',  css: 'tk-donation-tier-hour' },
+    'day':        { label: 'Fund a Day',       css: 'tk-donation-tier-day' },
+    'champion':   { label: 'Kanto Champion',   css: 'tk-donation-tier-champion' },
+    'shoutout':   { label: 'Shoutout',         css: 'tk-donation-tier-default' },
+    'banner':     { label: 'Banner',           css: 'tk-donation-tier-default' },
+    'premium':    { label: 'Premium',          css: 'tk-donation-tier-default' },
+  };
+
+  function getTierConfig(tier) {
+    var key = (tier || '').toLowerCase().replace(/[^a-z]/g, '');
+    return TIER_CONFIG[key] || { label: tier || 'Donation', css: 'tk-donation-tier-default' };
+  }
+
+  function timeAgo(dateStr) {
+    var now = new Date();
+    var then = new Date(dateStr);
+    var diff = Math.floor((now - then) / 1000);
+    if (diff < 60) return 'Just now';
+    if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+    if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+    if (diff < 604800) return Math.floor(diff / 86400) + 'd ago';
+    return then.toLocaleDateString();
+  }
+
   // Build the widget HTML
   function renderWidget(data) {
     var sponsorsHtml = '';
+    var donationsHtml = '';
 
     // Sponsor banner(s) — only show if enabled and sponsors exist
     if (data.sponsor_enabled && data.sponsors && data.sponsors.length > 0) {
@@ -191,8 +388,54 @@
       }
     }
 
+    // Donations feed — show recent donations
+    if (data.donations && data.donations.length > 0) {
+      var totalAmount = (data.donationStats && data.donationStats.totalAmount) ? data.donationStats.totalAmount : 0;
+      var totalCount = (data.donationStats && data.donationStats.totalCount) ? data.donationStats.totalCount : 0;
+
+      var cardsHtml = '';
+      for (var j = 0; j < data.donations.length; j++) {
+        var d = data.donations[j];
+        var tierInfo = getTierConfig(d.tier);
+        var msgHtml = d.message ? '<p class="tk-donation-message">\u201C' + escapeHtml(d.message) + '\u201D</p>' : '';
+        cardsHtml += '<div class="tk-donation-card">'
+          + '<div class="tk-donation-top">'
+          + '<span class="tk-donation-name">' + escapeHtml(d.name) + '</span>'
+          + '<span class="tk-donation-amount">$' + d.amount.toFixed(0) + '</span>'
+          + '</div>'
+          + '<span class="tk-donation-tier ' + tierInfo.css + '">' + escapeHtml(tierInfo.label) + '</span>'
+          + msgHtml
+          + '<p class="tk-donation-time">' + timeAgo(d.createdAt) + '</p>'
+          + '</div>';
+      }
+
+      donationsHtml = '<div class="tk-donations-section">'
+        + '<div class="tk-donations-header">'
+        + '<h4>\u2764\uFE0F Recent <span>Donations</span></h4>'
+        + '<div class="tk-donations-stats">'
+        + '<span class="tk-donations-stat"><strong>$' + totalAmount.toFixed(0) + '</strong> raised</span>'
+        + '<span class="tk-donations-stat"><strong>' + totalCount + '</strong> donors</span>'
+        + '</div>'
+        + '</div>'
+        + '<div class="tk-donations-feed">'
+        + cardsHtml
+        + '</div>'
+        + '<div class="tk-donations-cta"><a href="' + HUB_URL + '/kanto-fund" target="_blank">Support the station \u2192</a></div>'
+        + '</div>';
+    } else if (data.donations && data.donations.length === 0) {
+      // Show empty state with CTA
+      donationsHtml = '<div class="tk-donations-section">'
+        + '<div class="tk-donations-header">'
+        + '<h4>\u2764\uFE0F Recent <span>Donations</span></h4>'
+        + '</div>'
+        + '<p class="tk-donations-empty">Be the first to support Tunog Kalye Radio!</p>'
+        + '<div class="tk-donations-cta"><a href="' + HUB_URL + '/kanto-fund" target="_blank">Donate now \u2192</a></div>'
+        + '</div>';
+    }
+
     var html = '<div class="tk-hub-wrapper">'
       + sponsorsHtml
+      + donationsHtml
       + '<div class="tk-hub-banner">'
       + '<h3>\uD83C\uDFA4 TUNOG KALYE <span>HUB</span></h3>'
       + '<p>Submit your music, support the station, or become a sponsor</p>'
@@ -223,20 +466,25 @@
     }
   }
 
-  // Fetch sponsor data from Hub API (with fallback)
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  // Fetch sponsor data + donations from Hub API (with fallback)
   fetch(HUB_URL + '/api/sponsor-widget')
     .then(function(res) { return res.ok ? res.json() : null; })
     .then(function(data) {
       if (data) {
         renderWidget(data);
       } else {
-        // Fallback: render without sponsors
-        renderWidget({ sponsor_enabled: false, sponsors: [] });
+        // Fallback: render without sponsors or donations
+        renderWidget({ sponsor_enabled: false, sponsors: [], donations: [], donationStats: { totalAmount: 0, totalCount: 0 } });
       }
     })
     .catch(function() {
       // Fallback if API unreachable — render static widget
-      renderWidget({ sponsor_enabled: false, sponsors: [] });
+      renderWidget({ sponsor_enabled: false, sponsors: [], donations: [], donationStats: { totalAmount: 0, totalCount: 0 } });
     });
 })();
 </script>
