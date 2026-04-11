@@ -4,25 +4,25 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // ─── Tier Display Config ──────────────────────────────────
     var TIER_CONFIG = {
-        'coffee':   { label: 'Buy Us a Coffee', css: 'tk-donation-tier-coffee' },
-        'hour':     { label: 'Sponsor an Hour',  css: 'tk-donation-tier-hour' },
-        'day':      { label: 'Fund a Day',       css: 'tk-donation-tier-day' },
-        'champion': { label: 'Kanto Champion',   css: 'tk-donation-tier-champion' },
-        'shoutout': { label: 'Shoutout',         css: 'tk-donation-tier-default' },
-        'banner':   { label: 'Banner',           css: 'tk-donation-tier-default' },
-        'premium':  { label: 'Premium',          css: 'tk-donation-tier-default' }
+        'coffee':   { label: 'Coffee', icon: '\u2615', css: 'tk-tier-coffee' },
+        'hour':     { label: 'Sponsor an Hour', icon: '\uD83D\uDD51', css: 'tk-tier-hour' },
+        'day':      { label: 'Fund a Day', icon: '\uD83C\uDF1F', css: 'tk-tier-day' },
+        'champion': { label: 'Kanto Champion', icon: '\uD83D\uDC51', css: 'tk-tier-champion' },
+        'shoutout': { label: 'Shoutout', icon: '\uD83D\uDCE2', css: 'tk-tier-default' },
+        'banner':   { label: 'Banner', icon: '\uD83D\uDCC8', css: 'tk-tier-default' },
+        'premium':  { label: 'Premium', icon: '\u2B50', css: 'tk-tier-default' }
     };
 
     function getTierConfig(tier) {
         var key = (tier || '').toLowerCase().replace(/[^a-z]/g, '');
-        return TIER_CONFIG[key] || { label: tier || 'Donation', css: 'tk-donation-tier-default' };
+        return TIER_CONFIG[key] || { label: tier || 'Donation', icon: '\u2764\uFE0F', css: 'tk-tier-default' };
     }
 
     function timeAgo(dateStr) {
         var now = new Date();
         var then = new Date(dateStr);
         var diff = Math.floor((now - then) / 1000);
-        if (diff < 60) return 'Just now';
+        if (diff < 60) return 'just now';
         if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
         if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
         if (diff < 604800) return Math.floor(diff / 86400) + 'd ago';
@@ -39,7 +39,7 @@ document.addEventListener("DOMContentLoaded", function() {
     // ─── Styles ───────────────────────────────────────────────
     var styles = document.createElement("style");
     styles.innerHTML = `
-        /* THIS IS THE MAGIC FIX FOR "FIRST VIEW" */
+        /* FIXED BOTTOM BAR */
         .tk-hub-wrapper {
             position: fixed;
             bottom: 0;
@@ -48,28 +48,232 @@ document.addEventListener("DOMContentLoaded", function() {
             width: 100%;
             z-index: 1000;
             background: #050505;
-            padding-top: 10px;
             box-shadow: 0 -5px 20px rgba(0,0,0,0.8);
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
         }
 
         body {
-            padding-bottom: 300px;
+            padding-bottom: 180px;
         }
 
+        /* ─── SCROLLING TICKER (vebetter style) ──────────── */
+        .tk-ticker {
+            background: linear-gradient(90deg, #1a0505 0%, #0f0a0a 50%, #0a0505 100%);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            padding: 10px 0;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Fade edges */
+        .tk-ticker::before,
+        .tk-ticker::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 60px;
+            z-index: 2;
+            pointer-events: none;
+        }
+        .tk-ticker::before {
+            left: 0;
+            background: linear-gradient(to right, #0f0808, transparent);
+        }
+        .tk-ticker::after {
+            right: 0;
+            background: linear-gradient(to left, #0f0808, transparent);
+        }
+
+        .tk-ticker-track {
+            display: flex;
+            width: max-content;
+            animation: tk-scroll 45s linear infinite;
+        }
+        .tk-ticker-track:hover {
+            animation-play-state: paused;
+        }
+
+        @keyframes tk-scroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        .tk-ticker-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 20px;
+            margin: 0 6px;
+            border-radius: 8px;
+            white-space: nowrap;
+            flex-shrink: 0;
+            border: 1px solid rgba(255,255,255,0.06);
+            transition: all 0.2s ease;
+        }
+        .tk-ticker-item:hover {
+            border-color: rgba(255,255,255,0.15);
+            background: rgba(255,255,255,0.04);
+        }
+
+        /* Sponsor items */
+        .tk-ticker-sponsor {
+            background: rgba(249, 115, 22, 0.08);
+            border-color: rgba(249, 115, 22, 0.2);
+        }
+        .tk-ticker-sponsor:hover {
+            background: rgba(249, 115, 22, 0.14);
+            border-color: rgba(249, 115, 22, 0.35);
+        }
+        .tk-ticker-sponsor-icon {
+            font-size: 14px;
+        }
+        .tk-ticker-sponsor-name {
+            color: #f97316 !important;
+            font-size: 12px !important;
+            font-weight: 700 !important;
+            text-decoration: none !important;
+        }
+        .tk-ticker-sponsor-name:hover {
+            text-decoration: underline !important;
+        }
+        .tk-ticker-sponsor-desc {
+            color: #94a3b8 !important;
+            font-size: 11px !important;
+        }
+
+        /* Donation items */
+        .tk-ticker-donation {
+            background: rgba(16, 185, 129, 0.06);
+            border-color: rgba(16, 185, 129, 0.15);
+        }
+        .tk-ticker-donation:hover {
+            background: rgba(16, 185, 129, 0.12);
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+        .tk-ticker-donation-icon {
+            font-size: 14px;
+        }
+        .tk-ticker-donation-name {
+            color: #fff !important;
+            font-size: 12px !important;
+            font-weight: 700 !important;
+        }
+        .tk-ticker-donation-amount {
+            color: #10b981 !important;
+            font-size: 13px !important;
+            font-weight: 800 !important;
+        }
+        .tk-ticker-donation-tier {
+            display: inline-block;
+            padding: 1px 6px;
+            border-radius: 4px;
+            font-size: 9px !important;
+            font-weight: 600 !important;
+        }
+        .tk-tier-coffee {
+            background: rgba(251, 191, 36, 0.15);
+            color: #fbbf24 !important;
+        }
+        .tk-tier-hour {
+            background: rgba(59, 130, 246, 0.15);
+            color: #60a5fa !important;
+        }
+        .tk-tier-day {
+            background: rgba(168, 85, 247, 0.15);
+            color: #c084fc !important;
+        }
+        .tk-tier-champion {
+            background: rgba(245, 158, 11, 0.15);
+            color: #fbbf24 !important;
+        }
+        .tk-tier-default {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399 !important;
+        }
+        .tk-ticker-donation-time {
+            color: #475569 !important;
+            font-size: 10px !important;
+        }
+        .tk-ticker-donation-msg {
+            color: #64748b !important;
+            font-size: 10px !important;
+            font-style: italic !important;
+            max-width: 120px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Separator dots between items */
+        .tk-ticker-dot {
+            width: 3px;
+            height: 3px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            flex-shrink: 0;
+            margin: 0 4px;
+            align-self: center;
+        }
+
+        /* Empty ticker */
+        .tk-ticker-empty {
+            color: #475569 !important;
+            font-size: 12px !important;
+            text-align: center;
+            padding: 8px !important;
+        }
+        .tk-ticker-empty a {
+            color: #10b981 !important;
+            text-decoration: none !important;
+            font-weight: 600 !important;
+        }
+        .tk-ticker-empty a:hover {
+            text-decoration: underline !important;
+        }
+
+        /* ─── STATS BAR ──────────────────────────────────── */
+        .tk-stats-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            padding: 6px 20px;
+            background: rgba(255,255,255,0.02);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .tk-stat-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .tk-stat-value {
+            color: #10b981 !important;
+            font-size: 14px !important;
+            font-weight: 800 !important;
+        }
+        .tk-stat-label {
+            color: #64748b !important;
+            font-size: 11px !important;
+        }
+        .tk-stat-sep {
+            color: rgba(255,255,255,0.1);
+            font-size: 14px;
+        }
+
+        /* ─── HUB BANNER ─────────────────────────────────── */
         .tk-hub-banner {
             background: linear-gradient(135deg, #1a0000 0%, #0a0a0f 50%, #1a0a00 100%);
             border: 1px solid rgba(255,255,255,0.1);
             border-radius: 12px;
-            padding: 20px;
-            margin: 0 auto 10px auto;
+            padding: 16px 20px;
+            margin: 8px auto 8px auto;
             text-align: center;
             max-width: 800px;
             box-sizing: border-box;
         }
         .tk-hub-banner h3 {
             color: #fff !important;
-            font-size: 18px !important;
+            font-size: 16px !important;
             font-weight: 800 !important;
             margin: 0 0 4px 0 !important;
             letter-spacing: -0.02em;
@@ -82,8 +286,8 @@ document.addEventListener("DOMContentLoaded", function() {
         }
         .tk-hub-banner p {
             color: #94a3b8 !important;
-            font-size: 13px !important;
-            margin: 0 0 12px 0 !important;
+            font-size: 12px !important;
+            margin: 0 0 10px 0 !important;
         }
         .tk-hub-buttons {
             display: flex;
@@ -95,9 +299,9 @@ document.addEventListener("DOMContentLoaded", function() {
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            padding: 10px 20px;
+            padding: 8px 16px;
             border-radius: 8px;
-            font-size: 13px !important;
+            font-size: 12px !important;
             font-weight: 700 !important;
             text-decoration: none !important;
             color: #fff !important;
@@ -120,28 +324,28 @@ document.addEventListener("DOMContentLoaded", function() {
         .tk-hub-btn-secondary:hover {
             background: rgba(255,255,255,0.12);
         }
+
+        /* ─── FOOTER ─────────────────────────────────────── */
         .tk-hub-footer {
-            border-top: 1px solid rgba(255,255,255,0.08);
-            padding: 10px 20px;
+            border-top: 1px solid rgba(255,255,255,0.06);
+            padding: 8px 20px;
             text-align: center;
-            width: 100%;
-            box-sizing: border-box;
         }
         .tk-hub-footer p {
             color: #475569 !important;
-            font-size: 11px !important;
-            margin: 0 0 6px 0 !important;
+            font-size: 10px !important;
+            margin: 0 0 4px 0 !important;
         }
         .tk-hub-footer-links {
             display: flex;
             justify-content: center;
-            gap: 15px;
+            gap: 12px;
             flex-wrap: wrap;
         }
         .tk-hub-footer-links a {
-            color: #64748b !important;
+            color: #475569 !important;
             text-decoration: none !important;
-            font-size: 11px !important;
+            font-size: 10px !important;
             font-weight: 500 !important;
             transition: color 0.2s ease;
         }
@@ -149,203 +353,13 @@ document.addEventListener("DOMContentLoaded", function() {
             color: #ef4444 !important;
         }
 
-        /* SPONSOR BANNER */
-        .tk-sponsor-banner {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 6px;
-            padding: 8px 15px;
-            margin: 0 auto 10px auto;
-            text-align: center;
-            max-width: 800px;
-        }
-        .tk-sponsor-banner p {
-            color: #94a3b8 !important;
-            font-size: 12px !important;
-            margin: 0 !important;
-        }
-        .tk-sponsor-banner a {
-            color: #f97316 !important;
-            text-decoration: none !important;
-            font-weight: 700 !important;
-        }
-        .tk-sponsor-banner a:hover {
-            text-decoration: underline !important;
-        }
-
-        /* ─── DONATIONS FEED ─────────────────────────────── */
-        .tk-donations-section {
-            max-width: 800px;
-            margin: 0 auto 10px auto;
-            box-sizing: border-box;
-        }
-        .tk-donations-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 4px;
-            margin-bottom: 8px;
-        }
-        .tk-donations-header h4 {
-            color: #e2e8f0 !important;
-            font-size: 13px !important;
-            font-weight: 700 !important;
-            margin: 0 !important;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .tk-donations-header h4 span {
-            background: linear-gradient(to right, #10b981, #14b8a6);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        .tk-donations-stats {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .tk-donations-stat {
-            color: #64748b !important;
-            font-size: 11px !important;
-            font-weight: 500 !important;
-        }
-        .tk-donations-stat strong {
-            color: #10b981 !important;
-            font-weight: 700 !important;
-        }
-        .tk-donations-feed {
-            display: flex;
-            gap: 6px;
-            overflow-x: auto;
-            padding-bottom: 6px;
-            scroll-behavior: smooth;
-            -webkit-overflow-scrolling: touch;
-        }
-        .tk-donations-feed::-webkit-scrollbar {
-            height: 3px;
-        }
-        .tk-donations-feed::-webkit-scrollbar-track {
-            background: rgba(255,255,255,0.03);
-            border-radius: 3px;
-        }
-        .tk-donations-feed::-webkit-scrollbar-thumb {
-            background: rgba(255,255,255,0.1);
-            border-radius: 3px;
-        }
-        .tk-donation-card {
-            flex-shrink: 0;
-            min-width: 180px;
-            max-width: 220px;
-            background: rgba(16, 185, 129, 0.05);
-            border: 1px solid rgba(16, 185, 129, 0.15);
-            border-radius: 10px;
-            padding: 10px 12px;
-            transition: all 0.2s ease;
-        }
-        .tk-donation-card:hover {
-            border-color: rgba(16, 185, 129, 0.3);
-            background: rgba(16, 185, 129, 0.08);
-        }
-        .tk-donation-top {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 4px;
-        }
-        .tk-donation-name {
-            color: #fff !important;
-            font-size: 12px !important;
-            font-weight: 700 !important;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 110px;
-        }
-        .tk-donation-amount {
-            color: #10b981 !important;
-            font-size: 14px !important;
-            font-weight: 800 !important;
-        }
-        .tk-donation-tier {
-            display: inline-block;
-            padding: 2px 7px;
-            border-radius: 4px;
-            font-size: 10px !important;
-            font-weight: 600 !important;
-            margin-bottom: 3px;
-        }
-        .tk-donation-tier-coffee {
-            background: rgba(251, 191, 36, 0.15);
-            color: #fbbf24 !important;
-            border: 1px solid rgba(251, 191, 36, 0.25);
-        }
-        .tk-donation-tier-hour {
-            background: rgba(59, 130, 246, 0.15);
-            color: #60a5fa !important;
-            border: 1px solid rgba(59, 130, 246, 0.25);
-        }
-        .tk-donation-tier-day {
-            background: rgba(168, 85, 247, 0.15);
-            color: #c084fc !important;
-            border: 1px solid rgba(168, 85, 247, 0.25);
-        }
-        .tk-donation-tier-champion {
-            background: rgba(245, 158, 11, 0.15);
-            color: #fbbf24 !important;
-            border: 1px solid rgba(245, 158, 11, 0.3);
-        }
-        .tk-donation-tier-default {
-            background: rgba(16, 185, 129, 0.15);
-            color: #34d399 !important;
-            border: 1px solid rgba(16, 185, 129, 0.25);
-        }
-        .tk-donation-message {
-            color: #94a3b8 !important;
-            font-size: 11px !important;
-            font-style: italic !important;
-            margin: 3px 0 0 0 !important;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .tk-donation-time {
-            color: #475569 !important;
-            font-size: 10px !important;
-            margin: 3px 0 0 0 !important;
-        }
-        .tk-donations-empty {
-            color: #64748b !important;
-            font-size: 12px !important;
-            text-align: center;
-            padding: 12px !important;
-            font-style: italic !important;
-        }
-        .tk-donations-cta {
-            text-align: center;
-            margin-top: 6px;
-        }
-        .tk-donations-cta a {
-            color: #10b981 !important;
-            text-decoration: none !important;
-            font-size: 11px !important;
-            font-weight: 600 !important;
-            transition: color 0.2s ease;
-        }
-        .tk-donations-cta a:hover {
-            color: #34d399 !important;
-            text-decoration: underline !important;
-        }
-
-        /* Mobile Fix */
+        /* ─── Mobile ─────────────────────────────────────── */
         @media (max-width: 768px) {
-            body { padding-bottom: 380px; }
-            .tk-hub-banner { padding: 15px 10px; margin: 0 10px 10px 10px; }
-            .tk-hub-btn { width: 100%; justify-content: center; margin-bottom: 5px; }
-            .tk-sponsor-banner { margin: 0 10px 10px 10px; }
-            .tk-donations-section { margin: 0 10px 10px 10px; }
-            .tk-donation-card { min-width: 160px; }
+            body { padding-bottom: 220px; }
+            .tk-hub-banner { padding: 12px 10px; margin: 6px 10px 6px 10px; }
+            .tk-hub-btn { width: 100%; justify-content: center; margin-bottom: 4px; }
+            .tk-stats-bar { gap: 12px; }
+            .tk-ticker-item { padding: 5px 12px; }
         }
     `;
     document.head.appendChild(styles);
@@ -364,67 +378,94 @@ document.addEventListener("DOMContentLoaded", function() {
         });
 
     function renderWidget(data) {
-        var sponsorsHtml = '';
-        var donationsHtml = '';
+        var tickerItems = '';
 
-        // ── Sponsor banner(s) ─────────────────────────────
+        // ── Build sponsor items for ticker ─────────────────
         if (data.sponsor_enabled && data.sponsors && data.sponsors.length > 0) {
             for (var i = 0; i < data.sponsors.length; i++) {
                 var s = data.sponsors[i];
-                var link = s.link ? '<a href="' + s.link + '" target="_blank" rel="noopener">' + escapeHtml(s.name) + '</a>' : escapeHtml(s.name);
-                var desc = s.description ? ' \u2014 ' + escapeHtml(s.description) : '';
-                sponsorsHtml += '<div class="tk-sponsor-banner"><p>Sponsored by ' + link + desc + '</p></div>';
+                var sponsorName = s.link
+                    ? '<a href="' + s.link + '" target="_blank" rel="noopener" class="tk-ticker-sponsor-name">' + escapeHtml(s.name) + '</a>'
+                    : '<span class="tk-ticker-sponsor-name">' + escapeHtml(s.name) + '</span>';
+                var sponsorDesc = s.description ? '<span class="tk-ticker-sponsor-desc">' + escapeHtml(s.description) + '</span>' : '';
+
+                tickerItems += '<div class="tk-ticker-item tk-ticker-sponsor">'
+                    + '<span class="tk-ticker-sponsor-icon">\uD83D\uDCE2</span>'
+                    + sponsorName
+                    + sponsorDesc
+                    + '</div>'
+                    + '<div class="tk-ticker-dot"></div>';
             }
         }
 
-        // ── Donations feed ────────────────────────────────
+        // ── Build donation items for ticker ────────────────
         if (data.donations && data.donations.length > 0) {
-            var totalAmount = (data.donationStats && data.donationStats.totalAmount) ? data.donationStats.totalAmount : 0;
-            var totalCount = (data.donationStats && data.donationStats.totalCount) ? data.donationStats.totalCount : 0;
-
-            var cardsHtml = '';
             for (var j = 0; j < data.donations.length; j++) {
                 var d = data.donations[j];
                 var tierInfo = getTierConfig(d.tier);
-                var msgHtml = d.message ? '<p class="tk-donation-message">\u201C' + escapeHtml(d.message) + '\u201D</p>' : '';
-                cardsHtml += '<div class="tk-donation-card">'
-                    + '<div class="tk-donation-top">'
-                    + '<span class="tk-donation-name">' + escapeHtml(d.name) + '</span>'
-                    + '<span class="tk-donation-amount">$' + Number(d.amount).toFixed(0) + '</span>'
-                    + '</div>'
-                    + '<span class="tk-donation-tier ' + tierInfo.css + '">' + escapeHtml(tierInfo.label) + '</span>'
+                var msgHtml = d.message ? '<span class="tk-ticker-donation-msg">\u201C' + escapeHtml(d.message) + '\u201D</span>' : '';
+
+                tickerItems += '<div class="tk-ticker-item tk-ticker-donation">'
+                    + '<span class="tk-ticker-donation-icon">' + tierInfo.icon + '</span>'
+                    + '<span class="tk-ticker-donation-name">' + escapeHtml(d.name) + '</span>'
+                    + '<span class="tk-ticker-donation-amount">$' + Number(d.amount).toFixed(0) + '</span>'
+                    + '<span class="tk-ticker-donation-tier ' + tierInfo.css + '">' + escapeHtml(tierInfo.label) + '</span>'
                     + msgHtml
-                    + '<p class="tk-donation-time">' + timeAgo(d.createdAt) + '</p>'
+                    + '<span class="tk-ticker-donation-time">' + timeAgo(d.createdAt) + '</span>'
+                    + '</div>'
+                    + '<div class="tk-ticker-dot"></div>';
+            }
+        }
+
+        // ── Build ticker HTML ──────────────────────────────
+        var tickerHtml = '';
+        if (tickerItems) {
+            // Duplicate content for seamless infinite scroll
+            var duplicatedItems = tickerItems + tickerItems;
+            tickerHtml = '<div class="tk-ticker">'
+                + '<div class="tk-ticker-track">'
+                + duplicatedItems
+                + '</div>'
+                + '</div>';
+        } else {
+            tickerHtml = '<div class="tk-ticker">'
+                + '<p class="tk-ticker-empty">Be the first to support! <a href="' + HUB_URL + '/kanto-fund" target="_blank">Donate now \u2192</a></p>'
+                + '</div>';
+        }
+
+        // ── Stats bar ─────────────────────────────────────
+        var statsHtml = '';
+        if (data.donations && data.donations.length > 0) {
+            var totalAmount = (data.donationStats && data.donationStats.totalAmount) ? data.donationStats.totalAmount : 0;
+            var totalCount = (data.donationStats && data.donationStats.totalCount) ? data.donationStats.totalCount : 0;
+            var sponsorCount = (data.sponsors && data.sponsors.length) || 0;
+
+            statsHtml = '<div class="tk-stats-bar">'
+                + '<div class="tk-stat-item">'
+                + '<span class="tk-stat-value">$' + Number(totalAmount).toFixed(0) + '</span>'
+                + '<span class="tk-stat-label">raised</span>'
+                + '</div>'
+                + '<span class="tk-stat-sep">\u2022</span>'
+                + '<div class="tk-stat-item">'
+                + '<span class="tk-stat-value">' + totalCount + '</span>'
+                + '<span class="tk-stat-label">donors</span>'
+                + '</div>';
+
+            if (sponsorCount > 0) {
+                statsHtml += '<span class="tk-stat-sep">\u2022</span>'
+                    + '<div class="tk-stat-item">'
+                    + '<span class="tk-stat-value">' + sponsorCount + '</span>'
+                    + '<span class="tk-stat-label">sponsors</span>'
                     + '</div>';
             }
 
-            donationsHtml = '<div class="tk-donations-section">'
-                + '<div class="tk-donations-header">'
-                + '<h4>\u2764\uFE0F Recent <span>Donations</span></h4>'
-                + '<div class="tk-donations-stats">'
-                + '<span class="tk-donations-stat"><strong>$' + Number(totalAmount).toFixed(0) + '</strong> raised</span>'
-                + '<span class="tk-donations-stat"><strong>' + totalCount + '</strong> donors</span>'
-                + '</div>'
-                + '</div>'
-                + '<div class="tk-donations-feed">'
-                + cardsHtml
-                + '</div>'
-                + '<div class="tk-donations-cta"><a href="' + HUB_URL + '/kanto-fund" target="_blank">Support the station \u2192</a></div>'
-                + '</div>';
-        } else if (data.donations && data.donations.length === 0) {
-            donationsHtml = '<div class="tk-donations-section">'
-                + '<div class="tk-donations-header">'
-                + '<h4>\u2764\uFE0F Recent <span>Donations</span></h4>'
-                + '</div>'
-                + '<p class="tk-donations-empty">Be the first to support Tunog Kalye Radio!</p>'
-                + '<div class="tk-donations-cta"><a href="' + HUB_URL + '/kanto-fund" target="_blank">Donate now \u2192</a></div>'
-                + '</div>';
+            statsHtml += '</div>';
         }
 
         // ── Assemble full widget ───────────────────────────
         var html = '<div class="tk-hub-wrapper">'
-            + sponsorsHtml
-            + donationsHtml
+            + tickerHtml
+            + statsHtml
             + '<div class="tk-hub-banner">'
             + '<h3>\uD83C\uDFA4 TUNOG KALYE <span>HUB</span></h3>'
             + '<p>Submit your music, support the station, or become a sponsor</p>'
@@ -439,8 +480,8 @@ document.addEventListener("DOMContentLoaded", function() {
             + '<div class="tk-hub-footer-links">'
             + '<a href="' + HUB_URL + '/about" target="_blank">About Us</a>'
             + '<a href="' + HUB_URL + '/kanto-fund" target="_blank">Kanto Fund</a>'
-            + '<a href="' + HUB_URL + '/terms" target="_blank">Terms of Service</a>'
-            + '<a href="' + HUB_URL + '/privacy" target="_blank">Privacy Policy</a>'
+            + '<a href="' + HUB_URL + '/terms" target="_blank">Terms</a>'
+            + '<a href="' + HUB_URL + '/privacy" target="_blank">Privacy</a>'
             + '</div>'
             + '</div>'
             + '</div>';
