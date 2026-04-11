@@ -103,6 +103,27 @@ export default function TunogKalyePathways() {
   const [submitResult, setSubmitResult] = useState<{ success: boolean; message: string } | null>(null);
   const [siteSettings, setSiteSettings] = useState<Record<string, string>>({});
 
+  // Detect hash fragments (#submit, #sponsor, #donate) from navbar links
+  const handleHash = useCallback(() => {
+    const hash = window.location.hash.replace("#", "");
+    if (hash === "submit" || hash === "sponsor" || hash === "donate") {
+      setActivePathway(hash);
+      setPathwayStep(1);
+      setSubmitResult(null);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      // Clean up the hash so it doesn't re-trigger on refresh
+      window.history.replaceState(null, "", window.location.pathname);
+    }
+  }, []);
+
+  useEffect(() => {
+    // Check hash on initial load
+    handleHash();
+    // Listen for hash changes (when navbar links are clicked while on homepage)
+    window.addEventListener("hashchange", handleHash);
+    return () => window.removeEventListener("hashchange", handleHash);
+  }, [handleHash]);
+
   // Fetch site settings on mount
   useEffect(() => {
     fetch("/api/site-settings")
