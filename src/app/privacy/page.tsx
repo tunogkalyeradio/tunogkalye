@@ -210,7 +210,7 @@ export default function PrivacyPage() {
         <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6">
           <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-between">
             <div className="flex items-center gap-2">
-              <Radio className="h-4 w-4 text-red-400" />
+              <img src="/tunog-kalye-horizontal.png" alt="TKR" className="h-5 w-auto object-contain" />
               <span className="text-sm text-slate-500">Tunog Kalye Radio &copy; 2026. All rights reserved.</span>
             </div>
             <div className="flex gap-4 text-xs text-slate-600">
