@@ -22,7 +22,7 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import Link from "next/link";
-import { CATEGORY_GRADIENTS } from "../../page";
+import { CATEGORY_GRADIENTS } from "../../store-utils";
 
 interface ProductData {
   id: number;

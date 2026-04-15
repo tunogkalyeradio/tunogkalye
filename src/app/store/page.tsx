@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth-utils";
 import StorePageClient from "./store-page-client";
@@ -6,6 +7,31 @@ import { ShoppingBag, Store } from "lucide-react";
 import { CATEGORIES, CATEGORY_GRADIENTS, type StoreProduct, type FeaturedArtist } from "./store-utils";
 
 export { CATEGORIES, CATEGORY_GRADIENTS, type StoreProduct, type FeaturedArtist };
+
+export const metadata: Metadata = {
+  title: "Merch Store — Filipino Indie Artist Merchandise",
+  description:
+    "Shop official merchandise from Filipino indie artists on the Tunog Kalye Radio store. Browse t-shirts, hoodies, tumblers, hats and more. 90% goes directly to the artist. Secure checkout via Stripe. Support OPM artists with every purchase.",
+  keywords: [
+    "OPM merch store",
+    "Filipino indie merchandise",
+    "Pinoy band merch",
+    "Filipino artist t-shirts",
+    "OPM clothing store",
+    "support Filipino artists",
+    "Pinoy indie merch",
+    "Filipino music merchandise online",
+  ],
+  alternates: {
+    canonical: "https://hub.tunogkalye.net/store",
+  },
+  openGraph: {
+    title: "Merch Store — Support Filipino Indie Artists",
+    description:
+      "Shop merch from Filipino indie artists. 90% goes directly to the artist. Secure checkout.",
+    url: "https://hub.tunogkalye.net/store",
+  },
+};
 
 export async function getProducts() {
   return db.product.findMany({

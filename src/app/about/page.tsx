@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import {
   Radio, ArrowLeft, Shield, HandCoins, Users, Heart, Globe,
@@ -9,6 +10,31 @@ import {
   Card, CardContent, CardDescription, CardHeader, CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+
+export const metadata: Metadata = {
+  title: "About Tunog Kalye Radio — Our Story, Mission & Vision",
+  description:
+    "Learn about Tunog Kalye Radio, the 24/7 Filipino indie music broadcasting network born from the kanto (street corner) of Surrey, BC, Canada. Discover our mission to democratize OPM, our zero-commission model, and how we support independent Filipino artists worldwide.",
+  keywords: [
+    "about Tunog Kalye Radio",
+    "Filipino indie radio station story",
+    "OPM radio mission",
+    "Filipino music broadcasting Canada",
+    "zero commission music platform",
+    "Pinoy indie music support",
+    "Filipino diaspora radio",
+    "Surrey BC Filipino radio",
+  ],
+  alternates: {
+    canonical: "https://hub.tunogkalye.net/about",
+  },
+  openGraph: {
+    title: "About Tunog Kalye Radio — Our Story",
+    description:
+      "Born from the kanto. Broadcasting Filipino indie music worldwide. Zero commission. Corporate-free. Learn our story.",
+    url: "https://hub.tunogkalye.net/about",
+  },
+};
 
 export default function AboutPage() {
   return (

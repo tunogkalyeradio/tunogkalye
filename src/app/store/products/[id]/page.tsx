@@ -1,7 +1,7 @@
 import { db } from "@/lib/db";
 import { notFound } from "next/navigation";
 import ProductDetailClient from "./product-detail-client";
-import { CATEGORY_GRADIENTS } from "../../page";
+import { CATEGORY_GRADIENTS } from "../../store-utils";
 import Link from "next/link";
 import { ArrowLeft, Store } from "lucide-react";
 

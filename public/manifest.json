@@ -1,11 +1,16 @@
 {
   "name": "Tunog Kalye Radio",
   "short_name": "TKR",
-  "description": "24/7 Filipino Independent Music — Submit, Sponsor, Support",
+  "description": "24/7 Filipino Independent Music Radio — Submit, Sponsor, Support. Broadcasting worldwide from Surrey, BC, Canada.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0a0a0f",
   "theme_color": "#dc2626",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": ["music", "entertainment", "radio"],
   "icons": [
     {
       "src": "/favicon-32x32.png",
@@ -20,7 +25,26 @@
     {
       "src": "/android-chrome-512x512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Submit Music",
+      "url": "/#submit",
+      "description": "Submit your Filipino indie music for airplay"
+    },
+    {
+      "name": "Merch Store",
+      "url": "/store",
+      "description": "Shop merch from Filipino indie artists"
+    },
+    {
+      "name": "Support Us",
+      "url": "/#donate",
+      "description": "Support Tunog Kalye Radio"
     }
   ]
 }

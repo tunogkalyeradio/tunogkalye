@@ -34,7 +34,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import Link from "next/link";
-import { CATEGORY_GRADIENTS } from "../../page";
+import { CATEGORY_GRADIENTS } from "../../store-utils";
 
 interface ArtistData {
   id: number;

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import {
   ArrowLeft, HandCoins, ShoppingBag, Heart, CheckCircle2,
@@ -9,6 +10,31 @@ import {
   Card, CardContent, CardHeader, CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+
+export const metadata: Metadata = {
+  title: "Kanto Fund — Transparent Revenue Sharing for Filipino Indie Artists",
+  description:
+    "The Kanto Fund is Tunog Kalye Radio's transparent revenue-sharing model. 10% of all merch sales is pooled quarterly and distributed to top-charting Filipino indie artists. Learn how your purchases directly support OPM artists.",
+  keywords: [
+    "Kanto Fund",
+    "Filipino artist revenue sharing",
+    "OPM artist support fund",
+    "Filipino indie music funding",
+    "transparent music revenue",
+    "support Filipino artists quarterly",
+    "OPM artist earnings",
+    "Pinoy indie artist income",
+  ],
+  alternates: {
+    canonical: "https://hub.tunogkalye.net/kanto-fund",
+  },
+  openGraph: {
+    title: "Kanto Fund — Empowering Filipino Indie Artists",
+    description:
+      "10% of all merch sales goes directly to top-charting Filipino indie artists. Fully transparent, quarterly distributions.",
+    url: "https://hub.tunogkalye.net/kanto-fund",
+  },
+};
 
 export default function KantoFundPage() {
   return (

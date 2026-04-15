@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXTAUTH_URL || "https://tunog-kalye-hub.vercel.app";
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXTAUTH_URL || "https://hub.tunogkalye.net";
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -8,12 +8,12 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "Googlebot",
         allow: "/",
-        disallow: ["/api/", "/admin/", "/artist/", "/dashboard/"],
+        disallow: ["/api/", "/admin/", "/artist/", "/dashboard/", "/auth/error"],
       },
       {
         userAgent: "Bingbot",
         allow: "/",
-        disallow: ["/api/", "/admin/", "/artist/", "/dashboard/"],
+        disallow: ["/api/", "/admin/", "/artist/", "/dashboard/", "/auth/error"],
       },
       {
         userAgent: "Twitterbot",
