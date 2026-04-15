@@ -5,6 +5,8 @@ import { Toaster } from "@/components/ui/toaster";
 import AuthProvider from "@/components/auth-provider";
 import ChatWidget from "@/components/chat-widget";
 import LivePlayer from "@/components/live-player";
+import Shoutbox from "@/components/shoutbox";
+import PushNotificationManager from "@/components/push-notification-manager";
 
 const SITE_URL = "https://hub.tunogkalye.net";
 const SITE_NAME = "Tunog Kalye Radio";
@@ -236,6 +238,8 @@ export default function RootLayout({
         <AuthProvider>
           {children}
           <ChatWidget />
+          <Shoutbox />
+          <PushNotificationManager />
           <LivePlayer />
         </AuthProvider>
         <Toaster />

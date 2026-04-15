@@ -374,6 +374,122 @@ function SongHistoryWidget({ history }: { history: SongHistoryEntry[] }) {
   );
 }
 
+// ─── Alarm Clock Component ────────────────────────────────────
+function AlarmClock({ alarmTime, isAlarmSet, isAlarmFiring, onSet, onClear, onDismiss }: {
+  alarmTime: string | null;
+  isAlarmSet: boolean;
+  isAlarmFiring: boolean;
+  onSet: (time: string) => void;
+  onClear: () => void;
+  onDismiss: () => void;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [inputTime, setInputTime] = useState("");
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className={`rounded-lg p-2 transition-colors ${
+          isAlarmFiring
+            ? "text-red-400 bg-red-400/10 animate-pulse"
+            : isAlarmSet
+              ? "text-green-400 bg-green-400/10"
+              : "text-slate-400 hover:bg-white/10 hover:text-white"
+        }`}
+        title={isAlarmFiring ? "Alarm is ringing!" : isAlarmSet ? `Alarm set for ${alarmTime}` : "Set alarm"}
+      >
+        <Bell className="h-4 w-4" />
+      </button>
+
+      {/* Alarm firing overlay */}
+      {isAlarmFiring && (
+        <div className="absolute bottom-full right-0 mb-2 w-56 rounded-xl border border-red-500/30 bg-[#1a1a2e] p-3 shadow-xl animate-in fade-in zoom-in-95 duration-200">
+          <p className="mb-1 text-sm font-bold text-red-400">Alarm Ringing!</p>
+          <p className="mb-2 text-xs text-slate-400">Wake up to Tunog Kalye Radio!</p>
+          <button
+            onClick={() => { onDismiss(); setIsOpen(false); }}
+            className="w-full rounded-lg bg-red-500/20 px-3 py-1.5 text-xs font-medium text-red-400 hover:bg-red-500/30"
+          >
+            Dismiss Alarm
+          </button>
+        </div>
+      )}
+
+      {/* Alarm set confirmation */}
+ {!isAlarmFiring && isAlarmSet && isOpen && (
+        <div className="absolute bottom-full right-0 mb-2 w-48 rounded-xl border border-white/10 bg-[#1a1a2e] p-3 shadow-xl">
+          <p className="mb-1 text-xs font-medium text-green-400">Alarm Set</p>
+          <p className="mb-2 text-lg font-bold text-white">{alarmTime}</p>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setIsOpen(false)}
+              className="flex-1 rounded-lg bg-white/5 px-2 py-1.5 text-xs text-slate-300 hover:bg-white/10"
+            >
+              Close
+            </button>
+            <button
+              onClick={() => { onClear(); setIsOpen(false); }}
+              className="flex-1 rounded-lg bg-red-500/10 px-2 py-1.5 text-xs text-red-400 hover:bg-red-500/20"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Set alarm form */}
+      {!isAlarmFiring && !isAlarmSet && isOpen && (
+        <div className="absolute bottom-full right-0 mb-2 w-48 rounded-xl border border-white/10 bg-[#1a1a2e] p-3 shadow-xl">
+          <p className="mb-2 text-[10px] font-medium uppercase tracking-wider text-slate-500">
+            Wake Up to TKR
+          </p>
+          <input
+            type="time"
+            value={inputTime}
+            onChange={(e) => setInputTime(e.target.value)}
+            className="mb-2 w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white focus:border-red-500/50 focus:outline-none [color-scheme:dark]"
+          />
+          <div className="flex gap-2">
+            <button
+              onClick={() => { if (inputTime) { onSet(inputTime); setIsOpen(false); } }}
+              disabled={!inputTime}
+              className="flex-1 rounded-lg bg-gradient-to-r from-red-600 to-orange-500 px-2 py-1.5 text-xs font-medium text-white hover:from-red-500 hover:to-orange-400 disabled:opacity-40"
+            >
+              Set Alarm
+            </button>
+            <button
+              onClick={() => setIsOpen(false)}
+              className="flex-1 rounded-lg bg-white/5 px-2 py-1.5 text-xs text-slate-300 hover:bg-white/10"
+            >
+              Cancel
+            </button>
+          </div>
+          {/* Quick presets */}
+          <div className="mt-2 border-t border-white/5 pt-2">
+            <p className="mb-1 text-[9px] text-slate-600">Quick set:</p>
+            <div className="flex gap-1">
+              {[15, 30, 60].map((m) => {
+                const d = new Date(Date.now() + m * 60000);
+                const timeStr = `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+                return (
+                  <button
+                    key={m}
+                    onClick={() => { onSet(timeStr); setIsOpen(false); }}
+                    className="flex-1 rounded bg-white/5 px-1 py-1 text-[10px] text-slate-400 hover:bg-white/10 hover:text-white"
+                  >
+                    {m}m
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Main Live Player Component ───────────────────────────────
 export default function LivePlayer() {
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -394,6 +510,9 @@ export default function LivePlayer() {
   const [sleepTimeLeft, setSleepTimeLeft] = useState<number | null>(null);
   const [isSleepActive, setIsSleepActive] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
+  const [alarmTime, setAlarmTime] = useState<string | null>(null);
+  const [isAlarmFiring, setIsAlarmFiring] = useState(false);
+  const alarmCheckRef = useRef<NodeJS.Timeout | null>(null);
 
   // Dismiss state
   useEffect(() => {
@@ -606,6 +725,44 @@ export default function LivePlayer() {
     setIsPlaying(false);
   };
 
+  // Alarm clock check
+  useEffect(() => {
+    if (!alarmTime) return;
+    alarmCheckRef.current = setInterval(() => {
+      const now = new Date();
+      const [h, m] = alarmTime.split(":").map(Number);
+      if (now.getHours() === h && now.getMinutes() === m && now.getSeconds() < 5) {
+        setIsAlarmFiring(true);
+        // Auto-start playback
+        if (audioRef.current && !isPlaying) {
+          audioRef.current.play().then(() => setIsPlaying(true)).catch(() => {});
+        }
+        // Play a notification sound using Web Audio API
+        try {
+          const ctx = new AudioContext();
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.frequency.value = 880;
+          osc.type = "sine";
+          gain.gain.value = 0.3;
+          osc.start();
+          setTimeout(() => { osc.frequency.value = 1100; }, 200);
+          setTimeout(() => { osc.frequency.value = 880; }, 400);
+          setTimeout(() => { osc.stop(); ctx.close(); }, 800);
+        } catch {}
+        setAlarmTime(null);
+      }
+    }, 1000);
+    return () => { if (alarmCheckRef.current) clearInterval(alarmCheckRef.current); };
+  }, [alarmTime, isPlaying]);
+
+  const dismissAlarm = () => {
+    setIsAlarmFiring(false);
+    if (alarmCheckRef.current) clearInterval(alarmCheckRef.current);
+  };
+
   const reopenPlayer = () => {
     setIsDismissed(false);
     sessionStorage.removeItem("player-dismissed");
@@ -807,6 +964,16 @@ export default function LivePlayer() {
               isActive={isSleepActive}
               onToggle={cancelSleepTimer}
               onSet={setSleepTimer}
+            />
+
+            {/* Alarm Clock */}
+            <AlarmClock
+              alarmTime={alarmTime}
+              isAlarmSet={!!alarmTime}
+              isAlarmFiring={isAlarmFiring}
+              onSet={setAlarmTime}
+              onClear={() => setAlarmTime(null)}
+              onDismiss={dismissAlarm}
             />
 
             {/* Share */}

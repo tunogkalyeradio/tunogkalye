@@ -9,6 +9,11 @@
   "orientation": "portrait-primary",
   "scope": "/",
   "lang": "en",
+  "serviceworker": {
+    "src": "/sw.js",
+    "scope": "/",
+    "update_via_cache": "none"
+  },
   "dir": "ltr",
   "categories": ["music", "entertainment", "radio"],
   "icons": [
