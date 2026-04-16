@@ -6,8 +6,9 @@ import Link from "next/link";
 import {
   Mic2, DollarSign, Heart, ShoppingBag, LogIn, UserPlus,
   ShieldCheck, Palette, LayoutDashboard, LogOut, ChevronDown,
-  Menu, X,
+  Menu, X, Globe,
 } from "lucide-react";
+import WorldClock from "./world-clock";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -153,6 +154,9 @@ export default function Navbar() {
           </div>
         </Link>
 
+        {/* World Clock — shows times for global audience */}
+        <WorldClock />
+
         {/* Desktop: Center nav + Auth */}
         <div className="hidden items-center gap-1 md:flex">
           <Link href="/#submit" className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-white/5 hover:text-red-400" title="Submit Music">
@@ -204,6 +208,14 @@ export default function Navbar() {
       {mobileOpen && (
         <div className="border-t border-white/5 bg-[#0a0a0f] md:hidden">
           <div className="mx-auto max-w-6xl space-y-1 px-4 py-3 sm:px-6">
+            {/* World Clock in mobile menu */}
+            <div className="mb-2 rounded-lg border border-white/5 bg-white/[0.02] p-3">
+              <div className="mb-2 flex items-center gap-2 text-[10px] font-medium uppercase tracking-wider text-slate-500">
+                <Globe className="h-3 w-3" />
+                World Clock
+              </div>
+              <WorldClock />
+            </div>
             <Link
               href="/#submit"
               onClick={() => setMobileOpen(false)}
