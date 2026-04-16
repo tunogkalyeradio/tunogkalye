@@ -1,7 +1,7 @@
 {
-  "name": "Tunog Kalye Radio",
-  "short_name": "TKR",
-  "description": "24/7 Filipino Independent Music Radio — Submit, Sponsor, Support. Broadcasting worldwide from Surrey, BC, Canada.",
+  "name": "Tunog Kalye Radio — The Premier Broadcasting Network for Filipino Indie Music",
+  "short_name": "TKR Radio",
+  "description": "Tunog Kalye Radio — The Premier Broadcasting Network for Filipino Indie Music. 24/7 global radio from Surrey, BC, Canada. Submit music, shop merch, support indie OPM artists.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0a0a0f",

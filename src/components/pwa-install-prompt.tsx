@@ -118,10 +118,13 @@ export default function PWAInstallPrompt() {
             <h3 className="text-sm font-bold text-white">
               Install Tunog Kalye Radio
             </h3>
-            <p className="mt-0.5 text-xs text-slate-400">
+            <p className="mt-0.5 text-[11px] text-slate-500 italic">
+              The Premier Broadcasting Network for Filipino Indie Music
+            </p>
+            <p className="mt-1 text-xs text-slate-400">
               {isIOS
-                ? "Tap the Share button, then 'Add to Home Screen' for the full app experience."
-                : "Add to your home screen for a fast, app-like experience with background play."}
+                ? "Tap Share, then 'Add to Home Screen' for the full app experience."
+                : "Add to home screen for a fast, app-like experience with background play."}
             </p>
 
             <div className="mt-3 flex items-center gap-2">
