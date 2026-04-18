@@ -170,7 +170,7 @@ export default function AboutPage() {
                   gradient: "from-rose-500 to-pink-400",
                   shadow: "shadow-rose-500/20",
                   title: "Community First",
-                  desc: "The Kanto Fund redistributes revenue to top-charting artists. Supporting music isn't just a tagline.",
+                  desc: "The Kanto Fund redistributes 10% of merch sales to top-charting artists based on radio airplay and stream listens. Supporting music isn't just a tagline.",
                 },
                 {
                   icon: Globe,

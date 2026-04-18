@@ -165,7 +165,7 @@ export default function Navbar() {
           <Link href="/#sponsor" className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-white/5 hover:text-amber-400" title="Sponsor">
             <DollarSign className="h-4 w-4" />
           </Link>
-          <Link href="/#donate" className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-white/5 hover:text-rose-400" title="Donate">
+          <Link href="/#donate" className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-white/5 hover:text-rose-400" title="Support the Station">
             <Heart className="h-4 w-4" />
           </Link>
           <Link href="/store" className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-white/5 hover:text-emerald-400" title="Merch Store">
@@ -235,7 +235,7 @@ export default function Navbar() {
               onClick={() => setMobileOpen(false)}
               className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-slate-400 transition-colors hover:bg-white/5 hover:text-rose-400"
             >
-              <Heart className="h-4 w-4" /> Donate
+              <Heart className="h-4 w-4" /> Support the Station
             </Link>
             <Link
               href="/store"

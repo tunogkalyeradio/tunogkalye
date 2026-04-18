@@ -11,6 +11,9 @@ const submissionSchema = z.object({
   city: z.string().min(2, "City is required"),
   genre: z.string().optional(),
   message: z.string().optional(),
+  broadcastConsent: z.boolean().refine((val) => val === true, {
+    message: "You must agree to the broadcast license to submit your music.",
+  }),
 });
 
 export async function POST(request: NextRequest) {
@@ -37,6 +40,7 @@ export async function POST(request: NextRequest) {
         city: data.city,
         genre: data.genre || null,
         message: data.message || null,
+        broadcastConsent: data.broadcastConsent,
         status: "pending",
       },
     });

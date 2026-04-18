@@ -127,7 +127,7 @@ export default function KantoFundPage() {
                     icon: TrendingUp,
                     color: "bg-cyan-500",
                     title: "Quarterly Distribution",
-                    desc: "At the end of each quarter (March, June, September, December), the pooled fund is distributed to our top-charting artists based on airplay and engagement.",
+                    desc: "At the end of each quarter (March, June, September, December), the pooled fund is distributed to the top 5 most requested and streamed songs on our live radio. Kanto Fund payouts are based strictly on radio airplay and stream listens — never on merch sales volume — to keep the system fair and transparent for all artists.",
                   },
                   {
                     num: "04",
@@ -181,7 +181,7 @@ export default function KantoFundPage() {
                   <div className="h-3 w-full rounded-full bg-white/5 overflow-hidden">
                     <div className="h-full w-[90%] rounded-full bg-gradient-to-r from-emerald-500 to-teal-400" />
                   </div>
-                  <p className="mt-2 text-xs text-slate-500">Transferred instantly via Stripe Connect. No delays, no deductions.</p>
+                  <p className="mt-2 text-xs text-slate-500">No platform commissions taken by Tunog Kalye (standard Stripe payment processing fees apply).</p>
                 </div>
 
                 {/* Kanto Fund portion */}
@@ -198,7 +198,7 @@ export default function KantoFundPage() {
                   <div className="h-3 w-full rounded-full bg-white/5 overflow-hidden">
                     <div className="h-full w-[10%] rounded-full bg-gradient-to-r from-cyan-500 to-blue-400" />
                   </div>
-                  <p className="mt-2 text-xs text-slate-500">Pooled quarterly and distributed to top-charting independent artists.</p>
+                  <p className="mt-2 text-xs text-slate-500">Pooled quarterly and distributed to top-charting artists based on radio airplay and stream listens only.</p>
                 </div>
               </div>
             </div>
@@ -272,7 +272,7 @@ export default function KantoFundPage() {
           <section>
             <div className="mb-8 text-center">
               <h2 className="mb-2 text-2xl font-bold tracking-tight sm:text-3xl">How to Contribute</h2>
-              <p className="text-sm text-slate-500">Every merch purchase and sponsorship dollar strengthens the fund.</p>
+              <p className="text-sm text-slate-500">Every merch purchase strengthens the fund. Support artists by shopping their gear.</p>
             </div>
             <div className="mx-auto max-w-3xl space-y-4">
               {[
@@ -283,13 +283,13 @@ export default function KantoFundPage() {
                 },
                 {
                   icon: Heart,
-                  title: "Infrastructure Support",
-                  desc: "Use the \"Support the Station\" pathway on our hub to contribute toward server hosting and bandwidth. A portion is allocated to the Kanto Fund pool.",
+                  title: "Server Backers",
+                  desc: "Use the \"Support the Station\" pathway on our hub to contribute toward server hosting and CDN bandwidth. Contributions go strictly to Oracle Cloud and Cloudflare bills. Any surplus rolls over to the next month's server bill. Server Backer contributions never go to the Kanto Fund.",
                 },
                 {
                   icon: CheckCircle2,
                   title: "Kanto Champion ($100+)",
-                  desc: "Donors who contribute $100 or more are recognized as Kanto Champions — dedicated supporters who go above and beyond for Filipino indie music.",
+                  desc: "Server Backers who contribute $100 or more are recognized as Kanto Champions — dedicated supporters who go above and beyond to keep independent OPM on air.",
                 },
               ].map((item) => (
                 <div key={item.title} className="flex gap-4 rounded-xl border border-white/10 bg-[#12121a] p-5 transition-colors hover:border-white/20">

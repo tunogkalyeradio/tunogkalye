@@ -14,6 +14,7 @@ import Navbar from "@/components/navbar";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle,
 } from "@/components/ui/card";
@@ -30,6 +31,7 @@ interface FormData {
   bandName: string; realName: string; email: string;
   spotifyLink: string; soundcloudLink: string;
   city: string; genre: string; message: string;
+  broadcastConsent: boolean;
 }
 
 // ─── Color Meta ───────────────────────────────────────────
@@ -256,7 +258,7 @@ function HomePage({ onSelect, siteSettings: settings }: { onSelect: (f: PathwayI
           {[
             { id: "submit" as PathwayId, icon: Mic2, gradient: "from-red-600 to-orange-500", shadow: "shadow-red-500/20", border: "hover:border-red-500/40", title: "Submit Your Music", desc: "Get your music played on 24/7 global radio. We're always looking for fresh Filipino talent.", checks: ["100% copyright retained", "Non-exclusive broadcasting rights", "Reviewed within one week"], btn: FM.submit.btn },
             { id: "sponsor" as PathwayId, icon: DollarSign, gradient: "from-amber-500 to-yellow-400", shadow: "shadow-amber-500/20", border: "hover:border-amber-500/40", title: "Advertise With Us", desc: "Reach the Filipino-Canadian diaspora with high-ROI, targeted audio ads and banner placements.", checks: ["On-air shoutouts", "Website banner placement", "Plans from $50/month"], btn: FM.sponsor.btn },
-            { id: "donate" as PathwayId, icon: Heart, gradient: "from-rose-500 to-pink-400", shadow: "shadow-rose-500/20", border: "hover:border-rose-500/40", title: "Support the Station", desc: "Fund the infrastructure that keeps independent OPM broadcasting 24/7. Contributions go strictly to server hosting and bandwidth.", checks: ["B2B sponsorships are our primary revenue", "Funds the Kanto Fund for artists", "Infrastructure support only"], btn: FM.donate.btn },
+            { id: "donate" as PathwayId, icon: Heart, gradient: "from-rose-500 to-pink-400", shadow: "shadow-rose-500/20", border: "hover:border-rose-500/40", title: "Support the Station", desc: "Become a Server Backer and fund the infrastructure that keeps independent OPM broadcasting 24/7. Contributions go strictly to Oracle Cloud and Cloudflare CDN bills.", checks: ["B2B sponsorships are our primary revenue", "Server hosting and bandwidth only", "Surplus rolls to next month's bill"], btn: FM.donate.btn },
             { id: "store" as string, icon: ShoppingBag, gradient: "from-emerald-500 to-teal-400", shadow: "shadow-emerald-500/20", border: "hover:border-emerald-500/40", title: "Browse Merch Store", desc: "Support Filipino indie artists by buying their merch. 90% goes directly to them.", checks: ["Curated by artists", "Secure checkout", "Fast delivery"], btn: "bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white", isLink: true, href: "/store" },
           ].map((card) => (
             <Card key={card.id} onClick={() => card.isLink ? undefined : onSelect(card.id as PathwayId)} className={`group cursor-pointer border-white/10 bg-[#12121a] transition-all duration-300 ${card.border} hover:bg-[#14141f] hover:shadow-lg hover:${card.shadow}`}>
@@ -331,14 +333,14 @@ function HomePage({ onSelect, siteSettings: settings }: { onSelect: (f: PathwayI
             {[
               { q: "Do I keep my copyright?", a: "Absolutely. You retain 100% of your copyrights at all times. We only ask for non-exclusive digital broadcasting rights, which means you can simultaneously distribute your music on Spotify, Apple Music, YouTube, or any other platform. There are no advance recoupment clauses, no territorial restrictions, and no minimum commitment periods." },
               { q: "How long until my song airs?", a: "Our team reviews every submission within one week. If your track is approved, we'll email you with the good news and schedule it into our rotation. Once approved, you'll typically hear your song on air within 2-3 days as our DJs program it into themed blocks and time slots." },
-              { q: "What is the Kanto Fund?", a: "The Kanto Fund is our transparent revenue-sharing model. A dedicated percentage of all B2B advertising revenue and sponsorships is pooled quarterly and distributed directly to our top-charting independent artists. This fund helps artists pay for their next recording session, music video, or live gig — and we show exactly how the money is allocated." },
+              { q: "What is the Kanto Fund?", a: "The Kanto Fund is our transparent revenue-sharing model. 10% of all merchandise sales on hub.tunogkalye.net is pooled quarterly and distributed directly to the top-charting independent artists based on radio airplay and stream listens. This fund helps artists pay for their next recording session, music video, or live gig — and we show exactly how the money is allocated. B2B sponsorships do NOT fund the Kanto Fund; they pay strictly for platform operations and marketing." },
               { q: "How do sponsorships work?", a: "We offer three sponsorship tiers: Shoutout ($50/month) for daily on-air mentions, Banner ($100/month) which adds a website banner plus everything in Shoutout, and Premium ($200/month) for a sponsored hour, custom DJ intro, and exclusive category sponsorship. All plans include measurable metrics and can be cancelled anytime." },
               { q: "Who can submit music?", a: "Any independent Filipino artist or band can submit. You don't need to be signed to a label. You don't need a professional recording. If you're making Pinoy music — whether it's 90s alt-rock, modern indie, post-rock, or any genre — we want to hear it. Unsigned and independent artists are our priority." },
               { q: "Does Tunog Kalye take a commission from artist sales?", a: "Zero. Tunog Kalye takes absolutely no commission from artist merchandise, tips, album sales, or gig tickets. When fans discover an artist through our station and buy their merch or tip them directly, 100% of that money goes to the artist. This is a core principle of our platform." },
               { q: "I'm signed to a record label (or a digital distributor). Can I still submit my music?", a: "Yes, but with a quick check. Submitting to Tunog Kalye is for Non-Interactive Radio Broadcasting only. This is different from Digital Distribution (Spotify/Apple Music). Most independent label contracts allow radio play. However, out of respect for your label, please inform them you are submitting to a Canadian internet radio station. If your label manager has questions, tell them to email us at hello@tunogkalye.net. We are happy to clarify that we are a radio broadcaster, not a digital distributor." },
               { q: "Will putting my song on Tunog Kalye mess up my Spotify or YouTube monetization?", a: "Absolutely not. In fact, it does the opposite. We are a radio station. We do not take your digital distribution rights. We do not upload your songs to Spotify. When we play your song, the \"Now Playing\" widget shows your name, which drives fans to search for you on Spotify, which actually increases your stream count and revenue." },
               { q: "What exactly are you taking from me? What are my rights?", a: "We operate under the \"Open Kanto Policy.\" We require a Non-Exclusive Digital Broadcasting Right. This means: You own 100% of your copyright. You can sell your song, sign to a major label, or take it off our station at any time. We are simply borrowing it to play on our radio stream. That's it." },
-              { q: "How does the 0% Commission on Merch actually work? Where does the money go?", a: "We don't touch your money. When a fan buys your shirt or album on our Hub, the payment goes through a secure system (Stripe Connect) that automatically routes the funds directly into your bank account or GCash. Tunog Kalye takes exactly 0 pesos. We act as your free digital storefront to reach the Canadian diaspora." },
+              { q: "How does the 0% Commission on Merch actually work? Where does the money go?", a: "We don't touch your money. When a fan buys your shirt or album on our Hub, 90% of the sale price is routed directly to your bank account or GCash via Stripe Connect. Tunog Kalye takes no platform commission — the remaining 10% goes to the Kanto Fund to reward top-charting artists. Note: standard Stripe payment processing fees (typically 2.9% + 30¢ per transaction) are applied before the funds reach your account. We act as your free digital storefront to reach the Canadian diaspora." },
               { q: "What about FILSCAP? I get royalties from them. Will this affect that?", a: "No, this actually helps you. Tunog Kalye operates as a legal broadcast entity. We handle the station-side licensing. If you are a FILSCAP member, your song playing on our station generates performance royalties for you through FILSCAP. You get free promotion and you collect your royalties. It's a win-win." },
               { q: "Can I upload my official Music Video to your Video Hub?", a: "To protect your label contracts, our Video Hub (video.tunogkalye.net) is strictly for exclusive live content — like our \"Kanto Sessions\" (live acoustic videos) or video podcasts. We do not host official music videos to avoid any copyright strikes on your YouTube channel or disputes with your label's visual rights." },
             ].map((faq, i) => (
@@ -384,11 +386,11 @@ function SubmitPathway({ step, setStep, goHome, isSubmitting, setIsSubmitting, s
   isSubmitting: boolean; setIsSubmitting: (b: boolean) => void;
   submitResult: { success: boolean; message: string } | null; setSubmitResult: (r: { success: boolean; message: string } | null) => void;
 }) {
-  const [form, setForm] = useState<FormData>({ bandName: "", realName: "", email: "", spotifyLink: "", soundcloudLink: "", city: "", genre: "", message: "" });
+  const [form, setForm] = useState<FormData>({ bandName: "", realName: "", email: "", spotifyLink: "", soundcloudLink: "", city: "", genre: "", message: "", broadcastConsent: false });
   const uf = (f: keyof FormData, v: string) => setForm((p) => ({ ...p, [f]: v }));
 
   const handleSubmit = async () => {
-    if (!form.bandName || !form.realName || !form.email || !form.city) return;
+    if (!form.bandName || !form.realName || !form.email || !form.city || !form.broadcastConsent) return;
     setIsSubmitting(true);
     try {
       const res = await fetch("/api/submit", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) });
@@ -475,7 +477,24 @@ function SubmitPathway({ step, setStep, goHome, isSubmitting, setIsSubmitting, s
             <Shield className="mt-0.5 h-4 w-4 shrink-0 text-green-500" />
             <p className="text-xs text-slate-500">Your data is safe. We only use your email to notify you about your submission status and when your song airs on Tunog Kalye Radio. We never sell or share your information.</p>
           </div>
-          <Button onClick={handleSubmit} disabled={isSubmitting || !form.bandName || !form.realName || !form.email || !form.city} className="w-full bg-gradient-to-r from-red-600 to-orange-500 py-5 text-lg font-bold text-white shadow-lg shadow-red-500/20 hover:from-red-500 hover:to-orange-400 disabled:opacity-50">
+          {/* Broadcast Consent Checkbox — Mandatory */}
+          <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4">
+            <div className="flex items-start gap-3">
+              <Checkbox
+                id="broadcast-consent"
+                checked={form.broadcastConsent}
+                onCheckedChange={(checked: boolean) => uf("broadcastConsent", checked ? "true" : "false")}
+                className="mt-0.5 border-amber-500/50 data-[state=checked]:bg-amber-500 data-[state=checked]:border-amber-500"
+              />
+              <Label htmlFor="broadcast-consent" className="text-xs leading-relaxed text-slate-300 cursor-pointer">
+                <span className="font-bold text-amber-300">Required:</span> I grant Tunog Kalye a non-exclusive, royalty-free license to broadcast this track on Tunog Kalye Radio, YouTube (including live archives and short-form clips), and social media platforms. I confirm that I have the right to authorize this use and that this track is either an original work or properly licensed for broadcast. I understand that Tunog Kalye Radio is a non-interactive radio broadcaster and does not take ownership of my copyright.
+              </Label>
+            </div>
+            {!form.broadcastConsent && (
+              <p className="mt-2 text-[10px] text-amber-400/70">You must agree to the broadcast license to submit your music.</p>
+            )}
+          </div>
+          <Button onClick={handleSubmit} disabled={isSubmitting || !form.bandName || !form.realName || !form.email || !form.city || !form.broadcastConsent} className="w-full bg-gradient-to-r from-red-600 to-orange-500 py-5 text-lg font-bold text-white shadow-lg shadow-red-500/20 hover:from-red-500 hover:to-orange-400 disabled:opacity-50">
             {isSubmitting ? <><Loader2 className="mr-2 h-5 w-5 animate-spin" />Submitting...</> : <><Send className="mr-2 h-5 w-5" />Submit My Demo</>}
           </Button>
         </div>
@@ -805,7 +824,7 @@ function DonatePathway({ step, setStep, goHome, navigateTo, isSubmitting, setIsS
     { id: "coffee", name: "Buy Us a Coffee", price: "$5", amt: 5, icon: Coffee, desc: "A small token that keeps the speakers buzzing. Every coffee fuels another hour of independent OPM on air.", color: "from-amber-500/20 to-orange-500/20", border: "border-amber-500/30", ic: "text-amber-400" },
     { id: "hour", name: "Sponsor an Hour", price: "$20", amt: 20, icon: Zap, desc: "Fund a full hour of commercial-free broadcasting. Your name appears on our \"Sponsored by\" on-air mention.", color: "from-blue-500/20 to-cyan-500/20", border: "border-blue-500/30", ic: "text-blue-400" },
     { id: "day", name: "Fund a Day", price: "$50", amt: 50, icon: Radio, desc: "Cover an entire day of streaming costs. You get a dedicated shoutout and your name on our website for 24 hours.", color: "from-purple-500/20 to-violet-500/20", border: "border-purple-500/30", ic: "text-purple-400" },
-    { id: "kanto", name: "Kanto Champion", price: "$100", amt: 100, icon: Star, desc: "The ultimate fan tier. Your contribution goes directly to the Kanto Fund, supporting independent artists every quarter.", color: "from-rose-500/20 to-pink-500/20", border: "border-rose-500/30", ic: "text-rose-400" },
+    { id: "kanto", name: "Kanto Champion", price: "$100", amt: 100, icon: Star, desc: "The ultimate Server Backer tier. Your contribution keeps our Oracle Cloud and Cloudflare infrastructure running strong. You get recognized as a Kanto Champion on air.", color: "from-rose-500/20 to-pink-500/20", border: "border-rose-500/30", ic: "text-rose-400" },
   ];
 
   const handleDonate = async () => {
@@ -839,7 +858,7 @@ function DonatePathway({ step, setStep, goHome, navigateTo, isSubmitting, setIsS
               icon: DollarSign,
               title: "B2B Local Sponsorships",
               subtitle: "Primary Revenue",
-              desc: "We sell highly targeted audio ads and digital banner placements to local businesses — Pinoy restaurants in Surrey, local real estate, event promoters. This is the engine that pays our operational costs and funds the Kanto Fund.",
+              desc: "We sell highly targeted audio ads and digital banner placements to local businesses — Pinoy restaurants in Surrey, local real estate, event promoters. This is the engine that pays our operational costs, our time, and marketing. B2B sponsorship revenue does NOT go to the Kanto Fund.",
               color: "from-amber-500 to-yellow-400",
               border: "border-amber-500/20",
               iconBg: "bg-amber-500/10",
@@ -849,7 +868,7 @@ function DonatePathway({ step, setStep, goHome, navigateTo, isSubmitting, setIsS
               icon: Server,
               title: "Community Infrastructure Support",
               subtitle: "Operational",
-              desc: "For listeners who want to support the platform directly, these contributions go strictly toward server hosting (Oracle/Cloudflare), bandwidth, and studio maintenance. Every dollar is accounted for.",
+              desc: "For listeners who want to support the platform directly, these contributions go strictly toward server hosting (Oracle Cloud/Cloudflare CDN) and bandwidth. Any surplus rolls over to the next month's server bill. These contributions never go to the Kanto Fund.",
               color: "from-blue-500 to-cyan-400",
               border: "border-blue-500/20",
               iconBg: "bg-blue-500/10",
@@ -891,7 +910,7 @@ function DonatePathway({ step, setStep, goHome, navigateTo, isSubmitting, setIsS
             </h2>
             <p className="mb-6 text-lg text-slate-300">Support the infrastructure that keeps independent OPM on air, 24/7. Every contribution goes directly to server hosting, bandwidth, and station maintenance.</p>
             <div className="mx-auto mb-8 max-w-md space-y-3 text-left">
-              {["B2B sponsorships fund our operations — we don't rely on donations to survive.", "The Kanto Fund redistributes sponsorship revenue to top-charting artists.", "Your infrastructure support keeps Oracle/Cloudflare servers running 24/7.", "Every supporter is recognized on air and on our website."].map((item, i) => (
+              {["B2B sponsorships fund our operations — we don't rely on donations to survive.", "The Kanto Fund is funded strictly by 10% of merch sales — not by sponsorships or donations.", "Your infrastructure support keeps Oracle Cloud and Cloudflare servers running 24/7.", "Every Server Backer is recognized on air and on our website."].map((item, i) => (
                 <div key={i} className="flex items-start gap-3"><Heart className="mt-0.5 h-4 w-4 shrink-0 text-rose-400" /><span className="text-sm text-slate-300">{item}</span></div>
               ))}
             </div>
@@ -972,7 +991,7 @@ function DonatePathway({ step, setStep, goHome, navigateTo, isSubmitting, setIsS
         <h2 className="mb-2 text-3xl font-black text-white">MARAMING SALAMAT!</h2>
         <p className="mb-2 text-slate-300">
           {selectedTier?.id === "kanto"
-            ? "Your Kanto Champion contribution means the world. You're directly funding the next generation of Filipino indie artists."
+            ? "Your Kanto Champion contribution means the world. You're directly keeping our servers running and the independent OPM stream alive for fans worldwide."
             : selectedTier?.id === "day"
             ? "An entire day of OPM broadcasting is now funded thanks to you. The music never stops."
             : selectedTier?.id === "hour"
@@ -989,7 +1008,7 @@ function DonatePathway({ step, setStep, goHome, navigateTo, isSubmitting, setIsS
         <h3 className="mb-6 text-lg font-bold text-white">What Happens Next</h3>
         <Timeline accentColor="bg-rose-500" items={[
           { icon: Radio, time: "Immediately", title: "Your Name Joins Our Supporter Roll", desc: "Your name (or \"Anonymous\") will be mentioned on air as a Tunog Kalye supporter during our next broadcast." },
-          { icon: Music, time: "This Quarter", title: "Kanto Fund Distributes to Artists", desc: "If you chose the Kanto Champion tier, your contribution goes directly into the next quarterly Kanto Fund distribution to top-charting indie artists." },
+          { icon: Server, time: "Immediately", title: "Your Contribution Powers the Server", desc: "Your support goes directly to Oracle Cloud hosting and Cloudflare CDN bills, keeping the 24/7 stream running for Filipino indie music fans worldwide." },
           { icon: Mail, time: "Ongoing", title: "You Receive Impact Updates", desc: "We'll send you periodic updates showing exactly which artists your support helped and how the Kanto Fund is making a difference." },
         ]} />
       </div>
